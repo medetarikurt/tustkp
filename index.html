@@ -46,7 +46,7 @@ body {
   justify-content: center;
   align-items: flex-start;
   padding: 20px 14px 40px;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.15s linear;
 }
 
 body.shift-mode {
@@ -145,7 +145,7 @@ body.shift-mode {
 .days-list::-webkit-scrollbar { display: none; }
 
 .day-item {
-  min-width: 48px;
+  width: 48px;
   height: 48px;
   border-radius: 12px;
   border: 1px solid var(--border);
@@ -211,8 +211,10 @@ body.shift-mode {
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  transition: all 0.15s ease;
+  min-width: 190px;
+  transition: all 0.1s ease;
 }
 
 body.shift-mode .shift-toggle-btn {
@@ -320,7 +322,7 @@ textarea.input-text { min-height: 140px; resize: vertical; line-height: 1.5; }
   font-size: 0.92rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.1s ease;
 }
 
 .q-btn.completed {
@@ -465,7 +467,6 @@ let currentDate = new Date();
 let carouselStartDate = new Date(currentDate);
 let saveTimeout = null;
 
-// Durum Değişkenleri
 let currentDayData = { course: '', todo: '', qDone: false, isShift: false, netTemel: '', netKlinik: '' };
 
 function init() {
@@ -641,14 +642,35 @@ function saveCurrentData() {
 
 function toggleShiftMode() {
   currentDayData.isShift = !currentDayData.isShift;
+  
+  // Anında görsel tepki (Instant UI Update)
+  if (currentDayData.isShift) {
+    document.body.classList.add('shift-mode');
+    document.getElementById('shiftBtnText').innerText = "Nöbet Modu Aktif";
+    document.getElementById('qLabel').innerText = "100 SORU HEDEFİ (NÖBET ESNESİ)";
+  } else {
+    document.body.classList.remove('shift-mode');
+    document.getElementById('shiftBtnText').innerText = "Nöbet Günü Olarak İşaretle";
+    document.getElementById('qLabel').innerText = "100 SORU HEDEFİ";
+  }
+  
   saveCurrentData();
-  updateUI(currentDate);
 }
 
 function toggleQuestions() {
   currentDayData.qDone = !currentDayData.qDone;
+  
+  // Anında görsel tepki (Instant UI Update)
+  const btn = document.getElementById('qBtn');
+  if (currentDayData.qDone) {
+    btn.classList.add('completed');
+    btn.innerText = '✓ 100 SORU ÇÖZÜLDÜ';
+  } else {
+    btn.classList.remove('completed');
+    btn.innerText = '100 SORU ÇÖZDÜM (İŞARETLE)';
+  }
+
   saveCurrentData();
-  updateUI(currentDate);
 }
 
 function calculateGlobalStats() {
