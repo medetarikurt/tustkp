@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Tus takip</title>
+<title>TUS Takip</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
   --bg: #091312;
@@ -18,8 +18,9 @@
   --gold-glow: rgba(212, 163, 89, 0.15);
   --success: #10b981;
   --success-glow: rgba(16, 185, 129, 0.15);
+  --danger: #ef4444;
+  --danger-glow: rgba(239, 68, 68, 0.15);
   --shift-bg: #111a24;
-  --shift-border: #1d334a;
   --shift-accent: #3b82f6;
   --radius: 12px;
 }
@@ -45,7 +46,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 20px 14px 40px;
+  padding: 20px 14px 80px;
   transition: background-color 0.15s linear;
 }
 
@@ -60,6 +61,9 @@ body.shift-mode {
   flex-direction: column;
   gap: 16px;
 }
+
+.view-panel { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+.view-panel.hidden { display: none !important; }
 
 /* Header & Stats */
 .top-bar {
@@ -273,7 +277,7 @@ body.shift-mode .shift-toggle-btn {
   font-family: inherit;
 }
 
-textarea.input-text { min-height: 140px; resize: vertical; line-height: 1.5; }
+textarea.input-text { min-height: 120px; resize: vertical; line-height: 1.5; }
 
 /* Trial Exam Card */
 .trial-card {
@@ -331,7 +335,7 @@ textarea.input-text { min-height: 140px; resize: vertical; line-height: 1.5; }
   background: var(--success-glow);
 }
 
-.branch-btn {
+.branch-add-btn {
   width: 100%;
   background: transparent;
   border: 1px dashed var(--border-focus);
@@ -345,28 +349,38 @@ textarea.input-text { min-height: 140px; resize: vertical; line-height: 1.5; }
   transition: all 0.15s ease;
 }
 
-.branch-btn:hover {
-  background: var(--gold-glow);
+.branch-add-btn:hover { background: var(--gold-glow); }
+
+.branch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
 }
 
-.branch-summary {
-  font-size: 0.75rem;
-  color: var(--text-dim);
+.branch-item-card {
+  font-size: 0.78rem;
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 8px 12px;
-  margin-top: 4px;
+  padding: 10px 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
+.branch-item-card .info { display: flex; flex-direction: column; gap: 2px; }
+.branch-item-card .info .c-name { color: #fff; font-weight: 600; }
+.branch-item-card .info .c-detail { color: var(--text-dim); font-size: 0.72rem; }
+.branch-item-card .actions { display: flex; gap: 10px; align-items: center; }
+.branch-item-card .net-badge { font-family: 'JetBrains Mono', monospace; color: var(--gold); font-weight: 700; }
+.branch-item-card .del-btn { color: var(--danger); cursor: pointer; font-size: 0.9rem; }
+
 /* Modal Popup */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.75);
+  background: rgba(0,0,0,0.8);
   display: none;
   justify-content: center;
   align-items: center;
@@ -379,7 +393,7 @@ textarea.input-text { min-height: 140px; resize: vertical; line-height: 1.5; }
   border: 1px solid var(--border-focus);
   border-radius: var(--radius);
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -399,8 +413,19 @@ textarea.input-text { min-height: 140px; resize: vertical; line-height: 1.5; }
   background: transparent;
   border: none;
   color: var(--text-dim);
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   cursor: pointer;
+}
+
+.modal-select {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: #fff;
+  padding: 10px;
+  font-size: 0.85rem;
+  outline: none;
 }
 
 .modal-inputs {
@@ -432,30 +457,127 @@ textarea.input-text { min-height: 140px; resize: vertical; line-height: 1.5; }
   margin-top: 6px;
 }
 
-/* Nav */
-.bottom-nav {
+/* Nav Bar (Bottom Fixed) */
+.fixed-tab-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(13, 26, 24, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+  z-index: 999;
+}
+
+.tab-nav-inner {
+  width: 100%;
+  max-width: 480px;
   display: grid;
-  grid-template-columns: 1fr 1.2fr 1fr;
+  grid-template-columns: 1fr 1fr;
+  padding: 8px 14px;
   gap: 10px;
 }
 
-.nav-btn {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  color: var(--text-main);
-  padding: 14px;
-  border-radius: 10px;
-  font-size: 0.85rem;
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
+  transition: all 0.15s;
 }
 
-.nav-btn.today-btn {
-  border-color: var(--gold);
-  color: var(--gold);
+.tab-btn.active {
   background: var(--gold-glow);
+  color: var(--gold);
+}
+
+/* Dashboard Styles */
+.dash-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dash-title {
+  font-size: 0.82rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--gold);
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progress-circle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 10px;
+  background: var(--bg);
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--gold);
+  width: 0%;
+  transition: width 0.3s;
+}
+
+.radar-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.radar-item.warning {
+  border-color: var(--danger);
+  background: var(--danger-glow);
+}
+
+.radar-tag {
+  font-size: 0.68rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.radar-tag.warn { background: var(--danger); color: #fff; }
+.radar-tag.good { background: var(--success); color: #fff; }
+
+.history-list { display: flex; flex-direction: column; gap: 8px; }
+.history-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  padding: 8px 10px;
+  background: var(--bg);
+  border-radius: 6px;
+  border: 1px solid var(--border);
 }
 </style>
 </head>
@@ -474,86 +596,119 @@ textarea.input-text { min-height: 140px; resize: vertical; line-height: 1.5; }
     <div class="countdown"><span id="daysLeft">--</span> gün kaldı</div>
   </div>
 
-  <!-- Meta Stats -->
-  <div class="meta-stats">
-    <div class="stat-box">
-      <div class="v" id="streakVal">0</div>
-      <div class="l">🔥 Gün Seri</div>
-    </div>
-    <div class="stat-box">
-      <div class="v" id="totalQVal">0</div>
-      <div class="l">📚 Toplam Soru</div>
-    </div>
-    <div class="stat-box">
-      <div class="v" id="syncVal">OK</div>
-      <div class="l">Bulut Durumu</div>
-    </div>
-  </div>
-
-  <!-- Week Selector -->
-  <div class="week-selector">
-    <button class="nav-arrow" onclick="shiftDays(-1)">&#8249;</button>
-    <div class="days-list" id="daysList"></div>
-    <button class="nav-arrow" onclick="shiftDays(1)">&#8250;</button>
-  </div>
-
-  <!-- Header & Shift Toggle -->
-  <div class="day-header">
-    <div class="day-title" id="displayDayName">--</div>
-    <div class="day-subtitle" id="displayFullDate">--</div>
-    <button class="shift-toggle-btn" id="shiftBtn" onclick="toggleShiftMode()">
-      <span>🏥</span> <span id="shiftBtnText">Nöbet Günü Olarak İşaretle</span>
-    </button>
-  </div>
-
-  <!-- Ders Selection -->
-  <div class="field-group">
-    <div class="field-label">DERS KATEGORİSİ</div>
-    <div class="course-badges" id="courseBadges"></div>
-    <input type="text" id="courseInput" class="input-text" placeholder="Ders adı veya konu" oninput="saveCurrentData()">
-  </div>
-
-  <!-- Deneme Kartı -->
-  <div class="trial-card" id="trialCard" style="display: none;">
-    <div class="trial-title">📊 HAFTALIK TUS DENEMESİ</div>
-    <div class="trial-inputs">
-      <div class="trial-field">
-        <label>Temel Net (100)</label>
-        <input type="number" id="netTemel" placeholder="0" oninput="saveCurrentData()">
+  <!-- VIEW 1: GÜNLÜK PLAN -->
+  <div id="viewPlan" class="view-panel">
+    <!-- Meta Stats -->
+    <div class="meta-stats">
+      <div class="stat-box">
+        <div class="v" id="streakVal">0</div>
+        <div class="l">🔥 Gün Seri</div>
       </div>
-      <div class="trial-field">
-        <label>Klinik Net (100)</label>
-        <input type="number" id="netKlinik" placeholder="0" oninput="saveCurrentData()">
+      <div class="stat-box">
+        <div class="v" id="totalQVal">0</div>
+        <div class="l">📚 Toplam Soru</div>
+      </div>
+      <div class="stat-box">
+        <div class="v" id="syncVal">OK</div>
+        <div class="l">Bulut Durumu</div>
       </div>
     </div>
-  </div>
 
-  <!-- Yapılacaklar -->
-  <div class="field-group">
-    <div class="field-label">NELER YAPACAKSIN</div>
-    <textarea id="todoInput" class="input-text" placeholder="Bugün yapılacaklar..." oninput="saveCurrentData()"></textarea>
-  </div>
+    <!-- Week Selector -->
+    <div class="week-selector">
+      <button class="nav-arrow" onclick="shiftDays(-1)">&#8249;</button>
+      <div class="days-list" id="daysList"></div>
+      <button class="nav-arrow" onclick="shiftDays(1)">&#8250;</button>
+    </div>
 
-  <!-- Soru & Branş Denemesi Buton Alanı -->
-  <div class="field-group">
-    <div class="field-label" id="qLabel">ÇIKMIŞ TUS SORU HEDEFİ</div>
-    <button class="q-btn" id="qBtn" onclick="toggleQuestions()">
-      100 ÇIKMIŞ TUS SORUSU ÇÖZDÜM
-    </button>
-    <button class="branch-btn" onclick="openBranchModal()">
-      ➕ BRANŞ DENEMESİ GİR
-    </button>
-    <div id="branchSummary" class="branch-summary" style="display: none;">
-      <span id="branchSummaryText">Mikrobiyoloji: 28D 4Y (27.0 Net)</span>
-      <span style="color: var(--gold); cursor: pointer;" onclick="openBranchModal()">Düzenle</span>
+    <!-- Header & Shift Toggle -->
+    <div class="day-header">
+      <div class="day-title" id="displayDayName">--</div>
+      <div class="day-subtitle" id="displayFullDate">--</div>
+      <button class="shift-toggle-btn" id="shiftBtn" onclick="toggleShiftMode()">
+        <span>🏥</span> <span id="shiftBtnText">Nöbet Günü Olarak İşaretle</span>
+      </button>
+    </div>
+
+    <!-- Ders Selection -->
+    <div class="field-group">
+      <div class="field-label">DERS KATEGORİSİ</div>
+      <div class="course-badges" id="courseBadges"></div>
+      <input type="text" id="courseInput" class="input-text" placeholder="Ders adı veya konu" oninput="saveCurrentData()">
+    </div>
+
+    <!-- Deneme Kartı -->
+    <div class="trial-card" id="trialCard" style="display: none;">
+      <div class="trial-title">📊 HAFTALIK TUS DENEMESİ</div>
+      <div class="trial-inputs">
+        <div class="trial-field">
+          <label>Temel Net (100)</label>
+          <input type="number" id="netTemel" placeholder="0" oninput="saveCurrentData()">
+        </div>
+        <div class="trial-field">
+          <label>Klinik Net (100)</label>
+          <input type="number" id="netKlinik" placeholder="0" oninput="saveCurrentData()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Yapılacaklar -->
+    <div class="field-group">
+      <div class="field-label">NELER YAPACAKSIN</div>
+      <textarea id="todoInput" class="input-text" placeholder="Bugün yapılacaklar..." oninput="saveCurrentData()"></textarea>
+    </div>
+
+    <!-- Soru & Branş Denemesi Buton Alanı -->
+    <div class="field-group">
+      <div class="field-label" id="qLabel">ÇIKMIŞ TUS SORU HEDEFİ</div>
+      <button class="q-btn" id="qBtn" onclick="toggleQuestions()">
+        100 ÇIKMIŞ TUS SORUSU ÇÖZDÜM
+      </button>
+      
+      <button class="branch-add-btn" onclick="openBranchModal()">
+        ➕ BRANŞ DENEMESİ EKLER
+      </button>
+      
+      <div id="branchList" class="branch-list"></div>
     </div>
   </div>
 
-  <!-- Nav -->
-  <div class="bottom-nav">
-    <button class="nav-btn" onclick="navigateDay(-1)">&#8249; Dün</button>
-    <button class="nav-btn today-btn" onclick="goToToday()">&#8635; Bugün</button>
-    <button class="nav-btn" onclick="navigateDay(1)">Yarın &#8250;</button>
+  <!-- VIEW 2: İSTATİSTİKLER -->
+  <div id="viewStats" class="view-panel hidden">
+    <!-- Maraton İlerleme -->
+    <div class="dash-card">
+      <div class="dash-title">
+        <span>🏁 14 MART MARATONU</span>
+        <span id="marathonPercent" style="color: #fff;">0%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="marathonFill"></div>
+      </div>
+      <div style="font-size: 0.72rem; color: var(--text-dim); display: flex; justify-content: space-between;">
+        <span>Başlangıç: 26 Ağustos 2026</span>
+        <span>Hedef: 14 Mart 2027</span>
+      </div>
+    </div>
+
+    <!-- Zayıf Ders Radarı -->
+    <div class="dash-card">
+      <div class="dash-title">⚠️ BRANŞ RADARI (ÖNCELİK VER)</div>
+      <div id="radarContainer" style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 0.75rem; color: var(--text-dim);">Henüz yeterli branş denemesi verisi girilmedi.</div>
+      </div>
+    </div>
+
+    <!-- Ders Bazlı Branş Karnesi -->
+    <div class="dash-card">
+      <div class="dash-title">📚 DERS BAZLI BRANŞ KARNESİ</div>
+      <div id="courseReportContainer" class="history-list"></div>
+    </div>
+
+    <!-- Son Branş Denemeleri Geçmişi -->
+    <div class="dash-card">
+      <div class="dash-title">🕒 SON BRANŞ DENEMELERİ</div>
+      <div id="branchHistoryList" class="history-list"></div>
+    </div>
   </div>
 </div>
 
@@ -561,10 +716,15 @@ textarea.input-text { min-height: 140px; resize: vertical; line-height: 1.5; }
 <div class="modal-overlay" id="branchModal">
   <div class="modal-content">
     <div class="modal-header">
-      <span>BRANŞ DENEMESİ GİR</span>
+      <span id="modalTitleText">BRANŞ DENEMESİ EKLER</span>
       <button class="modal-close" onclick="closeBranchModal()">&times;</button>
     </div>
-    <div style="font-size: 0.78rem; color: var(--text-dim);">Aktif Ders: <b id="modalCourseName" style="color: #fff;">--</b></div>
+    
+    <div class="modal-field">
+      <label>Ders Seçimi</label>
+      <select id="modalCourseSelect" class="modal-select"></select>
+    </div>
+
     <div class="modal-inputs">
       <div class="modal-field">
         <label>Doğru</label>
@@ -583,15 +743,37 @@ textarea.input-text { min-height: 140px; resize: vertical; line-height: 1.5; }
   </div>
 </div>
 
+<!-- Fixed Tab Nav -->
+<div class="fixed-tab-bar">
+  <div class="tab-nav-inner">
+    <button class="tab-btn active" id="tabPlanBtn" onclick="switchView('plan')">
+      📅 Günlük Plan
+    </button>
+    <button class="tab-btn" id="tabStatsBtn" onclick="switchView('stats')">
+      📊 İstatistikler
+    </button>
+  </div>
+</div>
+
 <script>
 const FIREBASE_URL = "https://tustkp-default-rtdb.europe-west1.firebasedatabase.app/";
 const TARGET_DATE = new Date('2027-03-14T00:00:00');
 const PROGRAM_START_DATE = new Date('2026-08-26T00:00:00');
 
-const COURSES = [
-  "Dahiliye", "Pediatri", "Genel Cerrahi", "Küçük Stajlar", "Kadın Doğum",
-  "Patoloji", "Farmakoloji", "Mikrobiyoloji", "Biyokimya", "Fizyoloji", "Anatomi"
-];
+// Resmi Soru Sayıları
+const COURSE_SPECS = {
+  "Pediatri": 25,
+  "Dahiliye": 23,
+  "Küçük Stajlar": 22,
+  "Genel Cerrahi": 20,
+  "Mikrobiyoloji": 18,
+  "Biyokimya": 18,
+  "Patoloji": 18,
+  "Farmakoloji": 18,
+  "Fizyoloji (Fiz-Hist-Embrio)": 15,
+  "Anatomi": 13,
+  "Kadın Doğum": 10
+};
 
 const DAY_NAMES = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
 const FULL_DAY_NAMES = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
@@ -600,16 +782,29 @@ const MONTH_NAMES = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Te
 let currentDate = new Date();
 let carouselStartDate = new Date(currentDate);
 let saveTimeout = null;
+let editingBranchIndex = null;
 
-let currentDayData = { course: '', todo: '', qDone: false, isShift: false, netTemel: '', netKlinik: '', branchResult: null };
+let currentDayData = { course: '', todo: '', qDone: false, isShift: false, netTemel: '', netKlinik: '', branchList: [] };
 
 function init() {
   updateCountdown();
   carouselStartDate.setDate(currentDate.getDate() - 1);
   renderBadges();
   renderCarousel();
+  populateCourseSelect();
   loadDateData(currentDate);
   calculateGlobalStats();
+}
+
+function switchView(view) {
+  document.getElementById('viewPlan').classList.toggle('hidden', view !== 'plan');
+  document.getElementById('viewStats').classList.toggle('hidden', view !== 'stats');
+  document.getElementById('tabPlanBtn').classList.toggle('active', view === 'plan');
+  document.getElementById('tabStatsBtn').classList.toggle('active', view === 'stats');
+  
+  if (view === 'stats') {
+    renderDashboard();
+  }
 }
 
 function updateCountdown() {
@@ -623,10 +818,21 @@ function formatDateKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+function populateCourseSelect() {
+  const sel = document.getElementById('modalCourseSelect');
+  sel.innerHTML = '';
+  Object.keys(COURSE_SPECS).forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.innerText = `${c} (${COURSE_SPECS[c]} Soru)`;
+    sel.appendChild(opt);
+  });
+}
+
 function renderBadges() {
   const container = document.getElementById('courseBadges');
   container.innerHTML = '';
-  COURSES.forEach(c => {
+  Object.keys(COURSE_SPECS).forEach(c => {
     const btn = document.createElement('button');
     btn.className = 'badge-btn';
     btn.innerText = c;
@@ -667,14 +873,12 @@ function renderCarousel() {
 
 function shiftDays(delta) { carouselStartDate.setDate(carouselStartDate.getDate() + delta); renderCarousel(); }
 function selectDate(d) { currentDate = new Date(d); renderCarousel(); loadDateData(currentDate); }
-function navigateDay(delta) { currentDate.setDate(currentDate.getDate() + delta); carouselStartDate.setDate(currentDate.getDate() - 1); renderCarousel(); loadDateData(currentDate); }
-function goToToday() { currentDate = new Date(); carouselStartDate = new Date(currentDate); carouselStartDate.setDate(currentDate.getDate() - 1); renderCarousel(); loadDateData(currentDate); }
 
 async function loadDateData(d) {
   const key = formatDateKey(d);
   document.getElementById('syncVal').innerText = "...";
   
-  currentDayData = { course: '', todo: '', qDone: false, isShift: false, netTemel: '', netKlinik: '', branchResult: null };
+  currentDayData = { course: '', todo: '', qDone: false, isShift: false, netTemel: '', netKlinik: '', branchList: [] };
   const localRaw = localStorage.getItem(`tus_plan_${key}`);
   if (localRaw) currentDayData = JSON.parse(localRaw);
 
@@ -694,6 +898,7 @@ async function loadDateData(d) {
     }
   }
 
+  if (!currentDayData.branchList) currentDayData.branchList = [];
   updateUI(d);
 }
 
@@ -740,14 +945,30 @@ function updateUI(d) {
     btn.innerText = '100 ÇIKMIŞ TUS SORUSU ÇÖZDÜM';
   }
 
-  // Branş Denemesi Özet
-  const bBox = document.getElementById('branchSummary');
-  if (currentDayData.branchResult) {
-    bBox.style.display = 'flex';
-    document.getElementById('branchSummaryText').innerText = `${currentDayData.branchResult.course || 'Ders'}: ${currentDayData.branchResult.correct}D ${currentDayData.branchResult.wrong}Y (${currentDayData.branchResult.net} Net)`;
-  } else {
-    bBox.style.display = 'none';
-  }
+  renderBranchList();
+}
+
+function renderBranchList() {
+  const container = document.getElementById('branchList');
+  container.innerHTML = '';
+  
+  if (!currentDayData.branchList || currentDayData.branchList.length === 0) return;
+
+  currentDayData.branchList.forEach((item, idx) => {
+    const card = document.createElement('div');
+    card.className = 'branch-item-card';
+    card.innerHTML = `
+      <div class="info">
+        <span class="c-name">${item.course}</span>
+        <span class="c-detail">${item.correct} Doğru · ${item.wrong} Yanlış</span>
+      </div>
+      <div class="actions">
+        <span class="net-badge">${item.net} Net</span>
+        <span class="del-btn" onclick="deleteBranchItem(${idx})">&times;</span>
+      </div>
+    `;
+    container.appendChild(card);
+  });
 }
 
 function saveCurrentData() {
@@ -781,48 +1002,32 @@ function saveCurrentData() {
 
 function toggleShiftMode() {
   currentDayData.isShift = !currentDayData.isShift;
-  
-  if (currentDayData.isShift) {
-    document.body.classList.add('shift-mode');
-    document.getElementById('shiftBtnText').innerText = "Nöbet Modu Aktif";
-    document.getElementById('qLabel').innerText = "ÇIKMIŞ TUS SORU HEDEFİ (NÖBET ESNESİ)";
-  } else {
-    document.body.classList.remove('shift-mode');
-    document.getElementById('shiftBtnText').innerText = "Nöbet Günü Olarak İşaretle";
-    document.getElementById('qLabel').innerText = "ÇIKMIŞ TUS SORU HEDEFİ";
-  }
-  
   saveCurrentData();
+  updateUI(currentDate);
 }
 
 function toggleQuestions() {
   currentDayData.qDone = !currentDayData.qDone;
-  
-  const btn = document.getElementById('qBtn');
-  if (currentDayData.qDone) {
-    btn.classList.add('completed');
-    btn.innerText = '✓ 100 ÇIKMIŞ TUS SORUSU ÇÖZÜLDÜ';
-  } else {
-    btn.classList.remove('completed');
-    btn.innerText = '100 ÇIKMIŞ TUS SORUSU ÇÖZDÜM';
-  }
-
   saveCurrentData();
+  updateUI(currentDate);
 }
 
-/* Modal İşlemleri */
-function openBranchModal() {
-  const course = document.getElementById('courseInput').value || 'Ders Seçilmedi';
-  document.getElementById('modalCourseName').innerText = course;
+/* Modal & Branch Handlers */
+function openBranchModal(editIndex = null) {
+  editingBranchIndex = editIndex;
   
-  if (currentDayData.branchResult) {
-    document.getElementById('branchCorrect').value = currentDayData.branchResult.correct || '';
-    document.getElementById('branchWrong').value = currentDayData.branchResult.wrong || '';
-    document.getElementById('branchNet').value = currentDayData.branchResult.net || '';
+  if (editIndex !== null) {
+    const item = currentDayData.branchList[editIndex];
+    document.getElementById('modalCourseSelect').value = item.course;
+    document.getElementById('branchCorrect').value = item.correct;
+    document.getElementById('branchWrong').value = item.wrong;
+    document.getElementById('branchNet').value = item.net;
+    document.getElementById('modalTitleText').innerText = "BRANŞ DENEMESİ DÜZENLE";
   } else {
     document.getElementById('branchCorrect').value = '';
     document.getElementById('branchWrong').value = '';
     document.getElementById('branchNet').value = '';
+    document.getElementById('modalTitleText').innerText = "BRANŞ DENEMESİ EKLER";
   }
   
   document.getElementById('branchModal').style.display = 'flex';
@@ -840,20 +1045,132 @@ function calcBranchNet() {
 }
 
 function saveBranchModal() {
+  const course = document.getElementById('modalCourseSelect').value;
   const c = document.getElementById('branchCorrect').value;
   const w = document.getElementById('branchWrong').value;
   const net = document.getElementById('branchNet').value;
-  const course = document.getElementById('courseInput').value || 'Genel';
 
-  if (c !== '' || w !== '') {
-    currentDayData.branchResult = { course, correct: c || 0, wrong: w || 0, net: net || 0 };
+  if (!c && !w) return;
+
+  const newItem = { course, correct: c || 0, wrong: w || 0, net: net || 0 };
+
+  if (editingBranchIndex !== null) {
+    currentDayData.branchList[editingBranchIndex] = newItem;
   } else {
-    currentDayData.branchResult = null;
+    if (!currentDayData.branchList) currentDayData.branchList = [];
+    currentDayData.branchList.push(newItem);
   }
 
   saveCurrentData();
   updateUI(currentDate);
   closeBranchModal();
+}
+
+function deleteBranchItem(idx) {
+  currentDayData.branchList.splice(idx, 1);
+  saveCurrentData();
+  updateUI(currentDate);
+}
+
+/* Dashboard & Stats Calculations */
+function renderDashboard() {
+  // 1. Maraton Yüzdesi
+  const now = new Date();
+  const totalDuration = TARGET_DATE - PROGRAM_START_DATE;
+  const elapsed = now - PROGRAM_START_DATE;
+  let pct = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
+  document.getElementById('marathonPercent').innerText = `${pct.toFixed(1)}%`;
+  document.getElementById('marathonFill').style.width = `${pct}%`;
+
+  // 2. Branş Verilerini Topla
+  let courseStats = {};
+  Object.keys(COURSE_SPECS).forEach(c => { courseStats[c] = { totalNet: 0, count: 0 }; });
+  
+  let allBranchHistory = [];
+
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k.startsWith('tus_plan_')) {
+      const raw = localStorage.getItem(k);
+      if (raw) {
+        const d = JSON.parse(raw);
+        if (d.branchList && d.branchList.length > 0) {
+          d.branchList.forEach(b => {
+            if (courseStats[b.course]) {
+              courseStats[b.course].totalNet += parseFloat(b.net) || 0;
+              courseStats[b.course].count += 1;
+            }
+            allBranchHistory.push({ dateKey: k.replace('tus_plan_', ''), ...b });
+          });
+        }
+      }
+    }
+  }
+
+  // Radar Render
+  const radarBox = document.getElementById('radarContainer');
+  radarBox.innerHTML = '';
+  let warnings = 0;
+
+  Object.keys(courseStats).forEach(c => {
+    const st = courseStats[c];
+    if (st.count > 0) {
+      const avgNet = st.totalNet / st.count;
+      const maxNet = COURSE_SPECS[c];
+      const ratio = avgNet / maxNet;
+
+      if (ratio < 0.6) { // %60 altı kritik
+        warnings++;
+        const item = document.createElement('div');
+        item.className = 'radar-item warning';
+        item.innerHTML = `
+          <span><b>${c}</b> (Ort: ${avgNet.toFixed(1)} / ${maxNet} Net)</span>
+          <span class="radar-tag warn">⚠️ Öncelik Ver</span>
+        `;
+        radarBox.appendChild(item);
+      }
+    }
+  });
+
+  if (warnings === 0) {
+    radarBox.innerHTML = `<div style="font-size:0.78rem; color:var(--success);">🎉 Harika gidiyorsun! Kritik seviyede zayıf dersin bulunmuyor.</div>`;
+  }
+
+  // Ders Karnesi Render
+  const reportBox = document.getElementById('courseReportContainer');
+  reportBox.innerHTML = '';
+
+  Object.keys(courseStats).forEach(c => {
+    const st = courseStats[c];
+    const maxQ = COURSE_SPECS[c];
+    const row = document.createElement('div');
+    row.className = 'history-row';
+    const avg = st.count > 0 ? (st.totalNet / st.count).toFixed(1) : '-';
+    row.innerHTML = `
+      <span><b>${c}</b> (${maxQ} Soru)</span>
+      <span style="color:var(--gold); font-family:'JetBrains Mono';">${st.count} Deneme · Ort: ${avg} Net</span>
+    `;
+    reportBox.appendChild(row);
+  });
+
+  // Son Geçmiş Render
+  const histBox = document.getElementById('branchHistoryList');
+  histBox.innerHTML = '';
+  allBranchHistory.sort((a,b) => b.dateKey.localeCompare(a.dateKey));
+
+  if (allBranchHistory.length === 0) {
+    histBox.innerHTML = `<div style="font-size:0.75rem; color:var(--text-dim);">Henüz branş denemesi çözülmedi.</div>`;
+  } else {
+    allBranchHistory.slice(0, 5).forEach(h => {
+      const row = document.createElement('div');
+      row.className = 'history-row';
+      row.innerHTML = `
+        <span>${h.dateKey} · <b>${h.course}</b></span>
+        <span style="color:var(--gold); font-family:'JetBrains Mono';">${h.net} Net (${h.correct}D ${h.wrong}Y)</span>
+      `;
+      histBox.appendChild(row);
+    });
+  }
 }
 
 function calculateGlobalStats() {
