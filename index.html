@@ -124,7 +124,7 @@ body.shift-mode {
 
 .days-list {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   overflow-x: auto;
   scrollbar-width: none;
   padding: 2px 0;
@@ -133,24 +133,34 @@ body.shift-mode {
 .days-list::-webkit-scrollbar { display: none; }
 
 .day-item {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
+  min-width: 46px;
+  height: 46px;
+  border-radius: 12px;
   border: 1px solid var(--border);
   background: transparent;
   color: var(--text-dim);
-  font-size: 0.78rem;
+  font-size: 0.7rem;
   font-weight: 500;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
+  line-height: 1.1;
+  padding: 4px;
+}
+
+.day-item span.num {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 0.85rem;
 }
 
 .day-item.active {
   border-color: var(--gold);
   color: #fff;
+  background: rgba(212, 163, 89, 0.1);
   box-shadow: 0 0 0 1px var(--gold);
 }
 
@@ -490,7 +500,7 @@ function renderCarousel() {
 
     const btn = document.createElement('button');
     btn.className = `day-item ${key === formatDateKey(currentDate) ? 'active' : ''} ${data.isShift ? 'is-shift' : ''}`;
-    btn.innerText = DAY_NAMES[d.getDay()];
+    btn.innerHTML = `<span class="num">${d.getDate()}</span><span>${DAY_NAMES[d.getDay()]}</span>`;
     btn.onclick = () => selectDate(d);
     list.appendChild(btn);
   }
