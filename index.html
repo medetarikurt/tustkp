@@ -18,15 +18,13 @@
   --gold-glow: rgba(212, 163, 89, 0.15);
   --success: #10b981;
   --success-glow: rgba(16, 185, 129, 0.15);
+  --shift-bg: #111a24;
+  --shift-border: #1d334a;
+  --shift-accent: #3b82f6;
   --radius: 12px;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  -webkit-tap-highlight-color: transparent;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
 body {
   background-color: var(--bg);
@@ -37,6 +35,11 @@ body {
   justify-content: center;
   align-items: flex-start;
   padding: 20px 14px 40px;
+  transition: background-color 0.3s;
+}
+
+body.shift-mode {
+  background-color: #060b11;
 }
 
 .wrap {
@@ -44,16 +47,15 @@ body {
   max-width: 480px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 
-/* Header */
+/* Header & Stats */
 .top-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 0.78rem;
-  letter-spacing: 0.05em;
 }
 
 .brand {
@@ -64,11 +66,7 @@ body {
   font-weight: 500;
 }
 
-.brand svg {
-  width: 16px;
-  height: 16px;
-  stroke: var(--gold);
-}
+.brand svg { width: 16px; height: 16px; stroke: var(--gold); }
 
 .countdown {
   font-family: 'JetBrains Mono', monospace;
@@ -76,25 +74,38 @@ body {
   color: var(--gold);
 }
 
-.countdown span {
-  color: var(--gold);
-  font-size: 1.05rem;
+.countdown span { font-size: 1.05rem; }
+
+.meta-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  text-align: center;
 }
 
-.sync-status {
-  font-size: 0.7rem;
-  color: var(--text-dim);
-  text-align: right;
+.stat-box .v {
   font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: var(--gold);
+  font-size: 0.95rem;
 }
 
-/* Gün Seçici Carousel */
+.stat-box .l {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+/* Week Selector */
 .week-selector {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
-  margin: 4px 0 6px;
 }
 
 .nav-arrow {
@@ -135,7 +146,6 @@ body {
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
-  transition: all 0.2s ease;
 }
 
 .day-item.active {
@@ -144,40 +154,85 @@ body {
   box-shadow: 0 0 0 1px var(--gold);
 }
 
-/* Başlık Alanı */
+.day-item.is-shift {
+  border-color: var(--shift-accent);
+  color: var(--shift-accent);
+}
+
+/* Day Header & Shift Toggle */
 .day-header {
   text-align: center;
-  margin: 6px 0 10px;
+  margin: 4px 0;
 }
 
 .day-title {
   font-family: 'Cinzel', serif;
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: 700;
   color: #fff;
-  letter-spacing: -0.02em;
-  margin-bottom: 4px;
 }
 
 .day-subtitle {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: var(--text-dim);
-  font-weight: 400;
+  margin-top: 2px;
 }
 
-/* Form Alanları */
-.field-group {
+.shift-toggle-btn {
+  margin: 8px auto 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  cursor: pointer;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  gap: 6px;
 }
+
+body.shift-mode .shift-toggle-btn {
+  border-color: var(--shift-accent);
+  color: var(--shift-accent);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+/* Form Groups & Badges */
+.field-group { display: flex; flex-direction: column; gap: 6px; }
 
 .field-label {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-family: 'JetBrains Mono', monospace;
   color: var(--text-dim);
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.course-badges {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+
+.course-badges::-webkit-scrollbar { display: none; }
+
+.badge-btn {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.badge-btn.active {
+  border-color: var(--gold);
+  color: var(--gold);
 }
 
 .input-text {
@@ -186,40 +241,62 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--text-main);
-  padding: 14px 16px;
-  font-size: 0.95rem;
+  padding: 12px 14px;
+  font-size: 0.92rem;
   outline: none;
   font-family: inherit;
-  transition: border-color 0.2s;
 }
 
-.input-text:focus {
-  border-color: var(--border-focus);
+textarea.input-text { min-height: 140px; resize: vertical; line-height: 1.5; }
+
+/* Trial Exam Card */
+.trial-card {
+  background: rgba(212, 163, 89, 0.05);
+  border: 1px solid var(--gold);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-textarea.input-text {
-  min-height: 180px;
-  resize: vertical;
-  line-height: 1.6;
+.trial-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--gold);
+  font-family: 'JetBrains Mono', monospace;
 }
 
-/* Soru Çözüm Butonu */
+.trial-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.trial-field label { font-size: 0.7rem; color: var(--text-dim); display: block; margin-bottom: 4px; }
+.trial-field input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  text-align: center;
+}
+
+/* Question Button */
 .q-btn {
   width: 100%;
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 18px 16px;
+  padding: 16px;
   color: var(--text-dim);
-  font-family: 'Inter', sans-serif;
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
 }
 
 .q-btn.completed {
@@ -228,33 +305,24 @@ textarea.input-text {
   background: var(--success-glow);
 }
 
-.sub-note {
-  font-size: 0.75rem;
-  color: var(--text-dim);
-  margin-top: -2px;
-}
-
-/* Alt Navigasyon */
+/* Nav */
 .bottom-nav {
   display: grid;
   grid-template-columns: 1fr 1.2fr 1fr;
   gap: 10px;
-  margin-top: 6px;
 }
 
 .nav-btn {
   background: var(--card-bg);
   border: 1px solid var(--border);
   color: var(--text-main);
-  padding: 12px 14px;
+  padding: 12px;
   border-radius: 10px;
   font-size: 0.85rem;
-  font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
 }
 
 .nav-btn.today-btn {
@@ -270,35 +338,67 @@ textarea.input-text {
   <!-- Top Bar -->
   <div class="top-bar">
     <div class="brand">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="9"></circle>
         <path d="M12 7v5l3 3"></path>
       </svg>
       TUS · 14 MART 2027
     </div>
-    <div>
-      <div class="countdown"><span id="daysLeft">--</span> gün kaldı</div>
-      <div class="sync-status" id="syncStatus">Bulut: Senkronize</div>
+    <div class="countdown"><span id="daysLeft">--</span> gün kaldı</div>
+  </div>
+
+  <!-- Meta Stats -->
+  <div class="meta-stats">
+    <div class="stat-box">
+      <div class="v" id="streakVal">0</div>
+      <div class="l">🔥 Gün Seri</div>
+    </div>
+    <div class="stat-box">
+      <div class="v" id="totalQVal">0</div>
+      <div class="l">📚 Toplam Soru</div>
+    </div>
+    <div class="stat-box">
+      <div class="v" id="syncVal">OK</div>
+      <div class="l">Bulut Durumu</div>
     </div>
   </div>
 
-  <!-- Gün Carousel -->
+  <!-- Week Selector -->
   <div class="week-selector">
     <button class="nav-arrow" onclick="shiftDays(-1)">&#8249;</button>
     <div class="days-list" id="daysList"></div>
     <button class="nav-arrow" onclick="shiftDays(1)">&#8250;</button>
   </div>
 
-  <!-- Gün Başlığı -->
+  <!-- Header & Shift Toggle -->
   <div class="day-header">
     <div class="day-title" id="displayDayName">--</div>
-    <div class="day-subtitle" id="displayFullDate">-- · plan henüz başlamadı</div>
+    <div class="day-subtitle" id="displayFullDate">--</div>
+    <button class="shift-toggle-btn" onclick="toggleShiftMode()">
+      <span>🏥</span> <span id="shiftBtnText">Nöbet Günü Olarak İşaretle</span>
+    </button>
   </div>
 
-  <!-- Ders Girişi -->
+  <!-- Ders Selection -->
   <div class="field-group">
-    <div class="field-label">DERS</div>
-    <input type="text" id="courseInput" class="input-text" placeholder="Ders adı" oninput="saveCurrentData()">
+    <div class="field-label">DERS KATEGORİSİ</div>
+    <div class="course-badges" id="courseBadges"></div>
+    <input type="text" id="courseInput" class="input-text" placeholder="Ders adı veya konu" oninput="saveCurrentData()">
+  </div>
+
+  <!-- Deneme Kartı -->
+  <div class="trial-card" id="trialCard" style="display: none;">
+    <div class="trial-title">📊 HAFTALIK TUS DENEMESİ</div>
+    <div class="trial-inputs">
+      <div class="trial-field">
+        <label>Temel Net (120)</label>
+        <input type="number" id="netTemel" placeholder="0" oninput="saveCurrentData()">
+      </div>
+      <div class="trial-field">
+        <label>Klinik Net (120)</label>
+        <input type="number" id="netKlinik" placeholder="0" oninput="saveCurrentData()">
+      </div>
+    </div>
   </div>
 
   <!-- Yapılacaklar -->
@@ -309,14 +409,13 @@ textarea.input-text {
 
   <!-- Soru Butonu -->
   <div class="field-group">
-    <div class="field-label">100 SORU HEDEFİ</div>
+    <div class="field-label" id="qLabel">100 SORU HEDEFİ</div>
     <button class="q-btn" id="qBtn" onclick="toggleQuestions()">
       100 SORU ÇÖZDÜM
     </button>
-    <div class="sub-note">Bir dokunuşla tamamlandı olarak işaretlenir</div>
   </div>
 
-  <!-- Alt Butonlar -->
+  <!-- Nav -->
   <div class="bottom-nav">
     <button class="nav-btn" onclick="navigateDay(-1)">&#8249; Dün</button>
     <button class="nav-btn today-btn" onclick="goToToday()">&#8635; Bugün</button>
@@ -325,11 +424,15 @@ textarea.input-text {
 </div>
 
 <script>
-// Firebase Veritabanı URL'in
 const FIREBASE_URL = "https://tustkp-default-rtdb.europe-west1.firebasedatabase.app/";
-
 const TARGET_DATE = new Date('2027-03-14T00:00:00');
 const PROGRAM_START_DATE = new Date('2026-08-26T00:00:00');
+
+const COURSES = [
+  "Dahiliye", "Pediatri", "Genel Cerrahi", "Küçük Stajlar", "Kadın Doğum",
+  "Patoloji", "Farmakoloji", "Mikrobiyoloji", "Biyokimya", "Fizyoloji", "Anatomi"
+];
+
 const DAY_NAMES = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
 const FULL_DAY_NAMES = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
 const MONTH_NAMES = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
@@ -341,8 +444,10 @@ let saveTimeout = null;
 function init() {
   updateCountdown();
   carouselStartDate.setDate(currentDate.getDate() - 1);
+  renderBadges();
   renderCarousel();
   loadDateData(currentDate);
+  calculateGlobalStats();
 }
 
 function updateCountdown() {
@@ -356,54 +461,51 @@ function formatDateKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+function renderBadges() {
+  const container = document.getElementById('courseBadges');
+  container.innerHTML = '';
+  COURSES.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'badge-btn';
+    btn.innerText = c;
+    btn.onclick = () => {
+      document.getElementById('courseInput').value = c;
+      document.querySelectorAll('.badge-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      saveCurrentData();
+    };
+    container.appendChild(btn);
+  });
+}
+
 function renderCarousel() {
   const list = document.getElementById('daysList');
   list.innerHTML = '';
-  
   for (let i = 0; i < 7; i++) {
     const d = new Date(carouselStartDate);
     d.setDate(carouselStartDate.getDate() + i);
-    
+    const key = formatDateKey(d);
+    const raw = localStorage.getItem(`tus_plan_${key}`);
+    const data = raw ? JSON.parse(raw) : {};
+
     const btn = document.createElement('button');
-    btn.className = `day-item ${formatDateKey(d) === formatDateKey(currentDate) ? 'active' : ''}`;
+    btn.className = `day-item ${key === formatDateKey(currentDate) ? 'active' : ''} ${data.isShift ? 'is-shift' : ''}`;
     btn.innerText = DAY_NAMES[d.getDay()];
     btn.onclick = () => selectDate(d);
     list.appendChild(btn);
   }
 }
 
-function shiftDays(delta) {
-  carouselStartDate.setDate(carouselStartDate.getDate() + delta);
-  renderCarousel();
-}
-
-function selectDate(d) {
-  currentDate = new Date(d);
-  renderCarousel();
-  loadDateData(currentDate);
-}
-
-function navigateDay(delta) {
-  currentDate.setDate(currentDate.getDate() + delta);
-  carouselStartDate.setDate(currentDate.getDate() - 1);
-  renderCarousel();
-  loadDateData(currentDate);
-}
-
-function goToToday() {
-  currentDate = new Date();
-  carouselStartDate = new Date(currentDate);
-  carouselStartDate.setDate(currentDate.getDate() - 1);
-  renderCarousel();
-  loadDateData(currentDate);
-}
+function shiftDays(delta) { carouselStartDate.setDate(carouselStartDate.getDate() + delta); renderCarousel(); }
+function selectDate(d) { currentDate = new Date(d); renderCarousel(); loadDateData(currentDate); }
+function navigateDay(delta) { currentDate.setDate(currentDate.getDate() + delta); carouselStartDate.setDate(currentDate.getDate() - 1); renderCarousel(); loadDateData(currentDate); }
+function goToToday() { currentDate = new Date(); carouselStartDate = new Date(currentDate); carouselStartDate.setDate(currentDate.getDate() - 1); renderCarousel(); loadDateData(currentDate); }
 
 async function loadDateData(d) {
   const key = formatDateKey(d);
-  document.getElementById('syncStatus').innerText = "Bulut: Yükleniyor...";
+  document.getElementById('syncVal').innerText = "...";
   
-  let data = { course: '', todo: '', qDone: false };
-
+  let data = { course: '', todo: '', qDone: false, isShift: false, netTemel: '', netKlinik: '' };
   const localRaw = localStorage.getItem(`tus_plan_${key}`);
   if (localRaw) data = JSON.parse(localRaw);
 
@@ -417,33 +519,60 @@ async function loadDateData(d) {
           localStorage.setItem(`tus_plan_${key}`, JSON.stringify(data));
         }
       }
-      document.getElementById('syncStatus').innerText = "Bulut: Senkronize";
+      document.getElementById('syncVal').innerText = "OK";
     } catch (e) {
-      document.getElementById('syncStatus').innerText = "Bulut: Çevrimdışı";
+      document.getElementById('syncVal').innerText = "OFF";
     }
   }
 
+  // UI Setup
   document.getElementById('displayDayName').innerText = FULL_DAY_NAMES[d.getDay()];
+  document.getElementById('displayFullDate').innerText = `${d.getDate()} ${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
   
-  let statusText = 'plan henüz başlamadı';
-  if (d < PROGRAM_START_DATE && !data.course && !data.todo) {
-    statusText = 'program öncesi gün';
-  } else if (data.course || data.todo || data.qDone) {
-    statusText = 'plan kayıtlı';
+  // Shift Mode UI
+  if (data.isShift) {
+    document.body.classList.add('shift-mode');
+    document.getElementById('shiftBtnText').innerText = "Nöbet Modu Aktif";
+    document.getElementById('qLabel').innerText = "100 SORU HEDEFİ (NÖBET ESNESİ)";
+  } else {
+    document.body.classList.remove('shift-mode');
+    document.getElementById('shiftBtnText').innerText = "Nöbet Günü Olarak İşaretle";
+    document.getElementById('qLabel').innerText = "100 SORU HEDEFİ";
   }
 
-  document.getElementById('displayFullDate').innerText = `${d.getDate()} ${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()} · ${statusText}`;
+  // Deneme Gösterim Mantığı
+  const isSunday = d.getDay() === 0;
+  const isSaturday = d.getDay() === 6;
+  let showTrial = isSunday;
 
+  if (isSaturday) {
+    const tomorrow = new Date(d);
+    tomorrow.setDate(d.getDate() + 1);
+    const tomData = JSON.parse(localStorage.getItem(`tus_plan_${formatDateKey(tomorrow)}`) || '{}');
+    if (tomData.isShift) showTrial = true;
+  }
+
+  document.getElementById('trialCard').style.display = showTrial ? 'flex' : 'none';
+  document.getElementById('netTemel').value = data.netTemel || '';
+  document.getElementById('netKlinik').value = data.netKlinik || '';
+
+  // Inputs
   document.getElementById('courseInput').value = data.course || '';
   document.getElementById('todoInput').value = data.todo || '';
 
+  // Badges state
+  document.querySelectorAll('.badge-btn').forEach(b => {
+    b.classList.toggle('active', b.innerText === data.course);
+  });
+
+  // Question Button
   const btn = document.getElementById('qBtn');
   if (data.qDone) {
     btn.classList.add('completed');
-    btn.innerText = '✓ 100 SORU ÇÖZÜLDÜ (TAMAMLANDI)';
+    btn.innerText = '✓ 100 SORU ÇÖZÜLDÜ';
   } else {
     btn.classList.remove('completed');
-    btn.innerText = '100 SORU ÇÖZDÜM (DOKUN VE TAMAMLANIŞI İŞARETLE)';
+    btn.innerText = '100 SORU ÇÖZDÜM (İŞARETLE)';
   }
 }
 
@@ -452,16 +581,18 @@ function saveCurrentData() {
   const data = {
     course: document.getElementById('courseInput').value,
     todo: document.getElementById('todoInput').value,
-    qDone: document.getElementById('qBtn').classList.contains('completed')
+    qDone: document.getElementById('qBtn').classList.contains('completed'),
+    isShift: document.body.classList.contains('shift-mode'),
+    netTemel: document.getElementById('netTemel').value,
+    netKlinik: document.getElementById('netKlinik').value
   };
   
   localStorage.setItem(`tus_plan_${key}`, JSON.stringify(data));
-  
-  let statusText = data.course || data.todo || data.qDone ? 'plan kayıtlı' : 'plan henüz başlamadı';
-  document.getElementById('displayFullDate').innerText = `${currentDate.getDate()} ${MONTH_NAMES[currentDate.getMonth()]} ${currentDate.getFullYear()} · ${statusText}`;
+  renderCarousel();
+  calculateGlobalStats();
 
   if (FIREBASE_URL) {
-    document.getElementById('syncStatus').innerText = "Bulut: Kaydediliyor...";
+    document.getElementById('syncVal').innerText = "...";
     clearTimeout(saveTimeout);
     saveTimeout = setTimeout(async () => {
       try {
@@ -470,25 +601,58 @@ function saveCurrentData() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
-        document.getElementById('syncStatus').innerText = "Bulut: Senkronize";
+        document.getElementById('syncVal').innerText = "OK";
       } catch (e) {
-        document.getElementById('syncStatus').innerText = "Bulut: Hata!";
+        document.getElementById('syncVal').innerText = "ERR";
       }
     }, 1000);
   }
 }
 
+function toggleShiftMode() {
+  document.body.classList.toggle('shift-mode');
+  saveCurrentData();
+  loadDateData(currentDate);
+}
+
 function toggleQuestions() {
   const btn = document.getElementById('qBtn');
   btn.classList.toggle('completed');
-  
-  if (btn.classList.contains('completed')) {
-    btn.innerText = '✓ 100 SORU ÇÖZÜLDÜ (TAMAMLANDI)';
-  } else {
-    btn.innerText = '100 SORU ÇÖZDÜM (DOKUN VE TAMAMLANIŞI İŞARETLE)';
-  }
-  
   saveCurrentData();
+  loadDateData(currentDate);
+}
+
+function calculateGlobalStats() {
+  let totalQ = 0;
+  let streak = 0;
+  let tempDate = new Date();
+
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k.startsWith('tus_plan_')) {
+      const d = JSON.parse(localStorage.getItem(k));
+      if (d.qDone) totalQ += 100;
+    }
+  }
+
+  while (true) {
+    const key = formatDateKey(tempDate);
+    const raw = localStorage.getItem(`tus_plan_${key}`);
+    if (raw) {
+      const data = JSON.parse(raw);
+      if (data.qDone) {
+        streak++;
+        tempDate.setDate(tempDate.getDate() - 1);
+      } else {
+        break;
+      }
+    } else {
+      break;
+    }
+  }
+
+  document.getElementById('totalQVal').innerText = totalQ.toLocaleString();
+  document.getElementById('streakVal').innerText = streak;
 }
 
 init();
