@@ -33,7 +33,7 @@
   user-select: none;
 }
 
-input, textarea {
+input, textarea, select {
   user-select: text;
 }
 
@@ -311,15 +311,15 @@ textarea.input-text { min-height: 140px; resize: vertical; line-height: 1.5; }
   text-align: center;
 }
 
-/* Question Button */
+/* Question Area Buttons */
 .q-btn {
   width: 100%;
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 18px;
+  padding: 16px;
   color: var(--text-dim);
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.1s ease;
@@ -329,6 +329,107 @@ textarea.input-text { min-height: 140px; resize: vertical; line-height: 1.5; }
   border-color: var(--success);
   color: var(--success);
   background: var(--success-glow);
+}
+
+.branch-btn {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed var(--border-focus);
+  border-radius: var(--radius);
+  padding: 12px;
+  color: var(--gold);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: all 0.15s ease;
+}
+
+.branch-btn:hover {
+  background: var(--gold-glow);
+}
+
+.branch-summary {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Modal Popup */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.75);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: var(--card-bg);
+  border: 1px solid var(--border-focus);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--gold);
+  font-size: 0.9rem;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.modal-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.modal-field label { font-size: 0.68rem; color: var(--text-dim); display: block; margin-bottom: 4px; }
+.modal-field input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  text-align: center;
+}
+
+.modal-save-btn {
+  background: var(--gold-glow);
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 6px;
 }
 
 /* Nav */
@@ -433,12 +534,19 @@ textarea.input-text { min-height: 140px; resize: vertical; line-height: 1.5; }
     <textarea id="todoInput" class="input-text" placeholder="Bugün yapılacaklar..." oninput="saveCurrentData()"></textarea>
   </div>
 
-  <!-- Soru Butonu -->
+  <!-- Soru & Branş Denemesi Buton Alanı -->
   <div class="field-group">
-    <div class="field-label" id="qLabel">100 SORU HEDEFİ</div>
+    <div class="field-label" id="qLabel">ÇIKMIŞ TUS SORU HEDEFİ</div>
     <button class="q-btn" id="qBtn" onclick="toggleQuestions()">
-      100 SORU ÇÖZDÜM (İŞARETLE)
+      100 ÇIKMIŞ TUS SORUSU ÇÖZDÜM
     </button>
+    <button class="branch-btn" onclick="openBranchModal()">
+      ➕ BRANŞ DENEMESİ GİR
+    </button>
+    <div id="branchSummary" class="branch-summary" style="display: none;">
+      <span id="branchSummaryText">Mikrobiyoloji: 28D 4Y (27.0 Net)</span>
+      <span style="color: var(--gold); cursor: pointer;" onclick="openBranchModal()">Düzenle</span>
+    </div>
   </div>
 
   <!-- Nav -->
@@ -446,6 +554,32 @@ textarea.input-text { min-height: 140px; resize: vertical; line-height: 1.5; }
     <button class="nav-btn" onclick="navigateDay(-1)">&#8249; Dün</button>
     <button class="nav-btn today-btn" onclick="goToToday()">&#8635; Bugün</button>
     <button class="nav-btn" onclick="navigateDay(1)">Yarın &#8250;</button>
+  </div>
+</div>
+
+<!-- Modal Pop-up -->
+<div class="modal-overlay" id="branchModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span>BRANŞ DENEMESİ GİR</span>
+      <button class="modal-close" onclick="closeBranchModal()">&times;</button>
+    </div>
+    <div style="font-size: 0.78rem; color: var(--text-dim);">Aktif Ders: <b id="modalCourseName" style="color: #fff;">--</b></div>
+    <div class="modal-inputs">
+      <div class="modal-field">
+        <label>Doğru</label>
+        <input type="number" id="branchCorrect" placeholder="0" oninput="calcBranchNet()">
+      </div>
+      <div class="modal-field">
+        <label>Yanlış</label>
+        <input type="number" id="branchWrong" placeholder="0" oninput="calcBranchNet()">
+      </div>
+      <div class="modal-field">
+        <label>Net</label>
+        <input type="number" id="branchNet" placeholder="0" readonly style="color: var(--gold);">
+      </div>
+    </div>
+    <button class="modal-save-btn" onclick="saveBranchModal()">KAYDET</button>
   </div>
 </div>
 
@@ -467,7 +601,7 @@ let currentDate = new Date();
 let carouselStartDate = new Date(currentDate);
 let saveTimeout = null;
 
-let currentDayData = { course: '', todo: '', qDone: false, isShift: false, netTemel: '', netKlinik: '' };
+let currentDayData = { course: '', todo: '', qDone: false, isShift: false, netTemel: '', netKlinik: '', branchResult: null };
 
 function init() {
   updateCountdown();
@@ -540,7 +674,7 @@ async function loadDateData(d) {
   const key = formatDateKey(d);
   document.getElementById('syncVal').innerText = "...";
   
-  currentDayData = { course: '', todo: '', qDone: false, isShift: false, netTemel: '', netKlinik: '' };
+  currentDayData = { course: '', todo: '', qDone: false, isShift: false, netTemel: '', netKlinik: '', branchResult: null };
   const localRaw = localStorage.getItem(`tus_plan_${key}`);
   if (localRaw) currentDayData = JSON.parse(localRaw);
 
@@ -567,18 +701,16 @@ function updateUI(d) {
   document.getElementById('displayDayName').innerText = FULL_DAY_NAMES[d.getDay()];
   document.getElementById('displayFullDate').innerText = `${d.getDate()} ${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
   
-  // Shift UI
   if (currentDayData.isShift) {
     document.body.classList.add('shift-mode');
     document.getElementById('shiftBtnText').innerText = "Nöbet Modu Aktif";
-    document.getElementById('qLabel').innerText = "100 SORU HEDEFİ (NÖBET ESNESİ)";
+    document.getElementById('qLabel').innerText = "ÇIKMIŞ TUS SORU HEDEFİ (NÖBET ESNESİ)";
   } else {
     document.body.classList.remove('shift-mode');
     document.getElementById('shiftBtnText').innerText = "Nöbet Günü Olarak İşaretle";
-    document.getElementById('qLabel').innerText = "100 SORU HEDEFİ";
+    document.getElementById('qLabel').innerText = "ÇIKMIŞ TUS SORU HEDEFİ";
   }
 
-  // Deneme Kartı
   const isSunday = d.getDay() === 0;
   const isSaturday = d.getDay() === 6;
   let showTrial = isSunday;
@@ -594,20 +726,27 @@ function updateUI(d) {
   document.getElementById('netTemel').value = currentDayData.netTemel || '';
   document.getElementById('netKlinik').value = currentDayData.netKlinik || '';
 
-  // Text Inputs
   document.getElementById('courseInput').value = currentDayData.course || '';
   document.getElementById('todoInput').value = currentDayData.todo || '';
 
   updateBadgesUI();
 
-  // Question Button UI
   const btn = document.getElementById('qBtn');
   if (currentDayData.qDone) {
     btn.classList.add('completed');
-    btn.innerText = '✓ 100 SORU ÇÖZÜLDÜ';
+    btn.innerText = '✓ 100 ÇIKMIŞ TUS SORUSU ÇÖZÜLDÜ';
   } else {
     btn.classList.remove('completed');
-    btn.innerText = '100 SORU ÇÖZDÜM (İŞARETLE)';
+    btn.innerText = '100 ÇIKMIŞ TUS SORUSU ÇÖZDÜM';
+  }
+
+  // Branş Denemesi Özet
+  const bBox = document.getElementById('branchSummary');
+  if (currentDayData.branchResult) {
+    bBox.style.display = 'flex';
+    document.getElementById('branchSummaryText').innerText = `${currentDayData.branchResult.course || 'Ders'}: ${currentDayData.branchResult.correct}D ${currentDayData.branchResult.wrong}Y (${currentDayData.branchResult.net} Net)`;
+  } else {
+    bBox.style.display = 'none';
   }
 }
 
@@ -646,11 +785,11 @@ function toggleShiftMode() {
   if (currentDayData.isShift) {
     document.body.classList.add('shift-mode');
     document.getElementById('shiftBtnText').innerText = "Nöbet Modu Aktif";
-    document.getElementById('qLabel').innerText = "100 SORU HEDEFİ (NÖBET ESNESİ)";
+    document.getElementById('qLabel').innerText = "ÇIKMIŞ TUS SORU HEDEFİ (NÖBET ESNESİ)";
   } else {
     document.body.classList.remove('shift-mode');
     document.getElementById('shiftBtnText').innerText = "Nöbet Günü Olarak İşaretle";
-    document.getElementById('qLabel').innerText = "100 SORU HEDEFİ";
+    document.getElementById('qLabel').innerText = "ÇIKMIŞ TUS SORU HEDEFİ";
   }
   
   saveCurrentData();
@@ -662,13 +801,59 @@ function toggleQuestions() {
   const btn = document.getElementById('qBtn');
   if (currentDayData.qDone) {
     btn.classList.add('completed');
-    btn.innerText = '✓ 100 SORU ÇÖZÜLDÜ';
+    btn.innerText = '✓ 100 ÇIKMIŞ TUS SORUSU ÇÖZÜLDÜ';
   } else {
     btn.classList.remove('completed');
-    btn.innerText = '100 SORU ÇÖZDÜM (İŞARETLE)';
+    btn.innerText = '100 ÇIKMIŞ TUS SORUSU ÇÖZDÜM';
   }
 
   saveCurrentData();
+}
+
+/* Modal İşlemleri */
+function openBranchModal() {
+  const course = document.getElementById('courseInput').value || 'Ders Seçilmedi';
+  document.getElementById('modalCourseName').innerText = course;
+  
+  if (currentDayData.branchResult) {
+    document.getElementById('branchCorrect').value = currentDayData.branchResult.correct || '';
+    document.getElementById('branchWrong').value = currentDayData.branchResult.wrong || '';
+    document.getElementById('branchNet').value = currentDayData.branchResult.net || '';
+  } else {
+    document.getElementById('branchCorrect').value = '';
+    document.getElementById('branchWrong').value = '';
+    document.getElementById('branchNet').value = '';
+  }
+  
+  document.getElementById('branchModal').style.display = 'flex';
+}
+
+function closeBranchModal() {
+  document.getElementById('branchModal').style.display = 'none';
+}
+
+function calcBranchNet() {
+  const c = parseFloat(document.getElementById('branchCorrect').value) || 0;
+  const w = parseFloat(document.getElementById('branchWrong').value) || 0;
+  const net = c - (w / 4);
+  document.getElementById('branchNet').value = net >= 0 ? net.toFixed(2) : 0;
+}
+
+function saveBranchModal() {
+  const c = document.getElementById('branchCorrect').value;
+  const w = document.getElementById('branchWrong').value;
+  const net = document.getElementById('branchNet').value;
+  const course = document.getElementById('courseInput').value || 'Genel';
+
+  if (c !== '' || w !== '') {
+    currentDayData.branchResult = { course, correct: c || 0, wrong: w || 0, net: net || 0 };
+  } else {
+    currentDayData.branchResult = null;
+  }
+
+  saveCurrentData();
+  updateUI(currentDate);
+  closeBranchModal();
 }
 
 function calculateGlobalStats() {
