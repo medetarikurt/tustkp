@@ -417,11 +417,11 @@ textarea.input-text { min-height: 140px; resize: vertical; line-height: 1.5; }
     <div class="trial-title">📊 HAFTALIK TUS DENEMESİ</div>
     <div class="trial-inputs">
       <div class="trial-field">
-        <label>Temel Net (120)</label>
+        <label>Temel Net (100)</label>
         <input type="number" id="netTemel" placeholder="0" oninput="saveCurrentData()">
       </div>
       <div class="trial-field">
-        <label>Klinik Net (120)</label>
+        <label>Klinik Net (100)</label>
         <input type="number" id="netKlinik" placeholder="0" oninput="saveCurrentData()">
       </div>
     </div>
@@ -643,7 +643,6 @@ function saveCurrentData() {
 function toggleShiftMode() {
   currentDayData.isShift = !currentDayData.isShift;
   
-  // Anında görsel tepki (Instant UI Update)
   if (currentDayData.isShift) {
     document.body.classList.add('shift-mode');
     document.getElementById('shiftBtnText').innerText = "Nöbet Modu Aktif";
@@ -660,7 +659,6 @@ function toggleShiftMode() {
 function toggleQuestions() {
   currentDayData.qDone = !currentDayData.qDone;
   
-  // Anında görsel tepki (Instant UI Update)
   const btn = document.getElementById('qBtn');
   if (currentDayData.qDone) {
     btn.classList.add('completed');
