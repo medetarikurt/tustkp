@@ -212,7 +212,7 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
 <script>
 const FIREBASE_URL = "https://tustkp-default-rtdb.europe-west1.firebasedatabase.app/";
 const TARGET_DATE = new Date('2027-03-14T00:00:00');
-const START_DATE = new Date('2026-09-01T00:00:00'); 
+const START_DATE = new Date('2026-08-28T00:00:00'); 
 const CAMP_START = new Date('2027-02-22T00:00:00');
 const EXAM_WEEK = new Date('2027-03-08T00:00:00');
 
@@ -231,8 +231,8 @@ const PREDEFINED_SHIFTS = [
   '2026-09-03', '2026-09-05', '2026-09-08', '2026-09-10', 
   '2026-09-15', '2026-09-17', '2026-09-21', '2026-09-27'
 ];
-// 11-13 Eylül tamamen boş. 30 Eylül'ü de boş sayıyoruz ki 28-29-30 toplamı 2 gün çalışılmış olsun.
-const SPECIAL_OFF_DAYS = ['2026-09-11', '2026-09-12', '2026-09-13', '2026-09-30'];
+// 11-13 Eylül tamamen boş. Başlangıcı 28-29'a çektiğimiz için gün sayıları otomatik olarak eşitleniyor.
+const SPECIAL_OFF_DAYS = ['2026-09-11', '2026-09-12', '2026-09-13'];
 
 let scheduleSequence = [];
 [4,6,4,6,4,3,4,3,4,3,4].forEach((d, i) => { for(let k=0;k<d;k++) scheduleSequence.push({r:1, s:ORDER[i], idx:i}); });
@@ -333,7 +333,7 @@ function renderCarousel() {
     const d = new Date(carouselStartDate);
     d.setDate(carouselStartDate.getDate() + i);
     const key = formatDateKey(d);
-    let data = { isShift: PREDEFINED_SHIFTS.includes(key) }; // Varsayılan Nöbet Kontrolü
+    let data = { isShift: PREDEFINED_SHIFTS.includes(key) };
     const raw = localStorage.getItem(`tus_plan_${key}`);
     if (raw) data = JSON.parse(raw);
 
@@ -353,7 +353,6 @@ async function loadDateData(d) {
   const key = formatDateKey(d);
   document.getElementById('syncVal').innerText = "...";
   
-  // Eğer hiç veri yoksa görselden aldığımız nöbet tarihlerini true yapalım
   currentDayData = { isShift: PREDEFINED_SHIFTS.includes(key), netTemel: '', netKlinik: '', qDoneDay: false, qDoneNight: false, todo: '', branchList: [] };
   
   const localRaw = localStorage.getItem(`tus_plan_${key}`);
