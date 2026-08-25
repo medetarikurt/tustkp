@@ -201,7 +201,7 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
       <div class="dash-title"><span>🏁 14 MART MARATONU</span><span id="marathonPercent" style="color: #fff;">0%</span></div>
       <div class="progress-bar-bg"><div class="progress-bar-fill" id="marathonFill"></div></div>
       <div style="font-size: 0.72rem; color: var(--text-dim); display: flex; justify-content: space-between;">
-        <span>Başlangıç: 1 Eylül 2026</span><span>Hedef: 14 Mart 2027</span>
+        <span>Başlangıç: 28 Ağustos 2026</span><span>Hedef: 14 Mart 2027</span>
       </div>
     </div>
     
@@ -260,8 +260,8 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
 <script>
 const FIREBASE_URL = "https://tustkp-default-rtdb.europe-west1.firebasedatabase.app/";
 
-// BAŞLANGIÇ TARİHİ GÜNCELLENDİ (1 Eylül 2026)
-const START_DATE = new Date(2026, 8, 1, 0, 0, 0); 
+// BAŞLANGIÇ TARİHİ GÜNCELLENDİ (28 Ağustos 2026)
+const START_DATE = new Date(2026, 7, 28, 0, 0, 0); 
 const TARGET_DATE = new Date(2027, 2, 14, 0, 0, 0); 
 const CAMP_START = new Date(2027, 1, 22, 0, 0, 0); 
 const EXAM_WEEK = new Date(2027, 2, 8, 0, 0, 0); 
@@ -276,10 +276,12 @@ const DAY_NAMES = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
 const FULL_DAY_NAMES = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
 const MONTH_NAMES = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 
-// Özel izin günleri temizlendi, nöbetleri butondan manuel olarak ekleyebilirsin
-const SPECIAL_OFF_DAYS = [];
+const PREDEFINED_SHIFTS = ['2026-09-03', '2026-09-05', '2026-09-08', '2026-09-10', '2026-09-15', '2026-09-17', '2026-09-21', '2026-09-27'];
 
-// Turların Matematiksel Dizilimi (1. Tur, 2. Tur, 3. ve 4. Tur)
+// Özel izin günleri tekrar aktif edildi (11-13 Eylül)
+const SPECIAL_OFF_DAYS = ['2026-09-11', '2026-09-12', '2026-09-13'];
+
+// Turların Matematiksel Dizilimi
 let scheduleSequence = [];
 [4,6,4,6,4,3,4,3,4,3,4].forEach((d, i) => { for(let k=0;k<d;k++) scheduleSequence.push({r:1, s:ORDER[i], idx:i}); });
 [3,4,3,4,3,3,3,3,3,3,3].forEach((d, i) => { for(let k=0;k<d;k++) scheduleSequence.push({r:2, s:ORDER[i], idx:i}); });
@@ -329,7 +331,7 @@ function populateCourseSelect() {
   });
 }
 
-// SABİT KAYNAK KURALI GÜNCELLENDİ (Tur Parametresi Kaldırıldı)
+// SABİT KAYNAK KURALI (Tur Parametresi Yoktur)
 function getResource(subj) {
   const map = {
     'Dahiliye': 'Tıp Akademisi Soru',
@@ -349,7 +351,7 @@ function getResource(subj) {
 
 function getPlanForDate(targetObj) {
   let zTarget = getZeroDate(targetObj);
-  if (zTarget < START_DATE) return { type: 'OFF', msg: 'Program Başlamadı (1 Eylül Bekleniyor)' };
+  if (zTarget < START_DATE) return { type: 'OFF', msg: 'Program Başlamadı (28 Ağus. Bekleniyor)' };
   if (zTarget > TARGET_DATE) return { type: 'OFF', msg: 'Sınav Bitti' };
   
   const isSunday = zTarget.getDay() === 0;
@@ -370,7 +372,7 @@ function getPlanForDate(targetObj) {
   if (workingDaysElapsed < scheduleSequence.length) {
     const todayBlock = scheduleSequence[workingDaysElapsed];
     
-    // Patoloji için akşam istisnası korundu
+    // Patoloji için akşam istisnası
     let nightSubj = todayBlock.s === 'Patoloji' ? 'Patoloji (Akşam da)' : ORDER[todayBlock.idx === 0 ? ORDER.length - 1 : todayBlock.idx - 1];
 
     return {
@@ -392,7 +394,7 @@ function renderCarousel() {
     const d = new Date(carouselStartDate);
     d.setDate(carouselStartDate.getDate() + i);
     const key = formatDateKey(d);
-    let data = { isShift: false };
+    let data = { isShift: PREDEFINED_SHIFTS.includes(key) };
     const raw = localStorage.getItem(`tus_plan_${key}`);
     if (raw) data = JSON.parse(raw);
 
@@ -412,7 +414,7 @@ async function loadDateData(d) {
   const key = formatDateKey(d);
   document.getElementById('syncVal').innerText = "...";
   
-  currentDayData = { isShift: false, netTemel: '', netKlinik: '', qDoneDay: false, qDoneNight: false, todo: '', branchList: [] };
+  currentDayData = { isShift: PREDEFINED_SHIFTS.includes(key), netTemel: '', netKlinik: '', qDoneDay: false, qDoneNight: false, todo: '', branchList: [] };
   
   const localRaw = localStorage.getItem(`tus_plan_${key}`);
   if (localRaw) currentDayData = JSON.parse(localRaw);
