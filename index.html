@@ -142,6 +142,12 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
 .sarmal-card .s-name { font-weight: 600; font-size: 0.82rem; color: #fff; }
 .sarmal-card .s-round { font-size: 0.7rem; color: var(--text-dim); }
 .sarmal-card .s-res { font-size: 0.72rem; color: var(--gold); font-family: 'JetBrains Mono', monospace; }
+
+/* History Lists */
+.history-list { display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; padding-right: 4px; }
+.history-list::-webkit-scrollbar { width: 4px; }
+.history-list::-webkit-scrollbar-thumb { background: var(--border-focus); border-radius: 4px; }
+.history-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; padding: 10px; background: var(--bg); border-radius: 6px; border: 1px solid var(--border); }
 </style>
 </head>
 <body>
@@ -188,7 +194,7 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
     </div>
   </div>
 
-  <!-- VIEW 2: İSTATİSTİKLER (YENİ SARMAL KARNESİ BURADA) -->
+  <!-- VIEW 2: İSTATİSTİKLER (GÜNCELLENDİ) -->
   <div id="viewStats" class="view-panel hidden">
     <!-- Maraton İlerleme -->
     <div class="dash-card">
@@ -199,21 +205,29 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
       </div>
     </div>
     
-    <!-- Sarmal İlerleme Karnesi (YENİ) -->
+    <!-- Sarmal İlerleme Karnesi -->
     <div class="dash-card">
       <div class="dash-title">🔄 SARMAL DERS & KAYNAK KARNESİ</div>
       <div style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 4px;">Güncel tarihe göre hangi dersin neresindesin?</div>
-      <div class="sarmal-grid" id="sarmalReportContainer">
-        <!-- Dinamik olarak JS ile doldurulacak -->
-      </div>
+      <div class="sarmal-grid" id="sarmalReportContainer"></div>
     </div>
 
     <!-- Branş Radarı -->
     <div class="dash-card">
       <div class="dash-title">⚠️ BRANŞ RADARI (ÖNCELİK VER)</div>
-      <div id="radarContainer" style="display: flex; flex-direction: column; gap: 8px;">
-        <div style="font-size: 0.75rem; color: var(--text-dim);">Henüz yeterli branş denemesi verisi girilmedi.</div>
-      </div>
+      <div id="radarContainer" class="history-list"></div>
+    </div>
+
+    <!-- Tamamlanan Turlar -->
+    <div class="dash-card">
+      <div class="dash-title">🏆 TAMAMLANAN TURLAR (GEÇMİŞ)</div>
+      <div id="completedRoundsContainer" class="history-list"></div>
+    </div>
+
+    <!-- Branş Geçmişi -->
+    <div class="dash-card">
+      <div class="dash-title">🕒 BRANŞ DENEMESİ GEÇMİŞİ</div>
+      <div id="branchHistoryList" class="history-list"></div>
     </div>
   </div>
 </div>
@@ -246,11 +260,10 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
 <script>
 const FIREBASE_URL = "https://tustkp-default-rtdb.europe-west1.firebasedatabase.app/";
 
-// Tarihleri hatasız hesaplamak için 00:00:00 set edelim
-const START_DATE = new Date(2026, 7, 28, 0, 0, 0); // 28 Ağustos 2026
-const TARGET_DATE = new Date(2027, 2, 14, 0, 0, 0); // 14 Mart 2027
-const CAMP_START = new Date(2027, 1, 22, 0, 0, 0); // 22 Şubat 2027
-const EXAM_WEEK = new Date(2027, 2, 8, 0, 0, 0); // 8 Mart 2027
+const START_DATE = new Date(2026, 7, 28, 0, 0, 0); 
+const TARGET_DATE = new Date(2027, 2, 14, 0, 0, 0); 
+const CAMP_START = new Date(2027, 1, 22, 0, 0, 0); 
+const EXAM_WEEK = new Date(2027, 2, 8, 0, 0, 0); 
 
 const ORDER = ['Patoloji', 'Dahiliye', 'Biyokimya', 'Pediatri', 'Farmakoloji', 'Genel Cerrahi', 'Anatomi', 'Küçük Stajlar', 'Fizyoloji', 'Kadın Doğum', 'Mikrobiyoloji'];
 const COURSE_SPECS = {
@@ -271,7 +284,6 @@ let scheduleSequence = [];
 for(let r=3; r<=4; r++) { [3,3,3,3,3,3,3,3,3,3,3].forEach((d, i) => { for(let k=0;k<d;k++) scheduleSequence.push({r, s:ORDER[i], idx:i}); }); }
 
 let currentDate = new Date();
-// Saat farklarından kurtul
 currentDate.setHours(0,0,0,0);
 
 let carouselStartDate = new Date(currentDate);
@@ -288,17 +300,9 @@ function init() {
   calculateGlobalStats();
 }
 
-function getZeroDate(d) {
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
-}
-
-function formatDateKey(d) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
-function isSpecialOffDay(d) {
-  return SPECIAL_OFF_DAYS.includes(formatDateKey(d));
-}
+function getZeroDate(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0); }
+function formatDateKey(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+function isSpecialOffDay(d) { return SPECIAL_OFF_DAYS.includes(formatDateKey(d)); }
 
 function updateCountdown() {
   const diffDays = Math.ceil((TARGET_DATE - getZeroDate(new Date())) / (1000 * 60 * 60 * 24));
@@ -616,7 +620,7 @@ function calculateGlobalStats() {
 }
 
 function renderDashboard() {
-  // 1. Maraton Yüzdesi
+  // 1. Maraton
   const now = getZeroDate(new Date());
   const totalDuration = TARGET_DATE - START_DATE;
   const elapsed = now - START_DATE;
@@ -624,7 +628,6 @@ function renderDashboard() {
   document.getElementById('marathonPercent').innerText = `${pct.toFixed(1)}%`;
   document.getElementById('marathonFill').style.width = `${pct}%`;
 
-  // 2. Sarmal Ders & Kaynak Karnesi Hesabı
   let workingDaysToToday = 0;
   let tempD = new Date(START_DATE);
   while(tempD <= now) {
@@ -632,21 +635,38 @@ function renderDashboard() {
     tempD.setDate(tempD.getDate() + 1);
   }
 
+  // 2. Sarmal Karnesi & Tamamlanan Turlar Hesaplaması
   let subjState = {};
   ORDER.forEach(s => subjState[s] = { round: 0, status: 'Başlamadı', res: '-' });
 
-  for(let i=0; i < Math.min(workingDaysToToday, scheduleSequence.length); i++) {
+  let blocks = [];
+  let currentBlock = null;
+
+  for(let i=0; i<scheduleSequence.length; i++) {
     let step = scheduleSequence[i];
-    subjState[step.s].round = step.r;
-    subjState[step.s].res = getResource(step.s, step.r);
     
-    if (i === workingDaysToToday - 1) {
-      subjState[step.s].status = `${step.r}. Tur (Şu An Aktif ☀️)`;
+    // Blokları ayır
+    if (!currentBlock || currentBlock.s !== step.s || currentBlock.r !== step.r) {
+        if (currentBlock) blocks.push(currentBlock);
+        currentBlock = { s: step.s, r: step.r, res: getResource(step.s, step.r), endIdx: i };
     } else {
-      subjState[step.s].status = `${step.r}. Tur Tamamlandı ✓`;
+        currentBlock.endIdx = i;
+    }
+
+    // Karnesi güncelle
+    if (i < workingDaysToToday) {
+      subjState[step.s].round = step.r;
+      subjState[step.s].res = getResource(step.s, step.r);
+      if (i === workingDaysToToday - 1) {
+        subjState[step.s].status = `${step.r}. Tur (Aktif ☀️)`;
+      } else {
+        subjState[step.s].status = `${step.r}. Tur Bitti ✓`;
+      }
     }
   }
+  if (currentBlock) blocks.push(currentBlock);
 
+  // Sarmal Karne Ekrana Bas
   const sarmalBox = document.getElementById('sarmalReportContainer');
   sarmalBox.innerHTML = '';
   ORDER.forEach(s => {
@@ -661,10 +681,28 @@ function renderDashboard() {
     `;
   });
 
-  // 3. Branş Radarı
+  // Tamamlanan Turlar Ekrana Bas
+  const compBox = document.getElementById('completedRoundsContainer');
+  compBox.innerHTML = '';
+  let hasCompleted = false;
+  [...blocks].reverse().forEach(b => {
+    if (workingDaysToToday > b.endIdx) {
+        hasCompleted = true;
+        compBox.innerHTML += `
+          <div class="history-row">
+            <span>✅ <b>${b.s}</b> (${b.r}. Tur)</span>
+            <span style="color:var(--text-dim); font-size:0.7rem;">📖 ${b.res} Bitti</span>
+          </div>`;
+    }
+  });
+  if(!hasCompleted) compBox.innerHTML = `<div style="font-size:0.75rem; color:var(--text-dim);">Henüz tamamlanan bir tur bulunmuyor.</div>`;
+
+  // 3. Branş Radarı & Geçmiş Listesi
   let courseStats = {};
   Object.keys(COURSE_SPECS).forEach(c => { courseStats[c] = { totalNet: 0, count: 0 }; });
   
+  let allBranchHistory = [];
+
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
     if (k.startsWith('tus_plan_')) {
@@ -677,12 +715,14 @@ function renderDashboard() {
               courseStats[b.course].totalNet += parseFloat(b.net) || 0;
               courseStats[b.course].count += 1;
             }
+            allBranchHistory.push({ dateKey: k.replace('tus_plan_', ''), ...b });
           });
         }
       }
     }
   }
 
+  // Radar Bas
   const radarBox = document.getElementById('radarContainer');
   radarBox.innerHTML = '';
   let warnings = 0;
@@ -703,9 +743,28 @@ function renderDashboard() {
       }
     }
   });
+  if (warnings === 0) radarBox.innerHTML = `<div style="font-size:0.78rem; color:var(--success);">Kritik seviyede zayıf dersin bulunmuyor veya yeterli veri girilmedi.</div>`;
 
-  if (warnings === 0) {
-    radarBox.innerHTML = `<div style="font-size:0.78rem; color:var(--success);">Kritik seviyede zayıf dersin bulunmuyor veya yeterli veri girilmedi.</div>`;
+  // Geçmiş Listesi Bas
+  const histBox = document.getElementById('branchHistoryList');
+  histBox.innerHTML = '';
+  allBranchHistory.sort((a,b) => b.dateKey.localeCompare(a.dateKey));
+  
+  if (allBranchHistory.length === 0) {
+    histBox.innerHTML = `<div style="font-size:0.75rem; color:var(--text-dim);">Henüz branş denemesi çözülmedi.</div>`;
+  } else {
+    allBranchHistory.forEach(h => {
+      histBox.innerHTML += `
+        <div class="history-row">
+          <div style="display:flex; flex-direction:column; gap:2px;">
+            <span style="color:#fff; font-weight:600;">${h.course}</span>
+            <span style="color:var(--text-dim); font-size:0.68rem;">📅 ${h.dateKey}</span>
+          </div>
+          <span style="color:var(--gold); font-family:'JetBrains Mono', monospace; font-weight:700;">
+            ${h.net} Net <span style="font-size:0.65rem; font-weight:400; color:var(--text-dim);">(${h.correct}D ${h.wrong}Y)</span>
+          </span>
+        </div>`;
+    });
   }
 }
 
