@@ -18,6 +18,7 @@
   --gold-glow: rgba(212, 163, 89, 0.15);
   --success: #10b981;
   --success-glow: rgba(16, 185, 129, 0.15);
+  --danger: #ef4444;
   --shift-accent: #3b82f6;
   --night-bg: #141124;
   --night-border: #302654;
@@ -25,7 +26,7 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; touch-action: manipulation; }
-input, textarea { user-select: text; }
+input, textarea, select { user-select: text; }
 
 body {
   background-color: var(--bg);
@@ -89,6 +90,28 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
 .trial-field label { font-size: 0.7rem; color: var(--text-dim); display: block; margin-bottom: 4px; }
 .trial-field input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px; color: #fff; font-family: 'JetBrains Mono', monospace; text-align: center; }
 
+/* Branch Modal & Buttons */
+.branch-add-btn { width: 100%; background: transparent; border: 1px dashed var(--border-focus); border-radius: var(--radius); padding: 12px; color: var(--gold); font-size: 0.82rem; font-weight: 500; cursor: pointer; margin-top: 4px; transition: all 0.15s ease; }
+.branch-add-btn:hover { background: var(--gold-glow); }
+.branch-list { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.branch-item-card { font-size: 0.78rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; }
+.branch-item-card .info { display: flex; flex-direction: column; gap: 2px; }
+.branch-item-card .info .c-name { color: #fff; font-weight: 600; }
+.branch-item-card .info .c-detail { color: var(--text-dim); font-size: 0.72rem; }
+.branch-item-card .actions { display: flex; gap: 10px; align-items: center; }
+.branch-item-card .net-badge { font-family: 'JetBrains Mono', monospace; color: var(--gold); font-weight: 700; }
+.branch-item-card .del-btn { color: var(--danger); cursor: pointer; font-size: 1.1rem; }
+
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+.modal-content { background: var(--card-bg); border: 1px solid var(--border-focus); border-radius: var(--radius); width: 100%; max-width: 400px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; font-family: 'JetBrains Mono', monospace; color: var(--gold); font-size: 0.9rem; }
+.modal-close { background: transparent; border: none; color: var(--text-dim); font-size: 1.3rem; cursor: pointer; }
+.modal-select { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: #fff; padding: 10px; font-size: 0.85rem; outline: none; }
+.modal-inputs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.modal-field label { font-size: 0.68rem; color: var(--text-dim); display: block; margin-bottom: 4px; }
+.modal-field input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px; color: #fff; font-family: 'JetBrains Mono', monospace; text-align: center; }
+.modal-save-btn { background: var(--gold-glow); border: 1px solid var(--gold); color: var(--gold); padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 6px; }
+
 /* Todo */
 .input-text { width: 100%; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text-main); padding: 12px 14px; font-size: 0.92rem; outline: none; font-family: inherit; resize: vertical; min-height: 80px; }
 
@@ -133,8 +156,16 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
   <!-- Dynamic Content Area -->
   <div id="dynamicContent"></div>
 
+  <!-- Branş Denemesi Alanı -->
+  <div style="margin-top: 8px;">
+    <button class="branch-add-btn" onclick="openBranchModal()">
+      ➕ BRANŞ DENEMESİ EKLER
+    </button>
+    <div id="branchList" class="branch-list"></div>
+  </div>
+
   <!-- Yapılacaklar -->
-  <div style="display: flex; flex-direction: column; gap: 6px;">
+  <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px;">
     <div class="card-label" style="color:var(--text-dim);">GÜNLÜK NOTLAR</div>
     <textarea id="todoInput" class="input-text" placeholder="Ekstra yapılacaklar..." oninput="saveCurrentData()"></textarea>
   </div>
@@ -147,6 +178,37 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
   </div>
 </div>
 
+<!-- Modal Pop-up -->
+<div class="modal-overlay" id="branchModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span id="modalTitleText">BRANŞ DENEMESİ EKLER</span>
+      <button class="modal-close" onclick="closeBranchModal()">&times;</button>
+    </div>
+    
+    <div class="modal-field">
+      <label>Ders Seçimi</label>
+      <select id="modalCourseSelect" class="modal-select"></select>
+    </div>
+
+    <div class="modal-inputs">
+      <div class="modal-field">
+        <label>Doğru</label>
+        <input type="number" id="branchCorrect" placeholder="0" oninput="calcBranchNet()">
+      </div>
+      <div class="modal-field">
+        <label>Yanlış</label>
+        <input type="number" id="branchWrong" placeholder="0" oninput="calcBranchNet()">
+      </div>
+      <div class="modal-field">
+        <label>Net</label>
+        <input type="number" id="branchNet" placeholder="0" readonly style="color: var(--gold);">
+      </div>
+    </div>
+    <button class="modal-save-btn" onclick="saveBranchModal()">KAYDET</button>
+  </div>
+</div>
+
 <script>
 const FIREBASE_URL = "https://tustkp-default-rtdb.europe-west1.firebasedatabase.app/";
 const TARGET_DATE = new Date('2027-03-14T00:00:00');
@@ -155,11 +217,23 @@ const CAMP_START = new Date('2027-02-22T00:00:00');
 const EXAM_WEEK = new Date('2027-03-08T00:00:00');
 
 const ORDER = ['Patoloji', 'Dahiliye', 'Biyokimya', 'Pediatri', 'Farmakoloji', 'Genel Cerrahi', 'Anatomi', 'Küçük Stajlar', 'Fizyoloji', 'Kadın Doğum', 'Mikrobiyoloji'];
+const COURSE_SPECS = {
+  "Pediatri": 25, "Dahiliye": 23, "Küçük Stajlar": 22, "Genel Cerrahi": 20,
+  "Mikrobiyoloji": 18, "Biyokimya": 18, "Patoloji": 18, "Farmakoloji": 18,
+  "Fizyoloji (Fiz-Hist-Embrio)": 15, "Anatomi": 13, "Kadın Doğum": 10
+};
 const DAY_NAMES = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
 const FULL_DAY_NAMES = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
 const MONTH_NAMES = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 
-// Schedule Generator (146 Working Days)
+// Otomatik Nöbet ve Özel İzin Tanımları
+const PREDEFINED_SHIFTS = [
+  '2026-09-03', '2026-09-05', '2026-09-08', '2026-09-10', 
+  '2026-09-15', '2026-09-17', '2026-09-21', '2026-09-27'
+];
+// 11-13 Eylül tamamen boş. 30 Eylül'ü de boş sayıyoruz ki 28-29-30 toplamı 2 gün çalışılmış olsun.
+const SPECIAL_OFF_DAYS = ['2026-09-11', '2026-09-12', '2026-09-13', '2026-09-30'];
+
 let scheduleSequence = [];
 [4,6,4,6,4,3,4,3,4,3,4].forEach((d, i) => { for(let k=0;k<d;k++) scheduleSequence.push({r:1, s:ORDER[i], idx:i}); });
 [3,4,3,4,3,3,3,3,3,3,3].forEach((d, i) => { for(let k=0;k<d;k++) scheduleSequence.push({r:2, s:ORDER[i], idx:i}); });
@@ -168,12 +242,14 @@ for(let r=3; r<=4; r++) { [3,3,3,3,3,3,3,3,3,3,3].forEach((d, i) => { for(let k=
 let currentDate = new Date();
 let carouselStartDate = new Date();
 let saveTimeout = null;
-let currentDayData = { isShift: false, netTemel: '', netKlinik: '', qDoneDay: false, qDoneNight: false, todo: '' };
+let editingBranchIndex = null;
+let currentDayData = { isShift: false, netTemel: '', netKlinik: '', qDoneDay: false, qDoneNight: false, todo: '', branchList: [] };
 
 function init() {
   updateCountdown();
   carouselStartDate = new Date(currentDate);
   carouselStartDate.setDate(currentDate.getDate() - 1);
+  populateCourseSelect();
   renderCarousel();
   loadDateData(currentDate);
   calculateGlobalStats();
@@ -186,6 +262,21 @@ function updateCountdown() {
 
 function formatDateKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function isSpecialOffDay(d) {
+  return SPECIAL_OFF_DAYS.includes(formatDateKey(d));
+}
+
+function populateCourseSelect() {
+  const sel = document.getElementById('modalCourseSelect');
+  sel.innerHTML = '';
+  Object.keys(COURSE_SPECS).forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.innerText = `${c} (${COURSE_SPECS[c]} Soru)`;
+    sel.appendChild(opt);
+  });
 }
 
 function getResource(subj, round) {
@@ -207,13 +298,16 @@ function getPlanForDate(targetObj) {
   
   const isSunday = targetObj.getDay() === 0;
   if (isSunday) return { type: 'DENEME' };
+  if (isSpecialOffDay(targetObj)) return { type: 'OFF', msg: 'Özel İzin / Çalışma Dışı' };
   if (targetObj >= EXAM_WEEK) return { type: 'EXAM_WEEK' };
   if (targetObj >= CAMP_START) return { type: 'CAMP' };
 
   let workingDaysElapsed = 0;
   let tempDate = new Date(START_DATE);
   while (tempDate < targetObj) {
-    if (tempDate.getDay() !== 0) workingDaysElapsed++;
+    if (tempDate.getDay() !== 0 && !isSpecialOffDay(tempDate)) {
+      workingDaysElapsed++;
+    }
     tempDate.setDate(tempDate.getDate() + 1);
   }
 
@@ -239,8 +333,9 @@ function renderCarousel() {
     const d = new Date(carouselStartDate);
     d.setDate(carouselStartDate.getDate() + i);
     const key = formatDateKey(d);
+    let data = { isShift: PREDEFINED_SHIFTS.includes(key) }; // Varsayılan Nöbet Kontrolü
     const raw = localStorage.getItem(`tus_plan_${key}`);
-    const data = raw ? JSON.parse(raw) : {};
+    if (raw) data = JSON.parse(raw);
 
     const btn = document.createElement('button');
     btn.className = `day-item ${key === formatDateKey(currentDate) ? 'active' : ''} ${data.isShift ? 'is-shift' : ''}`;
@@ -258,7 +353,9 @@ async function loadDateData(d) {
   const key = formatDateKey(d);
   document.getElementById('syncVal').innerText = "...";
   
-  currentDayData = { isShift: false, netTemel: '', netKlinik: '', qDoneDay: false, qDoneNight: false, todo: '' };
+  // Eğer hiç veri yoksa görselden aldığımız nöbet tarihlerini true yapalım
+  currentDayData = { isShift: PREDEFINED_SHIFTS.includes(key), netTemel: '', netKlinik: '', qDoneDay: false, qDoneNight: false, todo: '', branchList: [] };
+  
   const localRaw = localStorage.getItem(`tus_plan_${key}`);
   if (localRaw) currentDayData = JSON.parse(localRaw);
 
@@ -266,12 +363,17 @@ async function loadDateData(d) {
     const res = await fetch(`${FIREBASE_URL}plans/${key}.json`);
     if (res.ok) {
       const cloudData = await res.json();
-      if (cloudData) { currentDayData = cloudData; localStorage.setItem(`tus_plan_${key}`, JSON.stringify(currentDayData)); }
+      if (cloudData) { 
+        currentDayData = cloudData; 
+        if(!currentDayData.branchList) currentDayData.branchList = [];
+        localStorage.setItem(`tus_plan_${key}`, JSON.stringify(currentDayData)); 
+      }
     }
     document.getElementById('syncVal').innerText = "OK";
   } catch (e) {
     document.getElementById('syncVal').innerText = "OFF";
   }
+  if (!currentDayData.branchList) currentDayData.branchList = [];
   buildUI(d);
 }
 
@@ -343,7 +445,81 @@ function buildUI(d) {
   }
 
   content.innerHTML = html;
+  renderBranchList();
 }
+
+function renderBranchList() {
+  const container = document.getElementById('branchList');
+  container.innerHTML = '';
+  
+  if (!currentDayData.branchList || currentDayData.branchList.length === 0) return;
+
+  currentDayData.branchList.forEach((item, idx) => {
+    const card = document.createElement('div');
+    card.className = 'branch-item-card';
+    card.innerHTML = `
+      <div class="info">
+        <span class="c-name">${item.course}</span>
+        <span class="c-detail">${item.correct} Doğru · ${item.wrong} Yanlış</span>
+      </div>
+      <div class="actions">
+        <span class="net-badge">${item.net} Net</span>
+        <span class="del-btn" onclick="deleteBranchItem(${idx})">&times;</span>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+window.openBranchModal = function(editIndex = null) {
+  editingBranchIndex = editIndex;
+  if (editIndex !== null) {
+    const item = currentDayData.branchList[editIndex];
+    document.getElementById('modalCourseSelect').value = item.course;
+    document.getElementById('branchCorrect').value = item.correct;
+    document.getElementById('branchWrong').value = item.wrong;
+    document.getElementById('branchNet').value = item.net;
+    document.getElementById('modalTitleText').innerText = "BRANŞ DENEMESİ DÜZENLE";
+  } else {
+    document.getElementById('branchCorrect').value = '';
+    document.getElementById('branchWrong').value = '';
+    document.getElementById('branchNet').value = '';
+    document.getElementById('modalTitleText').innerText = "BRANŞ DENEMESİ EKLER";
+  }
+  document.getElementById('branchModal').style.display = 'flex';
+};
+
+window.closeBranchModal = function() { document.getElementById('branchModal').style.display = 'none'; };
+
+window.calcBranchNet = function() {
+  const c = parseFloat(document.getElementById('branchCorrect').value) || 0;
+  const w = parseFloat(document.getElementById('branchWrong').value) || 0;
+  const net = c - (w / 4);
+  document.getElementById('branchNet').value = net >= 0 ? net.toFixed(2) : 0;
+};
+
+window.saveBranchModal = function() {
+  const course = document.getElementById('modalCourseSelect').value;
+  const c = document.getElementById('branchCorrect').value;
+  const w = document.getElementById('branchWrong').value;
+  const net = document.getElementById('branchNet').value;
+  if (!c && !w) return;
+  const newItem = { course, correct: c || 0, wrong: w || 0, net: net || 0 };
+  if (editingBranchIndex !== null) {
+    currentDayData.branchList[editingBranchIndex] = newItem;
+  } else {
+    currentDayData.branchList.push(newItem);
+  }
+  saveCurrentData();
+  buildUI(currentDate);
+  closeBranchModal();
+};
+
+window.deleteBranchItem = function(idx) {
+  currentDayData.branchList.splice(idx, 1);
+  saveCurrentData();
+  buildUI(currentDate);
+};
 
 window.toggleQ = function(period) {
   if (period === 'day') currentDayData.qDoneDay = !currentDayData.qDoneDay;
@@ -395,9 +571,8 @@ function calculateGlobalStats() {
       let points = 0;
       if (d.qDoneDay) points += 0.5;
       if (d.qDoneNight) points += 0.5;
-      if (d.qDoneNight) totalQ += 100; // Akşam 100 soru
+      if (d.qDoneNight) totalQ += 100;
       
-      // Nöbet günüyse çalışılan miktar efektif olarak max 0.5 yansır
       if (d.isShift && points > 0) effectiveDays += 0.5;
       else effectiveDays += points;
     }
