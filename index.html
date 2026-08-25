@@ -362,13 +362,16 @@ function getPlanForDate(targetObj) {
 
   if (workingDaysElapsed < scheduleSequence.length) {
     const todayBlock = scheduleSequence[workingDaysElapsed];
-    const prevIdx = todayBlock.idx === 0 ? ORDER.length - 1 : todayBlock.idx - 1;
+    
+    // İşte düzelttiğimiz yer: Eğer Patoloji'deysek Akşam da Patoloji olacak!
+    let nightSubj = todayBlock.s === 'Patoloji' ? 'Patoloji (Akşam da)' : ORDER[todayBlock.idx - 1];
+
     return {
       type: 'SPIRAL',
       round: todayBlock.r,
       daySubj: todayBlock.s,
       dayRes: getResource(todayBlock.s, todayBlock.r),
-      nightSubj: ORDER[prevIdx] === 'Patoloji' ? 'Patoloji (Akşam da)' : ORDER[prevIdx]
+      nightSubj: nightSubj
     };
   } else {
     return { type: 'BUFFER', msg: 'Serbest Tekrar / Eksik Kapatma' };
@@ -620,7 +623,6 @@ function calculateGlobalStats() {
 }
 
 function renderDashboard() {
-  // 1. Maraton
   const now = getZeroDate(new Date());
   const totalDuration = TARGET_DATE - START_DATE;
   const elapsed = now - START_DATE;
@@ -635,7 +637,6 @@ function renderDashboard() {
     tempD.setDate(tempD.getDate() + 1);
   }
 
-  // 2. Sarmal Karnesi & Tamamlanan Turlar Hesaplaması
   let subjState = {};
   ORDER.forEach(s => subjState[s] = { round: 0, status: 'Başlamadı', res: '-' });
 
@@ -645,7 +646,6 @@ function renderDashboard() {
   for(let i=0; i<scheduleSequence.length; i++) {
     let step = scheduleSequence[i];
     
-    // Blokları ayır
     if (!currentBlock || currentBlock.s !== step.s || currentBlock.r !== step.r) {
         if (currentBlock) blocks.push(currentBlock);
         currentBlock = { s: step.s, r: step.r, res: getResource(step.s, step.r), endIdx: i };
@@ -653,7 +653,6 @@ function renderDashboard() {
         currentBlock.endIdx = i;
     }
 
-    // Karnesi güncelle
     if (i < workingDaysToToday) {
       subjState[step.s].round = step.r;
       subjState[step.s].res = getResource(step.s, step.r);
@@ -666,7 +665,6 @@ function renderDashboard() {
   }
   if (currentBlock) blocks.push(currentBlock);
 
-  // Sarmal Karne Ekrana Bas
   const sarmalBox = document.getElementById('sarmalReportContainer');
   sarmalBox.innerHTML = '';
   ORDER.forEach(s => {
@@ -681,7 +679,6 @@ function renderDashboard() {
     `;
   });
 
-  // Tamamlanan Turlar Ekrana Bas
   const compBox = document.getElementById('completedRoundsContainer');
   compBox.innerHTML = '';
   let hasCompleted = false;
@@ -697,7 +694,6 @@ function renderDashboard() {
   });
   if(!hasCompleted) compBox.innerHTML = `<div style="font-size:0.75rem; color:var(--text-dim);">Henüz tamamlanan bir tur bulunmuyor.</div>`;
 
-  // 3. Branş Radarı & Geçmiş Listesi
   let courseStats = {};
   Object.keys(COURSE_SPECS).forEach(c => { courseStats[c] = { totalNet: 0, count: 0 }; });
   
@@ -722,7 +718,6 @@ function renderDashboard() {
     }
   }
 
-  // Radar Bas
   const radarBox = document.getElementById('radarContainer');
   radarBox.innerHTML = '';
   let warnings = 0;
@@ -745,7 +740,6 @@ function renderDashboard() {
   });
   if (warnings === 0) radarBox.innerHTML = `<div style="font-size:0.78rem; color:var(--success);">Kritik seviyede zayıf dersin bulunmuyor veya yeterli veri girilmedi.</div>`;
 
-  // Geçmiş Listesi Bas
   const histBox = document.getElementById('branchHistoryList');
   histBox.innerHTML = '';
   allBranchHistory.sort((a,b) => b.dateKey.localeCompare(a.dateKey));
