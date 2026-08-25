@@ -194,21 +194,21 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
     </div>
   </div>
 
-  <!-- VIEW 2: İSTATİSTİKLER (GÜNCELLENDİ) -->
+  <!-- VIEW 2: İSTATİSTİKLER -->
   <div id="viewStats" class="view-panel hidden">
     <!-- Maraton İlerleme -->
     <div class="dash-card">
       <div class="dash-title"><span>🏁 14 MART MARATONU</span><span id="marathonPercent" style="color: #fff;">0%</span></div>
       <div class="progress-bar-bg"><div class="progress-bar-fill" id="marathonFill"></div></div>
       <div style="font-size: 0.72rem; color: var(--text-dim); display: flex; justify-content: space-between;">
-        <span>Başlangıç: 28 Ağustos 2026</span><span>Hedef: 14 Mart 2027</span>
+        <span>Başlangıç: 1 Eylül 2026</span><span>Hedef: 14 Mart 2027</span>
       </div>
     </div>
     
     <!-- Sarmal İlerleme Karnesi -->
     <div class="dash-card">
       <div class="dash-title">🔄 SARMAL DERS & KAYNAK KARNESİ</div>
-      <div style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 4px;">Güncel tarihe göre hangi dersin neresindesin?</div>
+      <div style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 4px;">Tüm Turlar İçin Sabit Soru Bankaları</div>
       <div class="sarmal-grid" id="sarmalReportContainer"></div>
     </div>
 
@@ -260,7 +260,8 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
 <script>
 const FIREBASE_URL = "https://tustkp-default-rtdb.europe-west1.firebasedatabase.app/";
 
-const START_DATE = new Date(2026, 7, 28, 0, 0, 0); 
+// BAŞLANGIÇ TARİHİ GÜNCELLENDİ (1 Eylül 2026)
+const START_DATE = new Date(2026, 8, 1, 0, 0, 0); 
 const TARGET_DATE = new Date(2027, 2, 14, 0, 0, 0); 
 const CAMP_START = new Date(2027, 1, 22, 0, 0, 0); 
 const EXAM_WEEK = new Date(2027, 2, 8, 0, 0, 0); 
@@ -275,9 +276,10 @@ const DAY_NAMES = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
 const FULL_DAY_NAMES = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
 const MONTH_NAMES = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 
-const PREDEFINED_SHIFTS = ['2026-09-03', '2026-09-05', '2026-09-08', '2026-09-10', '2026-09-15', '2026-09-17', '2026-09-21', '2026-09-27'];
-const SPECIAL_OFF_DAYS = ['2026-09-11', '2026-09-12', '2026-09-13'];
+// Özel izin günleri temizlendi, nöbetleri butondan manuel olarak ekleyebilirsin
+const SPECIAL_OFF_DAYS = [];
 
+// Turların Matematiksel Dizilimi (1. Tur, 2. Tur, 3. ve 4. Tur)
 let scheduleSequence = [];
 [4,6,4,6,4,3,4,3,4,3,4].forEach((d, i) => { for(let k=0;k<d;k++) scheduleSequence.push({r:1, s:ORDER[i], idx:i}); });
 [3,4,3,4,3,3,3,3,3,3,3].forEach((d, i) => { for(let k=0;k<d;k++) scheduleSequence.push({r:2, s:ORDER[i], idx:i}); });
@@ -327,22 +329,27 @@ function populateCourseSelect() {
   });
 }
 
-function getResource(subj, round) {
-  if(subj === 'Anatomi') return 'SMT Konu';
-  if(subj === 'Fizyoloji') return 'Çıkmış Sorular';
-  if(['Pediatri', 'Genel Cerrahi'].includes(subj)) return round <= 2 ? 'Ahmet Erkek SB' : 'Vaka SB';
-  if(subj === 'Dahiliye') return round <= 2 ? 'Tıp Ak SB' : 'Vaka SB';
-  if(subj === 'Küçük Stajlar') return round === 1 ? 'Prime' : (round === 2 ? 'İrşadi' : 'Vaka SB');
-  if(subj === 'Kadın Doğum') return round <= 2 ? 'Deneme Soruları' : 'Vaka SB';
-  if(subj === 'Mikrobiyoloji') return round <= 2 ? 'Tıp Ak SB' : 'Vaka SB';
-  if(['Biyokimya', 'Farmakoloji'].includes(subj)) return round <= 2 ? 'Tıp Ak SB' : 'Prime';
-  if(subj === 'Patoloji') return round <= 2 ? 'SST (Emrah H.)' : 'Prime';
-  return '';
+// SABİT KAYNAK KURALI GÜNCELLENDİ (Tur Parametresi Kaldırıldı)
+function getResource(subj) {
+  const map = {
+    'Dahiliye': 'Tıp Akademisi Soru',
+    'Pediatri': 'Ahmet Erkek',
+    'Genel Cerrahi': 'Ahmet Erkek',
+    'Küçük Stajlar': 'Prime',
+    'Kadın Doğum': 'Prime',
+    'Biyokimya': 'Tıp Akademisi Soru',
+    'Fizyoloji': 'Prime',
+    'Patoloji': 'SST (Emrah Hoca)',
+    'Farmakoloji': 'Prime',
+    'Mikrobiyoloji': 'Prime',
+    'Anatomi': 'SMT Konu'
+  };
+  return map[subj] || '';
 }
 
 function getPlanForDate(targetObj) {
   let zTarget = getZeroDate(targetObj);
-  if (zTarget < START_DATE) return { type: 'OFF', msg: 'Program Başlamadı (28 Ağus. Bekleniyor)' };
+  if (zTarget < START_DATE) return { type: 'OFF', msg: 'Program Başlamadı (1 Eylül Bekleniyor)' };
   if (zTarget > TARGET_DATE) return { type: 'OFF', msg: 'Sınav Bitti' };
   
   const isSunday = zTarget.getDay() === 0;
@@ -363,14 +370,14 @@ function getPlanForDate(targetObj) {
   if (workingDaysElapsed < scheduleSequence.length) {
     const todayBlock = scheduleSequence[workingDaysElapsed];
     
-    // İşte düzelttiğimiz yer: Eğer Patoloji'deysek Akşam da Patoloji olacak!
-    let nightSubj = todayBlock.s === 'Patoloji' ? 'Patoloji (Akşam da)' : ORDER[todayBlock.idx - 1];
+    // Patoloji için akşam istisnası korundu
+    let nightSubj = todayBlock.s === 'Patoloji' ? 'Patoloji (Akşam da)' : ORDER[todayBlock.idx === 0 ? ORDER.length - 1 : todayBlock.idx - 1];
 
     return {
       type: 'SPIRAL',
       round: todayBlock.r,
       daySubj: todayBlock.s,
-      dayRes: getResource(todayBlock.s, todayBlock.r),
+      dayRes: getResource(todayBlock.s),
       nightSubj: nightSubj
     };
   } else {
@@ -385,7 +392,7 @@ function renderCarousel() {
     const d = new Date(carouselStartDate);
     d.setDate(carouselStartDate.getDate() + i);
     const key = formatDateKey(d);
-    let data = { isShift: PREDEFINED_SHIFTS.includes(key) };
+    let data = { isShift: false };
     const raw = localStorage.getItem(`tus_plan_${key}`);
     if (raw) data = JSON.parse(raw);
 
@@ -405,7 +412,7 @@ async function loadDateData(d) {
   const key = formatDateKey(d);
   document.getElementById('syncVal').innerText = "...";
   
-  currentDayData = { isShift: PREDEFINED_SHIFTS.includes(key), netTemel: '', netKlinik: '', qDoneDay: false, qDoneNight: false, todo: '', branchList: [] };
+  currentDayData = { isShift: false, netTemel: '', netKlinik: '', qDoneDay: false, qDoneNight: false, todo: '', branchList: [] };
   
   const localRaw = localStorage.getItem(`tus_plan_${key}`);
   if (localRaw) currentDayData = JSON.parse(localRaw);
@@ -648,14 +655,14 @@ function renderDashboard() {
     
     if (!currentBlock || currentBlock.s !== step.s || currentBlock.r !== step.r) {
         if (currentBlock) blocks.push(currentBlock);
-        currentBlock = { s: step.s, r: step.r, res: getResource(step.s, step.r), endIdx: i };
+        currentBlock = { s: step.s, r: step.r, res: getResource(step.s), endIdx: i };
     } else {
         currentBlock.endIdx = i;
     }
 
     if (i < workingDaysToToday) {
       subjState[step.s].round = step.r;
-      subjState[step.s].res = getResource(step.s, step.r);
+      subjState[step.s].res = getResource(step.s);
       if (i === workingDaysToToday - 1) {
         subjState[step.s].status = `${step.r}. Tur (Aktif ☀️)`;
       } else {
