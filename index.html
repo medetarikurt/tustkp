@@ -153,7 +153,6 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
 <body>
 
 <div class="wrap">
-  <!-- Top Bar -->
   <div class="top-bar">
     <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg> 14 MART 2027</div>
     <div class="countdown"><span id="daysLeft">--</span> gün kaldı</div>
@@ -196,7 +195,6 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
 
   <!-- VIEW 2: İSTATİSTİKLER -->
   <div id="viewStats" class="view-panel hidden">
-    <!-- Maraton İlerleme -->
     <div class="dash-card">
       <div class="dash-title"><span>🏁 14 MART MARATONU</span><span id="marathonPercent" style="color: #fff;">0%</span></div>
       <div class="progress-bar-bg"><div class="progress-bar-fill" id="marathonFill"></div></div>
@@ -205,26 +203,22 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
       </div>
     </div>
     
-    <!-- Sarmal İlerleme Karnesi -->
     <div class="dash-card">
       <div class="dash-title">🔄 SARMAL DERS & KAYNAK KARNESİ</div>
       <div style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 4px;">Tüm Turlar İçin Sabit Soru Bankaları</div>
       <div class="sarmal-grid" id="sarmalReportContainer"></div>
     </div>
 
-    <!-- Branş Radarı -->
     <div class="dash-card">
       <div class="dash-title">⚠️ BRANŞ RADARI (ÖNCELİK VER)</div>
       <div id="radarContainer" class="history-list"></div>
     </div>
 
-    <!-- Tamamlanan Turlar -->
     <div class="dash-card">
       <div class="dash-title">🏆 TAMAMLANAN TURLAR (GEÇMİŞ)</div>
       <div id="completedRoundsContainer" class="history-list"></div>
     </div>
 
-    <!-- Branş Geçmişi -->
     <div class="dash-card">
       <div class="dash-title">🕒 BRANŞ DENEMESİ GEÇMİŞİ</div>
       <div id="branchHistoryList" class="history-list"></div>
@@ -260,13 +254,14 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
 <script>
 const FIREBASE_URL = "https://tustkp-default-rtdb.europe-west1.firebasedatabase.app/";
 
-// BAŞLANGIÇ TARİHİ GÜNCELLENDİ (28 Ağustos 2026)
 const START_DATE = new Date(2026, 7, 28, 0, 0, 0); 
 const TARGET_DATE = new Date(2027, 2, 14, 0, 0, 0); 
 const CAMP_START = new Date(2027, 1, 22, 0, 0, 0); 
 const EXAM_WEEK = new Date(2027, 2, 8, 0, 0, 0); 
 
-const ORDER = ['Patoloji', 'Dahiliye', 'Biyokimya', 'Pediatri', 'Farmakoloji', 'Genel Cerrahi', 'Anatomi', 'Küçük Stajlar', 'Fizyoloji', 'Kadın Doğum', 'Mikrobiyoloji'];
+// Karnedeki standart liste görünümü için baz dizi
+const ALL_SUBJECTS = ['Fizyoloji', 'Patoloji', 'Biyokimya', 'Pediatri', 'Mikrobiyoloji', 'Farmakoloji', 'Dahiliye', 'Anatomi', 'Küçük Stajlar', 'Genel Cerrahi', 'Kadın Doğum'];
+
 const COURSE_SPECS = {
   "Pediatri": 25, "Dahiliye": 23, "Küçük Stajlar": 22, "Genel Cerrahi": 20,
   "Mikrobiyoloji": 18, "Biyokimya": 18, "Patoloji": 18, "Farmakoloji": 18,
@@ -277,15 +272,43 @@ const FULL_DAY_NAMES = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe'
 const MONTH_NAMES = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 
 const PREDEFINED_SHIFTS = ['2026-09-03', '2026-09-05', '2026-09-08', '2026-09-10', '2026-09-15', '2026-09-17', '2026-09-21', '2026-09-27'];
-
-// Özel izin günleri tekrar aktif edildi (11-13 Eylül)
 const SPECIAL_OFF_DAYS = ['2026-09-11', '2026-09-12', '2026-09-13'];
 
-// Turların Matematiksel Dizilimi
+// ÇİFT MOTORLU SARMAL DİZİLİMİ
 let scheduleSequence = [];
-[4,6,4,6,4,3,4,3,4,3,4].forEach((d, i) => { for(let k=0;k<d;k++) scheduleSequence.push({r:1, s:ORDER[i], idx:i}); });
-[3,4,3,4,3,3,3,3,3,3,3].forEach((d, i) => { for(let k=0;k<d;k++) scheduleSequence.push({r:2, s:ORDER[i], idx:i}); });
-for(let r=3; r<=4; r++) { [3,3,3,3,3,3,3,3,3,3,3].forEach((d, i) => { for(let k=0;k<d;k++) scheduleSequence.push({r, s:ORDER[i], idx:i}); }); }
+
+// Motor 1: 1. Tur (Dahiliye Başta, ardından Fizyoloji->Patoloji...->Kadın Doğum)
+const ORDER_R1 = ['Dahiliye', 'Fizyoloji', 'Patoloji', 'Biyokimya', 'Pediatri', 'Mikrobiyoloji', 'Farmakoloji', 'Anatomi', 'Küçük Stajlar', 'Genel Cerrahi', 'Kadın Doğum'];
+const DAYS_R1 = [6, 4, 4, 4, 6, 4, 4, 4, 3, 3, 3];
+
+DAYS_R1.forEach((d, i) => {
+  for(let k=0; k<d; k++) {
+    let night = ORDER_R1[i] === 'Patoloji' ? 'Patoloji (Akşam da)' : (i === 0 ? 'Dahiliye (Akşam da)' : ORDER_R1[i-1]);
+    scheduleSequence.push({r:1, s:ORDER_R1[i], night: night});
+  }
+});
+
+// Motor 2: 2, 3 ve 4. Turlar (Görseldeki Orijinal Sıra: Fizyoloji Başta -> Kadın Doğum Sonda)
+const ORDER_BASE = ['Fizyoloji', 'Patoloji', 'Biyokimya', 'Pediatri', 'Mikrobiyoloji', 'Farmakoloji', 'Dahiliye', 'Anatomi', 'Küçük Stajlar', 'Genel Cerrahi', 'Kadın Doğum'];
+const DAYS_R2 = [3, 3, 3, 4, 3, 3, 4, 3, 3, 3, 3]; // Dahiliye 4, Pediatri 4, gerisi 3 gün
+
+DAYS_R2.forEach((d, i) => {
+  for(let k=0; k<d; k++) {
+    // 2. Turun ilk dersi Fizyoloji'nin akşamında, 1. Turun son dersi olan Kadın Doğum çözülecek.
+    let night = ORDER_BASE[i] === 'Patoloji' ? 'Patoloji (Akşam da)' : (i === 0 ? ORDER_R1[ORDER_R1.length-1] : ORDER_BASE[i-1]);
+    scheduleSequence.push({r:2, s:ORDER_BASE[i], night: night});
+  }
+});
+
+for(let r=3; r<=4; r++) {
+  const DAYS_R3_4 = [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3];
+  DAYS_R3_4.forEach((d, i) => {
+    for(let k=0; k<d; k++) {
+      let night = ORDER_BASE[i] === 'Patoloji' ? 'Patoloji (Akşam da)' : (i === 0 ? ORDER_BASE[ORDER_BASE.length-1] : ORDER_BASE[i-1]);
+      scheduleSequence.push({r:r, s:ORDER_BASE[i], night: night});
+    }
+  });
+}
 
 let currentDate = new Date();
 currentDate.setHours(0,0,0,0);
@@ -331,7 +354,6 @@ function populateCourseSelect() {
   });
 }
 
-// SABİT KAYNAK KURALI (Tur Parametresi Yoktur)
 function getResource(subj) {
   const map = {
     'Dahiliye': 'Tıp Akademisi Soru',
@@ -371,16 +393,13 @@ function getPlanForDate(targetObj) {
 
   if (workingDaysElapsed < scheduleSequence.length) {
     const todayBlock = scheduleSequence[workingDaysElapsed];
-    
-    // Patoloji için akşam istisnası
-    let nightSubj = todayBlock.s === 'Patoloji' ? 'Patoloji (Akşam da)' : ORDER[todayBlock.idx === 0 ? ORDER.length - 1 : todayBlock.idx - 1];
 
     return {
       type: 'SPIRAL',
       round: todayBlock.r,
       daySubj: todayBlock.s,
       dayRes: getResource(todayBlock.s),
-      nightSubj: nightSubj
+      nightSubj: todayBlock.night
     };
   } else {
     return { type: 'BUFFER', msg: 'Serbest Tekrar / Eksik Kapatma' };
@@ -647,7 +666,7 @@ function renderDashboard() {
   }
 
   let subjState = {};
-  ORDER.forEach(s => subjState[s] = { round: 0, status: 'Başlamadı', res: '-' });
+  ALL_SUBJECTS.forEach(s => subjState[s] = { round: 0, status: 'Başlamadı', res: '-' });
 
   let blocks = [];
   let currentBlock = null;
@@ -676,7 +695,7 @@ function renderDashboard() {
 
   const sarmalBox = document.getElementById('sarmalReportContainer');
   sarmalBox.innerHTML = '';
-  ORDER.forEach(s => {
+  ALL_SUBJECTS.forEach(s => {
     const st = subjState[s];
     const colorStyle = st.status.includes('Aktif') ? 'color: var(--success); font-weight:700;' : '';
     sarmalBox.innerHTML += `
