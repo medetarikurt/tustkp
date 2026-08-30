@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>TUS Takip - Sarmal Sistem</title>
 
-<!-- iOS Ana Ekran İkonu -->
 <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=TUS&background=091312&color=d4a359&size=512&bold=true&font-size=0.35">
 <link rel="icon" href="https://ui-avatars.com/api/?name=TUS&background=091312&color=d4a359&size=64&bold=true&font-size=0.35">
 
@@ -164,7 +163,6 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
     <div class="countdown"><span id="daysLeft">--</span> gün kaldı</div>
   </div>
 
-  <!-- VIEW 1: GÜNLÜK PLAN -->
   <div id="viewPlan" class="view-panel">
     <div class="meta-stats">
       <div class="stat-box"><div class="v" id="effVal">0</div><div class="l">Net Gün</div></div>
@@ -199,7 +197,6 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
     </div>
   </div>
 
-  <!-- VIEW 2: İSTATİSTİKLER -->
   <div id="viewStats" class="view-panel hidden">
     <div class="dash-card">
       <div class="dash-title"><span>🏁 14 MART MARATONU</span><span id="marathonPercent" style="color: #fff;">0%</span></div>
@@ -232,7 +229,6 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
   </div>
 </div>
 
-<!-- Modal Pop-up -->
 <div class="modal-overlay" id="branchModal">
   <div class="modal-content">
     <div class="modal-header">
@@ -249,7 +245,6 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
   </div>
 </div>
 
-<!-- Fixed Tab Nav -->
 <div class="fixed-tab-bar">
   <div class="tab-nav-inner">
     <button class="tab-btn active" id="tabPlanBtn" onclick="switchView('plan')">📅 Günlük Plan</button>
@@ -264,6 +259,7 @@ const START_DATE = new Date(2026, 7, 28, 0, 0, 0);
 const TARGET_DATE = new Date(2027, 2, 14, 0, 0, 0); 
 const CAMP_START = new Date(2027, 1, 22, 0, 0, 0); 
 const EXAM_WEEK = new Date(2027, 2, 8, 0, 0, 0); 
+const FIRST_TRIAL_DATE = new Date(2026, 9, 4, 0, 0, 0); // 4 Ekim 2026
 
 const ALL_SUBJECTS = ['Fizyoloji', 'Patoloji', 'Biyokimya', 'Pediatri', 'Mikrobiyoloji', 'Farmakoloji', 'Dahiliye', 'Anatomi', 'Küçük Stajlar', 'Genel Cerrahi', 'Kadın Doğum'];
 
@@ -357,7 +353,6 @@ function populateCourseSelect() {
   });
 }
 
-// SORU KAYNAKLARI (GÜNCELLENDİ)
 function getResource(subj) {
   const map = {
     'Dahiliye': 'Prime',
@@ -375,7 +370,6 @@ function getResource(subj) {
   return map[subj] || '';
 }
 
-// KONU KAYNAKLARI
 function getKonuResource(subj) {
   const map = {
     'Dahiliye': 'BBB Tıp Ak. Konu',
@@ -398,8 +392,9 @@ function getPlanForDate(targetObj) {
   if (zTarget < START_DATE) return { type: 'OFF', msg: 'Program Başlamadı (28 Ağus. Bekleniyor)' };
   if (zTarget > TARGET_DATE) return { type: 'OFF', msg: 'Sınav Bitti' };
   
-  const isSunday = zTarget.getDay() === 0;
-  if (isSunday) return { type: 'DENEME' };
+  const isTrialDay = zTarget.getDay() === 0 && zTarget >= FIRST_TRIAL_DATE;
+  if (isTrialDay) return { type: 'DENEME' };
+  
   if (isSpecialOffDay(zTarget)) return { type: 'OFF', msg: 'Özel İzin / Çalışma Dışı' };
   if (zTarget >= EXAM_WEEK) return { type: 'EXAM_WEEK' };
   if (zTarget >= CAMP_START) return { type: 'CAMP' };
@@ -407,7 +402,8 @@ function getPlanForDate(targetObj) {
   let workingDaysElapsed = 0;
   let tempDate = new Date(START_DATE);
   while (tempDate < zTarget) {
-    if (tempDate.getDay() !== 0 && !isSpecialOffDay(tempDate)) {
+    const tTrial = tempDate.getDay() === 0 && tempDate >= FIRST_TRIAL_DATE;
+    if (!tTrial && !isSpecialOffDay(tempDate)) {
       workingDaysElapsed++;
     }
     tempDate.setDate(tempDate.getDate() + 1);
@@ -687,7 +683,8 @@ function renderDashboard() {
   let workingDaysToToday = 0;
   let tempD = new Date(START_DATE);
   while(tempD <= now) {
-    if (tempD.getDay() !== 0 && !isSpecialOffDay(tempD)) workingDaysToToday++;
+    const tTrial = tempD.getDay() === 0 && tempD >= FIRST_TRIAL_DATE;
+    if (!tTrial && !isSpecialOffDay(tempD)) workingDaysToToday++;
     tempD.setDate(tempD.getDate() + 1);
   }
 
