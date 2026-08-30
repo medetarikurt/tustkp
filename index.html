@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>TUS Takip - Sarmal Sistem</title>
+
+<!-- iOS Ana Ekran İkonu -->
+<link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=TUS&background=091312&color=d4a359&size=512&bold=true&font-size=0.35">
+<link rel="icon" href="https://ui-avatars.com/api/?name=TUS&background=091312&color=d4a359&size=64&bold=true&font-size=0.35">
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
@@ -86,7 +91,8 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
 .card-label { font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-dim); letter-spacing: 0.08em; text-transform: uppercase; }
 .plan-card.night .card-label { color: #a78bfa; }
 .subject-title { font-size: 1.2rem; font-weight: 700; color: #fff; }
-.resource-text { font-size: 0.85rem; color: var(--gold); display: flex; align-items: center; gap: 6px; }
+.resource-text { font-size: 0.82rem; color: var(--gold); display: flex; align-items: flex-start; gap: 4px; flex-direction: column; }
+.resource-text span { display: flex; align-items: center; gap: 4px; }
 
 /* Trial Inputs */
 .trial-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
@@ -141,7 +147,7 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
 .sarmal-card { background: var(--bg); border: 1px solid var(--border); padding: 10px; border-radius: 8px; display: flex; flex-direction: column; gap: 4px; }
 .sarmal-card .s-name { font-weight: 600; font-size: 0.82rem; color: #fff; }
 .sarmal-card .s-round { font-size: 0.7rem; color: var(--text-dim); }
-.sarmal-card .s-res { font-size: 0.72rem; color: var(--gold); font-family: 'JetBrains Mono', monospace; }
+.sarmal-card .s-res { font-size: 0.7rem; color: var(--gold); font-family: 'JetBrains Mono', monospace; display: flex; flex-direction: column; gap: 2px; }
 
 /* History Lists */
 .history-list { display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; padding-right: 4px; }
@@ -205,7 +211,7 @@ body.shift-mode .shift-toggle-btn { border-color: var(--shift-accent); color: va
     
     <div class="dash-card">
       <div class="dash-title">🔄 SARMAL DERS & KAYNAK KARNESİ</div>
-      <div style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 4px;">Tüm Turlar İçin Sabit Soru Bankaları</div>
+      <div style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 4px;">Tüm Turlar İçin Sabit Konu & Soru Bankaları</div>
       <div class="sarmal-grid" id="sarmalReportContainer"></div>
     </div>
 
@@ -259,7 +265,6 @@ const TARGET_DATE = new Date(2027, 2, 14, 0, 0, 0);
 const CAMP_START = new Date(2027, 1, 22, 0, 0, 0); 
 const EXAM_WEEK = new Date(2027, 2, 8, 0, 0, 0); 
 
-// Karnedeki standart liste görünümü için baz dizi
 const ALL_SUBJECTS = ['Fizyoloji', 'Patoloji', 'Biyokimya', 'Pediatri', 'Mikrobiyoloji', 'Farmakoloji', 'Dahiliye', 'Anatomi', 'Küçük Stajlar', 'Genel Cerrahi', 'Kadın Doğum'];
 
 const COURSE_SPECS = {
@@ -274,10 +279,9 @@ const MONTH_NAMES = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Te
 const PREDEFINED_SHIFTS = ['2026-09-03', '2026-09-05', '2026-09-08', '2026-09-10', '2026-09-15', '2026-09-17', '2026-09-21', '2026-09-27'];
 const SPECIAL_OFF_DAYS = ['2026-09-11', '2026-09-12', '2026-09-13'];
 
-// ÇİFT MOTORLU SARMAL DİZİLİMİ
 let scheduleSequence = [];
 
-// Motor 1: 1. Tur (Dahiliye Başta, ardından Fizyoloji->Patoloji...->Kadın Doğum)
+// Motor 1: 1. Tur
 const ORDER_R1 = ['Dahiliye', 'Fizyoloji', 'Patoloji', 'Biyokimya', 'Pediatri', 'Mikrobiyoloji', 'Farmakoloji', 'Anatomi', 'Küçük Stajlar', 'Genel Cerrahi', 'Kadın Doğum'];
 const DAYS_R1 = [6, 4, 4, 4, 6, 4, 4, 4, 3, 3, 3];
 
@@ -288,13 +292,12 @@ DAYS_R1.forEach((d, i) => {
   }
 });
 
-// Motor 2: 2, 3 ve 4. Turlar (Görseldeki Orijinal Sıra: Fizyoloji Başta -> Kadın Doğum Sonda)
+// Motor 2: 2, 3 ve 4. Turlar
 const ORDER_BASE = ['Fizyoloji', 'Patoloji', 'Biyokimya', 'Pediatri', 'Mikrobiyoloji', 'Farmakoloji', 'Dahiliye', 'Anatomi', 'Küçük Stajlar', 'Genel Cerrahi', 'Kadın Doğum'];
-const DAYS_R2 = [3, 3, 3, 4, 3, 3, 4, 3, 3, 3, 3]; // Dahiliye 4, Pediatri 4, gerisi 3 gün
+const DAYS_R2 = [3, 3, 3, 4, 3, 3, 4, 3, 3, 3, 3]; 
 
 DAYS_R2.forEach((d, i) => {
   for(let k=0; k<d; k++) {
-    // 2. Turun ilk dersi Fizyoloji'nin akşamında, 1. Turun son dersi olan Kadın Doğum çözülecek.
     let night = ORDER_BASE[i] === 'Patoloji' ? 'Patoloji (Akşam da)' : (i === 0 ? ORDER_R1[ORDER_R1.length-1] : ORDER_BASE[i-1]);
     scheduleSequence.push({r:2, s:ORDER_BASE[i], night: night});
   }
@@ -354,19 +357,38 @@ function populateCourseSelect() {
   });
 }
 
+// SORU KAYNAKLARI (GÜNCELLENDİ)
 function getResource(subj) {
   const map = {
-    'Dahiliye': 'Tıp Akademisi Soru',
+    'Dahiliye': 'Prime',
     'Pediatri': 'Ahmet Erkek',
     'Genel Cerrahi': 'Ahmet Erkek',
     'Küçük Stajlar': 'Prime',
     'Kadın Doğum': 'Prime',
-    'Biyokimya': 'Tıp Akademisi Soru',
+    'Biyokimya': 'Tıp Ak. Soru',
     'Fizyoloji': 'Prime',
-    'Patoloji': 'SST (Emrah Hoca)',
+    'Patoloji': 'SST (Emrah H.)',
     'Farmakoloji': 'Prime',
     'Mikrobiyoloji': 'Prime',
-    'Anatomi': 'SMT Konu'
+    'Anatomi': 'SMT Soru/Konu'
+  };
+  return map[subj] || '';
+}
+
+// KONU KAYNAKLARI
+function getKonuResource(subj) {
+  const map = {
+    'Dahiliye': 'BBB Tıp Ak. Konu',
+    'Pediatri': 'Speet',
+    'Genel Cerrahi': 'Ahmet Erkek',
+    'Küçük Stajlar': 'Speet',
+    'Kadın Doğum': 'Speet',
+    'Biyokimya': 'Tıp Ak. Konu',
+    'Fizyoloji': 'Speet',
+    'Patoloji': 'Speet',
+    'Farmakoloji': 'Speet',
+    'Mikrobiyoloji': 'Tıp Ak. Konu',
+    'Anatomi': 'Speet'
   };
   return map[subj] || '';
 }
@@ -399,6 +421,7 @@ function getPlanForDate(targetObj) {
       round: todayBlock.r,
       daySubj: todayBlock.s,
       dayRes: getResource(todayBlock.s),
+      dayKonuRes: getKonuResource(todayBlock.s),
       nightSubj: todayBlock.night
     };
   } else {
@@ -507,7 +530,10 @@ function buildUI(d) {
       <div class="plan-card">
         <div class="card-label">☀️ GÜNDÜZ (${plan.round}. TEKRAR)</div>
         <div class="subject-title">${plan.daySubj}</div>
-        <div class="resource-text">📖 Kaynak: ${plan.dayRes}</div>
+        <div class="resource-text">
+          <span>📘 Konu: ${plan.dayKonuRes}</span>
+          <span>📙 Soru: ${plan.dayRes}</span>
+        </div>
         <button class="q-btn ${currentDayData.qDoneDay ? 'completed' : ''}" onclick="toggleQ('day')" style="margin-top:8px;">
           ${currentDayData.qDoneDay ? '✓ GÜNDÜZ HEDEFİ TAMAM' : 'GÜNDÜZ HEDEFİNİ TAMAMLADIM'}
         </button>
@@ -666,7 +692,7 @@ function renderDashboard() {
   }
 
   let subjState = {};
-  ALL_SUBJECTS.forEach(s => subjState[s] = { round: 0, status: 'Başlamadı', res: '-' });
+  ALL_SUBJECTS.forEach(s => subjState[s] = { round: 0, status: 'Başlamadı', res: '-', konuRes: '-' });
 
   let blocks = [];
   let currentBlock = null;
@@ -676,7 +702,7 @@ function renderDashboard() {
     
     if (!currentBlock || currentBlock.s !== step.s || currentBlock.r !== step.r) {
         if (currentBlock) blocks.push(currentBlock);
-        currentBlock = { s: step.s, r: step.r, res: getResource(step.s), endIdx: i };
+        currentBlock = { s: step.s, r: step.r, res: getResource(step.s), konuRes: getKonuResource(step.s), endIdx: i };
     } else {
         currentBlock.endIdx = i;
     }
@@ -684,6 +710,7 @@ function renderDashboard() {
     if (i < workingDaysToToday) {
       subjState[step.s].round = step.r;
       subjState[step.s].res = getResource(step.s);
+      subjState[step.s].konuRes = getKonuResource(step.s);
       if (i === workingDaysToToday - 1) {
         subjState[step.s].status = `${step.r}. Tur (Aktif ☀️)`;
       } else {
@@ -702,7 +729,8 @@ function renderDashboard() {
       <div class="sarmal-card">
         <div class="s-name">${s}</div>
         <div class="s-round" style="${colorStyle}">${st.status}</div>
-        <div class="s-res">📖 ${st.res}</div>
+        <div class="s-res">📘 Konu: ${st.konuRes}</div>
+        <div class="s-res">📙 Soru: ${st.res}</div>
       </div>
     `;
   });
@@ -716,7 +744,10 @@ function renderDashboard() {
         compBox.innerHTML += `
           <div class="history-row">
             <span>✅ <b>${b.s}</b> (${b.r}. Tur)</span>
-            <span style="color:var(--text-dim); font-size:0.7rem;">📖 ${b.res} Bitti</span>
+            <span style="color:var(--text-dim); font-size:0.7rem; display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
+              <span>📘 ${b.konuRes}</span>
+              <span>📙 ${b.res} Bitti</span>
+            </span>
           </div>`;
     }
   });
