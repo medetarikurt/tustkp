@@ -51,7 +51,6 @@
     <h1>TUS Hedef Takibi</h1>
     <div id="bugun-tarih" class="tarih-bilgisi">Tarih Hesaplanıyor...</div>
 
-    <!-- OTOMATİK HESAPLANAN DERS KARTI -->
     <div id="aktif-ders-karti" class="hedef-karti">
         <div class="hedef-baslik">
             <h2 id="kart-ders-adi">Ders Yükleniyor</h2>
@@ -74,7 +73,6 @@
             </label>
         </div>
         
-        <!-- SON 48 GÜN VE PAZAR DENEMELERİ -->
         <div class="gorev-item" id="deneme-modulu" style="display: none; border-left: 3px solid #ff9800;">
             <strong id="deneme-baslik">🔥 Deneme Modülü</strong>
             <label class="checkbox-container" style="margin-bottom: 8px;">
@@ -86,7 +84,6 @@
         </div>
     </div>
 
-    <!-- TATİL/MOLA KARTI -->
     <div id="tatil-karti" class="hedef-karti tatil-karti">
         <h2 style="color: var(--warning); text-align: center; margin-bottom: 10px;">🌴 Bugün Mola Günü</h2>
         <p style="text-align: center; font-size: 14px; color: var(--text-muted);">Sarmal takvim bugün ilerlemez. (Özel İzin Günleri)</p>
@@ -97,7 +94,6 @@
 </div>
 
 <script>
-    // KENDİ FİREBASE BİLGİLERİN ENTEGRE EDİLDİ
     const firebaseConfig = {
         apiKey: "AIzaSyCaDwYAGYgMHLmO3jypXF_SscN1Lze2EHg",
         authDomain: "tustkp.firebaseapp.com",
@@ -112,7 +108,6 @@
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const db = firebase.database();
 
-    // DERS HACİMLERİ VE KAYNAKLAR
     const planData = {
         dahiliye: { isim: "Dahiliye", konu: 450, soru: 750, konuK: "BBB Tıp Ak.", soruK: "Prime" },
         pediatri: { isim: "Pediatri", konu: 200, soru: 450, konuK: "Speet", soruK: "Ahmet Erkek" },
@@ -127,16 +122,15 @@
         kadindogum: { isim: "Kadın Doğum", konu: 100, soru: 400, konuK: "Speet", soruK: "Prime" }
     };
 
-    // OTOMATİK TAKVİM OLUŞTURUCU
     const t345 = [
-        { d: 'fizyoloji', g: 2 }, { d: 'patoloji', g: 3 }, { d: 'biyokimya', g: 2 },
+        { d: 'fizyoloji', g: 2 }, { d: 'patoloji', g: 3 }, { d: 'biyokimya', g: 1.5 },
         { d: 'pediatri', g: 3 }, { d: 'mikrobiyoloji', g: 2 }, { d: 'farmakoloji', g: 2 },
-        { d: 'dahiliye', g: 3 }, { d: 'anatomi', g: 1 }, { d: 'kucukstajlar', g: 2 },
+        { d: 'dahiliye', g: 3 }, { d: 'anatomi', g: 1 }, { d: 'kucukstajlar', g: 2.5 }, 
         { d: 'genelcerrahi', g: 3 }, { d: 'kadindogum', g: 2 }
     ];
     
     const sarmalAkil = [
-        { tur: 1, seq: [{d:'dahiliye',g:6}, {d:'pediatri',g:6}, {d:'fizyoloji',g:4}, {d:'patoloji',g:4}, {d:'biyokimya',g:4}, {d:'mikrobiyoloji',g:4}, {d:'farmakoloji',g:4}, {d:'anatomi',g:4}, {d:'kucukstajlar',g:3}, {d:'genelcerrahi',g:3}, {d:'kadindogum',g:3}] },
+        { tur: 1, seq: [{d:'dahiliye',g:6}, {d:'fizyoloji',g:4}, {d:'patoloji',g:4}, {d:'biyokimya',g:4}, {d:'pediatri',g:6}, {d:'mikrobiyoloji',g:4}, {d:'farmakoloji',g:4}, {d:'anatomi',g:4}, {d:'kucukstajlar',g:3}, {d:'genelcerrahi',g:3}, {d:'kadindogum',g:3}] },
         { tur: 2, seq: [{d:'fizyoloji',g:3}, {d:'patoloji',g:3}, {d:'biyokimya',g:3}, {d:'pediatri',g:4}, {d:'mikrobiyoloji',g:3}, {d:'farmakoloji',g:3}, {d:'dahiliye',g:4}, {d:'anatomi',g:3}, {d:'kucukstajlar',g:3}, {d:'genelcerrahi',g:3}, {d:'kadindogum',g:3}] },
         { tur: 3, seq: t345 }, { tur: 4, seq: t345 }, { tur: 5, seq: t345 }
     ];
@@ -156,7 +150,7 @@
     window.onload = () => { gunuHesaplaVeArayuzuCiz(); };
 
     function gunuHesaplaVeArayuzuCiz() {
-        const startDate = new Date(2026, 7, 28); // 28 Ağustos 2026
+        const startDate = new Date(2026, 7, 28); 
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
@@ -169,11 +163,9 @@
         while (currentDate <= today) {
             let isWorkDay = true;
             let m = currentDate.getMonth(); let d = currentDate.getDate(); let y = currentDate.getFullYear();
-            let gunHafta = currentDate.getDay(); // 0 = Pazar
+            let gunHafta = currentDate.getDay(); 
 
-            // 11-12-13 Eylül İzni
             if (y === 2026 && m === 8 && (d === 11 || d === 12 || d === 13)) { isWorkDay = false; }
-            // 4 Ekim sonrası Pazarlar Deneme Günü
             else if (currentDate >= new Date(2026, 9, 4) && gunHafta === 0) { isWorkDay = false; }
 
             if (currentDate.getTime() === today.getTime()) {
