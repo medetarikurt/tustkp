@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TUS Otomatik Çalışma Takibi</title>
+    <title>TUS Takip & Analiz</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -18,12 +18,21 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; }
-        .container { background-color: var(--surface); padding: 24px; border-radius: 12px; width: 100%; max-width: 480px; box-shadow: 0 4px 20px rgba(0,0,0,0.6); }
+        .container { background-color: var(--surface); padding: 24px; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 4px 20px rgba(0,0,0,0.6); }
         
-        h1 { text-align: center; color: var(--primary); margin-bottom: 20px; font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+        h1 { text-align: center; color: var(--primary); margin-bottom: 20px; font-size: 22px; font-weight: 700; }
         
-        .tarih-bilgisi { text-align: center; color: var(--text-muted); font-size: 14px; margin-bottom: 20px; font-weight: 500; }
+        /* Sekmeler */
+        .tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+        .tab-btn { flex: 1; background: transparent; color: var(--text-muted); border: none; padding: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .tab-btn.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
         
+        /* Takvim Navigasyonu */
+        .takvim-nav { display: flex; justify-content: space-between; align-items: center; background: #262626; padding: 10px; border-radius: 8px; margin-bottom: 15px; }
+        .takvim-btn { background: #333; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .takvim-btn:hover { background: var(--primary-variant); }
+        .tarih-bilgisi { font-size: 14px; font-weight: 600; color: #fff; }
+
         .hedef-karti { background: #262626; border-left: 4px solid var(--secondary); padding: 16px; border-radius: 8px; }
         .tatil-karti { border-left-color: var(--warning); display: none; }
         
@@ -38,62 +47,123 @@
         .checkbox-container { display: flex; align-items: center; cursor: pointer; user-select: none; font-size: 14px; }
         .checkbox-container input { margin-right: 10px; width: 18px; height: 18px; accent-color: var(--success); cursor: pointer; }
         
-        .btn-kaydet { width: 100%; background-color: var(--primary); color: #000; font-weight: 700; padding: 12px; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; margin-top: 18px; transition: opacity 0.2s; }
+        .btn-kaydet { width: 100%; background-color: var(--primary); color: #000; font-weight: 700; padding: 12px; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; margin-top: 18px; }
         .btn-kaydet:hover { opacity: 0.9; }
         
         #mesaj { text-align: center; margin-top: 14px; font-size: 13px; display: none; }
         .mesaj-basarili { color: var(--success); }
+
+        /* Form Elemanları (Deneme Modülü İçin) */
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: #303030; color: #fff; outline: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>TUS Hedef Takibi</h1>
-    <div id="bugun-tarih" class="tarih-bilgisi">Tarih Hesaplanıyor...</div>
+    <h1>TUS Takip Sistemi</h1>
+    
+    <div class="tabs">
+        <button class="tab-btn active" id="tab-plan-btn" onclick="sekmeDegistir('plan')">Günlük Plan</button>
+        <button class="tab-btn" id="tab-istatistik-btn" onclick="sekmeDegistir('istatistik')">Branş Denemeleri</button>
+    </div>
 
-    <div id="aktif-ders-karti" class="hedef-karti">
-        <div class="hedef-baslik">
-            <h2 id="kart-ders-adi">Ders Yükleniyor</h2>
-            <span id="kart-tur-gun" class="badge">...</span>
+    <!-- 1. SEKME: GÜNLÜK PLAN -->
+    <div id="sekme-plan">
+        <div class="takvim-nav">
+            <button class="takvim-btn" onclick="tarihDegistir(-1)">❮ Önceki</button>
+            <div id="bugun-tarih" class="tarih-bilgisi">Tarih</div>
+            <button class="takvim-btn" onclick="tarihDegistir(1)">Sonraki ❯</button>
         </div>
 
-        <div class="gorev-item" id="konu-modulu">
-            <strong>📖 Konu Hedefi</strong>
-            <div id="konu-sayfa" class="sayfa-bilgisi">Hesaplanıyor...</div>
-            <label class="checkbox-container">
-                <input type="checkbox" id="konu-check"> Hedefi Tamamladım
-            </label>
+        <div id="aktif-ders-karti" class="hedef-karti">
+            <div class="hedef-baslik">
+                <h2 id="kart-ders-adi">Ders Yükleniyor</h2>
+                <span id="kart-tur-gun" class="badge">...</span>
+            </div>
+
+            <div class="gorev-item" id="konu-modulu">
+                <strong>📖 Konu Hedefi</strong>
+                <div id="konu-sayfa" class="sayfa-bilgisi">Hesaplanıyor...</div>
+                <label class="checkbox-container">
+                    <input type="checkbox" id="konu-check"> Hedefi Tamamladım
+                </label>
+            </div>
+
+            <div class="gorev-item" id="soru-modulu">
+                <strong>🎯 Soru Hedefi</strong>
+                <div id="soru-sayfa" class="sayfa-bilgisi">Hesaplanıyor...</div>
+                <label class="checkbox-container">
+                    <input type="checkbox" id="soru-check"> Hedefi Tamamladım
+                </label>
+            </div>
+            
+            <div class="gorev-item" id="deneme-modulu" style="display: none; border-left: 3px solid #ff9800;">
+                <strong id="deneme-baslik">🔥 Deneme Modülü</strong>
+                <label class="checkbox-container" style="margin-bottom: 8px;">
+                    <input type="checkbox" id="temel-check"> 1 Temel Bilimler Denemesi (100 S)
+                </label>
+                <label class="checkbox-container">
+                    <input type="checkbox" id="klinik-check"> 1 Klinik Bilimler Denemesi (100 S)
+                </label>
+            </div>
         </div>
 
-        <div class="gorev-item" id="soru-modulu">
-            <strong>🎯 Soru Hedefi</strong>
-            <div id="soru-sayfa" class="sayfa-bilgisi">Hesaplanıyor...</div>
-            <label class="checkbox-container">
-                <input type="checkbox" id="soru-check"> Hedefi Tamamladım
-            </label>
+        <div id="tatil-karti" class="hedef-karti tatil-karti">
+            <h2 style="color: var(--warning); text-align: center; margin-bottom: 10px;">🌴 Mola / Opsiyon Günü</h2>
+            <p style="text-align: center; font-size: 14px; color: var(--text-muted);">Sarmal takvim bugün ilerlemez.</p>
+        </div>
+
+        <button class="btn-kaydet" onclick="firebaseKaydet()">Günü Kaydet</button>
+    </div>
+
+    <!-- 2. SEKME: İSTATİSTİK VE BRANŞ DENEME -->
+    <div id="sekme-istatistik" style="display: none;">
+        <div class="hedef-karti" style="border-left-color: var(--primary);">
+            <h2 style="margin-bottom: 15px; color: #fff; font-size: 18px;">Yeni Branş Denemesi Gir</h2>
+            
+            <div class="form-group">
+                <label>Ders Seç</label>
+                <select id="brans-ders">
+                    <option value="Dahiliye">Dahiliye</option>
+                    <option value="Fizyoloji">Fizyoloji</option>
+                    <option value="Patoloji">Patoloji</option>
+                    <option value="Biyokimya">Biyokimya</option>
+                    <option value="Pediatri">Pediatri</option>
+                    <option value="Mikrobiyoloji">Mikrobiyoloji</option>
+                    <option value="Farmakoloji">Farmakoloji</option>
+                    <option value="Anatomi">Anatomi</option>
+                    <option value="Küçük Stajlar">Küçük Stajlar</option>
+                    <option value="Genel Cerrahi">Genel Cerrahi</option>
+                    <option value="Kadın Doğum">Kadın Doğum</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Doğru Sayısı</label>
+                    <input type="number" id="brans-dogru" min="0" placeholder="Örn: 18">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Yanlış Sayısı</label>
+                    <input type="number" id="brans-yanlis" min="0" placeholder="Örn: 4">
+                </div>
+            </div>
+
+            <button class="btn-kaydet" style="background: var(--secondary);" onclick="bransDenemeKaydet()">Sonucu Firebase'e İşle</button>
         </div>
         
-        <div class="gorev-item" id="deneme-modulu" style="display: none; border-left: 3px solid #ff9800;">
-            <strong id="deneme-baslik">🔥 Deneme Modülü</strong>
-            <label class="checkbox-container" style="margin-bottom: 8px;">
-                <input type="checkbox" id="temel-check"> 1 Temel Bilimler Denemesi (100 Soru)
-            </label>
-            <label class="checkbox-container">
-                <input type="checkbox" id="klinik-check"> 1 Klinik Bilimler Denemesi (100 Soru)
-            </label>
+        <div style="margin-top: 20px; color: var(--text-muted); font-size: 13px; text-align: center;">
+            * Yakında buraya ders bazlı gelişim grafikleri ve ortalama net hesaplamaları eklenecek.
         </div>
     </div>
 
-    <div id="tatil-karti" class="hedef-karti tatil-karti">
-        <h2 style="color: var(--warning); text-align: center; margin-bottom: 10px;">🌴 Bugün Mola Günü</h2>
-        <p style="text-align: center; font-size: 14px; color: var(--text-muted);">Sarmal takvim bugün ilerlemez. (Özel İzin Günleri)</p>
-    </div>
-
-    <button class="btn-kaydet" onclick="firebaseKaydet()">Günü Kaydet</button>
     <div id="mesaj"></div>
 </div>
 
 <script>
+    // FİREBASE BİLGİLERİ
     const firebaseConfig = {
         apiKey: "AIzaSyCaDwYAGYgMHLmO3jypXF_SscN1Lze2EHg",
         authDomain: "tustkp.firebaseapp.com",
@@ -108,6 +178,7 @@
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const db = firebase.database();
 
+    // DERS HACİMLERİ 
     const planData = {
         dahiliye: { isim: "Dahiliye", konu: 450, soru: 750, konuK: "BBB Tıp Ak.", soruK: "Prime" },
         pediatri: { isim: "Pediatri", konu: 200, soru: 450, konuK: "Speet", soruK: "Ahmet Erkek" },
@@ -138,29 +209,44 @@
     let calismaGunleri = [];
     sarmalAkil.forEach(t => {
         t.seq.forEach(s => {
-            for(let i=1; i<=s.g; i++) {
-                calismaGunleri.push({ tur: t.tur, ders: s.d, gun: i, toplamGun: s.g });
-            }
+            for(let i=1; i<=s.g; i++) { calismaGunleri.push({ tur: t.tur, ders: s.d, gun: i, toplamGun: s.g }); }
         });
     });
 
     let globalGunVerisi = null;
     let globalDurum = "";
+    
+    // Aktif Takvim Tarihi (Uygulama açılınca o anki gün)
+    let aktifTarih = new Date(new Date().setHours(0,0,0,0));
 
     window.onload = () => { gunuHesaplaVeArayuzuCiz(); };
 
-    function gunuHesaplaVeArayuzuCiz() {
-        const startDate = new Date(2026, 7, 28); 
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    // Sekme Değiştirme Fonksiyonu
+    function sekmeDegistir(sekme) {
+        document.getElementById('sekme-plan').style.display = (sekme === 'plan') ? 'block' : 'none';
+        document.getElementById('sekme-istatistik').style.display = (sekme === 'istatistik') ? 'block' : 'none';
+        
+        document.getElementById('tab-plan-btn').className = (sekme === 'plan') ? 'tab-btn active' : 'tab-btn';
+        document.getElementById('tab-istatistik-btn').className = (sekme === 'istatistik') ? 'tab-btn active' : 'tab-btn';
+    }
 
-        document.getElementById("bugun-tarih").innerText = `Bugün: ${today.toLocaleDateString('tr-TR')}`;
+    // Tarih İleri/Geri Alma Fonksiyonu
+    function tarihDegistir(gunFarki) {
+        aktifTarih.setDate(aktifTarih.getDate() + gunFarki);
+        gunuHesaplaVeArayuzuCiz();
+    }
+
+    function gunuHesaplaVeArayuzuCiz() {
+        const startDate = new Date(2026, 7, 28); // 28 Ağustos 2026
+
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById("bugun-tarih").innerText = aktifTarih.toLocaleDateString('tr-TR', options);
 
         let currentDate = new Date(startDate);
         let isGunuSayaci = 0;
         let bugunDurum = "normal";
 
-        while (currentDate <= today) {
+        while (currentDate <= aktifTarih) {
             let isWorkDay = true;
             let m = currentDate.getMonth(); let d = currentDate.getDate(); let y = currentDate.getFullYear();
             let gunHafta = currentDate.getDay(); 
@@ -168,7 +254,7 @@
             if (y === 2026 && m === 8 && (d === 11 || d === 12 || d === 13)) { isWorkDay = false; }
             else if (currentDate >= new Date(2026, 9, 4) && gunHafta === 0) { isWorkDay = false; }
 
-            if (currentDate.getTime() === today.getTime()) {
+            if (currentDate.getTime() === aktifTarih.getTime()) {
                 if (!isWorkDay) {
                     bugunDurum = (gunHafta === 0 && currentDate >= new Date(2026, 9, 4)) ? "pazar_deneme" : "mola";
                 }
@@ -180,6 +266,7 @@
 
         globalDurum = bugunDurum;
         arayuzuUygula(isGunuSayaci, bugunDurum);
+        firebaseDurumGetir(); // Veritabanından o günün kayıtlı tiklerini çek
     }
 
     function arayuzuUygula(isGunuSayaci, durum) {
@@ -187,11 +274,19 @@
         const kartTatil = document.getElementById("tatil-karti");
         const denemeModulu = document.getElementById("deneme-modulu");
 
+        // UI Reset
+        document.getElementById("konu-check").checked = false;
+        document.getElementById("soru-check").checked = false;
+        document.getElementById("temel-check").checked = false;
+        document.getElementById("klinik-check").checked = false;
+
         if (durum === "mola") {
             kartDers.style.display = "none";
             kartTatil.style.display = "block";
             return;
         }
+
+        kartTatil.style.display = "none";
 
         if (durum === "pazar_deneme") {
             kartDers.style.display = "block";
@@ -199,13 +294,17 @@
             document.getElementById("kart-tur-gun").style.display = "none";
             document.getElementById("konu-modulu").style.display = "none";
             document.getElementById("soru-modulu").style.display = "none";
-            
             denemeModulu.style.display = "block";
             document.getElementById("deneme-baslik").innerText = "🔥 Pazar Rutini";
             return;
         }
 
+        document.getElementById("kart-tur-gun").style.display = "inline-block";
+        document.getElementById("konu-modulu").style.display = "block";
+        document.getElementById("soru-modulu").style.display = "block";
+
         if (isGunuSayaci > calismaGunleri.length) {
+            kartDers.style.display = "block";
             document.getElementById("kart-ders-adi").innerText = "🔥 Soru Kampı & Kapanış";
             document.getElementById("kart-tur-gun").innerText = "Son Düzlük";
             document.getElementById("konu-sayfa").innerText = "Eksik Kapatma / Spot Taraması";
@@ -214,6 +313,7 @@
             return;
         }
 
+        kartDers.style.display = "block";
         const aktif = calismaGunleri[isGunuSayaci - 1];
         globalGunVerisi = aktif;
         const veri = planData[aktif.ders];
@@ -221,10 +321,8 @@
         document.getElementById("kart-ders-adi").innerText = veri.isim;
         document.getElementById("kart-tur-gun").innerText = `${aktif.tur}. Tur (${aktif.gun}/${aktif.toplamGun} Gün)`;
 
-        if (aktif.tur >= 5) {
-            denemeModulu.style.display = "block";
-            document.getElementById("deneme-baslik").innerText = "🔥 Son 48 Gün Seri Deneme";
-        }
+        denemeModulu.style.display = (aktif.tur >= 5) ? "block" : "none";
+        if(aktif.tur >= 5) document.getElementById("deneme-baslik").innerText = "🔥 Son 48 Gün Seri Deneme";
 
         const gKonu = Math.ceil(veri.konu / aktif.toplamGun);
         const gSoru = veri.soru > 0 ? Math.ceil(veri.soru / aktif.toplamGun) : 0;
@@ -248,9 +346,28 @@
         }
     }
 
+    // Görüntülenen Günün Tiklerini Veritabanından Çekme
+    function firebaseDurumGetir() {
+        // Tarihi Firebase'de saklanan YYYY-MM-DD formatına çevir
+        const offset = aktifTarih.getTimezoneOffset();
+        const seciliGunStr = new Date(aktifTarih.getTime() - (offset*60*1000)).toISOString().split('T')[0];
+        
+        db.ref('tus_gunluk_kayitlar/' + seciliGunStr).once('value').then((snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                if(document.getElementById("konu-check")) document.getElementById("konu-check").checked = data.konu_bitti || false;
+                if(document.getElementById("soru-check")) document.getElementById("soru-check").checked = data.soru_bitti || false;
+                if(document.getElementById("temel-check")) document.getElementById("temel-check").checked = data.temel_deneme || data.son48_temel || false;
+                if(document.getElementById("klinik-check")) document.getElementById("klinik-check").checked = data.klinik_deneme || data.son48_klinik || false;
+            }
+        });
+    }
+
     function firebaseKaydet() {
-        const bugun = new Date().toISOString().split('T')[0];
-        let kayit = { tarih: bugun, kayit_zamani: firebase.database.ServerValue.TIMESTAMP };
+        const offset = aktifTarih.getTimezoneOffset();
+        const seciliGunStr = new Date(aktifTarih.getTime() - (offset*60*1000)).toISOString().split('T')[0];
+        
+        let kayit = { tarih: seciliGunStr, kayit_zamani: firebase.database.ServerValue.TIMESTAMP };
 
         if (globalDurum === "mola") {
             kayit.durum = "Mola Günü (Çalışma Yapılmadı)";
@@ -271,18 +388,42 @@
             }
         }
 
-        db.ref('tus_gunluk_kayitlar/' + bugun).set(kayit)
-        .then(() => {
-            const msj = document.getElementById("mesaj");
-            msj.innerText = "Günün hedefleri Firebase'e kilitlendi! ✅";
-            msj.className = "mesaj-basarili";
-            msj.style.display = "block";
-            setTimeout(() => { msj.style.display = "none"; }, 4000);
-        })
-        .catch(err => {
-            console.error("Firebase Hatası:", err);
-            alert("Kayıt başarısız. Veritabanı (Rules) izinlerini kontrol edin.");
-        });
+        db.ref('tus_gunluk_kayitlar/' + seciliGunStr).set(kayit)
+        .then(() => mesajGoster("Kayıt Firebase'e kilitlendi! ✅"))
+        .catch(err => alert("Kayıt başarısız. Veritabanı izinlerini kontrol edin."));
+    }
+
+    // Branş Deneme Kaydetme
+    function bransDenemeKaydet() {
+        const ders = document.getElementById("brans-ders").value;
+        const dogru = parseFloat(document.getElementById("brans-dogru").value) || 0;
+        const yanlis = parseFloat(document.getElementById("brans-yanlis").value) || 0;
+        const net = dogru - (yanlis / 4);
+
+        if(dogru === 0 && yanlis === 0) return alert("Lütfen doğru/yanlış sayısı girin!");
+
+        const bugun = new Date().toISOString().split('T')[0];
+        
+        db.ref('tus_brans_denemeleri').push({
+            tarih: bugun,
+            ders: ders,
+            dogru: dogru,
+            yanlis: yanlis,
+            net: net,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => {
+            mesajGoster(`${ders} netin (${net.toFixed(2)}) sisteme işlendi! 🎯`);
+            document.getElementById("brans-dogru").value = "";
+            document.getElementById("brans-yanlis").value = "";
+        }).catch(err => alert("Hata oluştu."));
+    }
+
+    function mesajGoster(metin) {
+        const msj = document.getElementById("mesaj");
+        msj.innerText = metin;
+        msj.className = "mesaj-basarili";
+        msj.style.display = "block";
+        setTimeout(() => { msj.style.display = "none"; }, 4000);
     }
 </script>
 </body>
