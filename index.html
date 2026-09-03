@@ -65,13 +65,18 @@
         .btn-kaydet { width: 100%; background: var(--primary); color: #000; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 5px; }
 
         /* İstatistik Ekranı */
-        .istatistik-kutu { background: #262626; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center; }
+        .istatistik-kutu { background: #262626; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center; border-bottom: 3px solid var(--primary); }
         .istatistik-deger { font-size: 24px; font-weight: bold; color: var(--primary); margin: 5px 0; }
         .istatistik-baslik { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
         
         .analiz-tablo { width: 100%; border-collapse: collapse; margin-top: 10px; }
         .analiz-tablo th { background: #333; color: var(--secondary); padding: 10px; text-align: left; font-size: 13px; }
         .analiz-tablo td { padding: 10px; border-bottom: 1px solid var(--border); color: #e0e0e0; font-size: 14px; }
+
+        /* Kaydırma Çubuğu (Bitenler Listesi İçin) */
+        .scroll-liste::-webkit-scrollbar { width: 6px; }
+        .scroll-liste::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+        .scroll-liste::-webkit-scrollbar-track { background: #222; }
 
         /* Toast Mesaj */
         #toast { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--success); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 10; }
@@ -178,22 +183,23 @@
     <!-- SEKME 2: İSTATİSTİKLER -->
     <div id="sekme-istatistik" style="display: none;">
         
-        <div style="display: flex; gap: 10px;">
-            <div class="istatistik-kutu" style="flex: 1; border-bottom: 3px solid var(--primary);">
-                <div class="istatistik-baslik">Mevcut Durum</div>
-                <div class="istatistik-deger" id="ist-mevcut-tur">-</div>
-                <div style="font-size: 13px; color: #fff;" id="ist-mevcut-gun">...</div>
-            </div>
-            <div class="istatistik-kutu" style="flex: 1; border-bottom: 3px solid var(--success);">
-                <div class="istatistik-baslik">Tamamlanan Görev</div>
-                <div class="istatistik-deger" id="ist-tamamlanan">-</div>
-                <div style="font-size: 13px; color: #fff;">Gün (Konu/Soru)</div>
+        <div class="istatistik-kutu">
+            <div class="istatistik-baslik">Mevcut Durum</div>
+            <div class="istatistik-deger" id="ist-mevcut-tur">-</div>
+            <div style="font-size: 13px; color: #fff;" id="ist-mevcut-gun">...</div>
+        </div>
+
+        <div class="hedef-karti" style="border-left-color: var(--success);">
+            <h2 style="font-size: 16px; margin-bottom: 10px; color: #fff;">🏆 Tamamlanan Görevler</h2>
+            <div id="ist-tamamlanan-liste" class="scroll-liste" style="max-height: 220px; overflow-y: auto; padding-right: 8px;">
+                <!-- JS ile Doldurulacak -->
+                <div style="text-align:center; color:#888; font-size:13px; margin-top:10px;">Yükleniyor...</div>
             </div>
         </div>
 
         <div class="hedef-karti" style="border-left-color: var(--secondary);">
             <h2 style="font-size: 16px; margin-bottom: 10px; color: #fff;">📊 Branş Deneme Karnesi</h2>
-            <div id="analiz-icerik" style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 20px 0;">
+            <div id="analiz-icerik" style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 15px 0;">
                 Yükleniyor...
             </div>
         </div>
@@ -202,7 +208,7 @@
 </div>
 
 <script>
-    // KENDİ FİREBASE BİLGİLERİN
+    // FİREBASE BİLGİLERİNİZ
     const firebaseConfig = {
         apiKey: "AIzaSyCaDwYAGYgMHLmO3jypXF_SscN1Lze2EHg",
         authDomain: "tustkp.firebaseapp.com",
@@ -245,11 +251,18 @@
     ];
 
     let calismaGunleri = [];
-    sarmalAkil.forEach(t => { t.seq.forEach(s => { for(let i=1; i<=s.g; i++) { calismaGunleri.push({ tur: t.tur, ders: s.d, gun: i, toplamGun: s.g }); } }); });
+    let hedefGunler = { 1:{}, 2:{}, 3:{}, 4:{}, 5:{} }; // İstatistik için gün limitleri
+
+    sarmalAkil.forEach(t => { 
+        t.seq.forEach(s => { 
+            hedefGunler[t.tur][planData[s.d].isim] = s.g;
+            for(let i=1; i<=s.g; i++) { calismaGunleri.push({ tur: t.tur, ders: s.d, gun: i, toplamGun: s.g }); } 
+        }); 
+    });
 
     let globalGunVerisi = null; let globalSoruDersiKey = null; let globalDurum = "";
     let aktifTarih = new Date(new Date().setHours(0,0,0,0));
-    let bugunSayaci = 0; // İstatistik için
+    let bugunSayaci = 0; 
 
     window.onload = () => { gunuHesaplaVeArayuzuCiz(); };
 
@@ -459,7 +472,7 @@
     }
 
     function istatistikleriYukle() {
-        // Mevcut Durum Özeti (Geçmiş günler)
+        // Mevcut Durum Özeti 
         if(globalGunVerisi) {
             document.getElementById("ist-mevcut-tur").innerText = `${globalGunVerisi.tur}. Tur`;
             document.getElementById("ist-mevcut-gun").innerText = `Çalışılan: ${bugunSayaci} Gün`;
@@ -468,16 +481,59 @@
             document.getElementById("ist-mevcut-gun").innerText = "Sona Yaklaşıldı";
         }
 
-        // Toplam Tamamlanan Görev Sayımı
+        // TAMAMLANAN GÖREVLER (TIK TIK LİSTE MANTIĞI)
         db.ref('tus_gunluk_kayitlar').once('value').then((snapshot) => {
-            let tamamlananKonu = 0;
+            const yapilanlar = {};
+            for(let t=1; t<=5; t++) {
+                yapilanlar[t] = {};
+                for(let key in planData) { yapilanlar[t][planData[key].isim] = { konu: 0, soru: 0 }; }
+            }
+
             if (snapshot.exists()) {
                 snapshot.forEach((child) => {
                     const data = child.val();
-                    if(data.konu_bitti) tamamlananKonu++;
+                    if (data.durum === "Sarmal Çalışma" && data.tur) {
+                        if(data.konu_bitti && data.konu_dersi && yapilanlar[data.tur][data.konu_dersi]) yapilanlar[data.tur][data.konu_dersi].konu++;
+                        if(data.soru_bitti && data.soru_dersi && yapilanlar[data.tur][data.soru_dersi]) yapilanlar[data.tur][data.soru_dersi].soru++;
+                    }
                 });
             }
-            document.getElementById("ist-tamamlanan").innerText = tamamlananKonu;
+
+            let htmlListe = '';
+            for(let t=1; t<=5; t++) {
+                let turIcerik = '';
+                for(let key in planData) {
+                    const dersAd = planData[key].isim;
+                    const hedefGun = hedefGunler[t][dersAd];
+                    if(hedefGun) {
+                        const konuBittiMi = yapilanlar[t][dersAd].konu >= hedefGun;
+                        const soruBittiMi = yapilanlar[t][dersAd].soru >= hedefGun;
+
+                        if (konuBittiMi || soruBittiMi) {
+                            turIcerik += `<div style="font-size:13px; color:#e0e0e0; border-bottom:1px solid #333; padding:8px 0; display:flex; align-items:center;">`;
+                            if (dersAd === "Anatomi") {
+                                if (konuBittiMi) turIcerik += `✅ <b>${dersAd}</b> &nbsp;<span style="color:#a0a0a0;">(Konu Bitti)</span>`;
+                            } else {
+                                if (konuBittiMi && soruBittiMi) {
+                                    turIcerik += `✅✅ <b>${dersAd}</b> &nbsp;<span style="color:var(--success); font-weight:bold;">(Konu + Soru Bitti)</span>`;
+                                } else if (konuBittiMi) {
+                                    turIcerik += `✅ <b>${dersAd}</b> &nbsp;<span style="color:var(--primary);">(Sadece Konu)</span>`;
+                                } else if (soruBittiMi) {
+                                    turIcerik += `✅ <b>${dersAd}</b> &nbsp;<span style="color:var(--secondary);">(Sadece Soru)</span>`;
+                                }
+                            }
+                            turIcerik += `</div>`;
+                        }
+                    }
+                }
+                if(turIcerik !== '') {
+                    htmlListe += `<h3 style="color:var(--primary); font-size:14px; margin-top:15px; margin-bottom:5px; text-transform:uppercase;">${t}. Tur Bitenler</h3>`;
+                    htmlListe += turIcerik;
+                }
+            }
+
+            if(htmlListe === '') htmlListe = '<div style="text-align:center; color:#888; font-size:13px; margin-top:10px;">Henüz tüm günleri tamamlanmış bir ders yok. İlk tiki atmaya çok yakınsın!</div>';
+            document.getElementById("ist-tamamlanan-liste").innerHTML = htmlListe;
         });
 
         // Branş Deneme Analizi
@@ -486,27 +542,22 @@
                 document.getElementById("analiz-icerik").innerText = "Henüz girilmiş bir branş denemesi yok.";
                 return;
             }
-
             const dersVerileri = {};
             snapshot.forEach((child) => {
                 const data = child.val();
                 if(!dersVerileri[data.ders]) dersVerileri[data.ders] = { toplamNet: 0, count: 0, maxNet: -99 };
-                
                 dersVerileri[data.ders].toplamNet += data.net;
                 dersVerileri[data.ders].count++;
                 if(data.net > dersVerileri[data.ders].maxNet) dersVerileri[data.ders].maxNet = data.net;
             });
 
-            let html = `<table class="analiz-tablo">
-                          <tr><th>Ders</th><th>Ort. Net</th><th>Max</th><th>Adet</th></tr>`;
-            
+            let html = `<table class="analiz-tablo"><tr><th>Ders</th><th>Ort. Net</th><th>Max</th><th>Adet</th></tr>`;
             for (const [ders, stat] of Object.entries(dersVerileri)) {
                 let ortalama = (stat.toplamNet / stat.count).toFixed(2);
-                let max = stat.maxNet.toFixed(2);
                 html += `<tr>
                             <td>${ders}</td>
                             <td style="color:var(--success); font-weight:bold;">${ortalama}</td>
-                            <td>${max}</td>
+                            <td>${stat.maxNet.toFixed(2)}</td>
                             <td>${stat.count}</td>
                          </tr>`;
             }
