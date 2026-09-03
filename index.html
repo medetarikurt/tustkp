@@ -18,10 +18,15 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 15px; }
-        .container { background-color: var(--surface); padding: 20px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 4px 20px rgba(0,0,0,0.6); position: relative; }
+        .container { background-color: var(--surface); padding: 20px; border-radius: 12px; width: 100%; max-width: 480px; box-shadow: 0 4px 20px rgba(0,0,0,0.6); position: relative; }
         
-        h1 { text-align: center; color: var(--primary); margin-bottom: 20px; font-size: 20px; font-weight: 700; }
+        h1 { text-align: center; color: var(--primary); margin-bottom: 15px; font-size: 22px; font-weight: 700; }
         
+        /* Sekmeler */
+        .tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+        .tab-btn { flex: 1; background: transparent; color: var(--text-muted); border: none; padding: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .tab-btn.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
+
         /* 3'lü Yuvarlak Takvim Navigasyonu */
         .takvim-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .nav-ok { background: transparent; color: var(--text-muted); border: none; font-size: 24px; cursor: pointer; padding: 5px 15px; transition: 0.2s; }
@@ -59,7 +64,16 @@
         .form-group input, .form-group select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: #303030; color: #fff; outline: none; }
         .btn-kaydet { width: 100%; background: var(--primary); color: #000; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 5px; }
 
-        /* Toast Mesaj (Oto Kayıt) */
+        /* İstatistik Ekranı */
+        .istatistik-kutu { background: #262626; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center; }
+        .istatistik-deger { font-size: 24px; font-weight: bold; color: var(--primary); margin: 5px 0; }
+        .istatistik-baslik { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        
+        .analiz-tablo { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .analiz-tablo th { background: #333; color: var(--secondary); padding: 10px; text-align: left; font-size: 13px; }
+        .analiz-tablo td { padding: 10px; border-bottom: 1px solid var(--border); color: #e0e0e0; font-size: 14px; }
+
+        /* Toast Mesaj */
         #toast { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--success); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 10; }
     </style>
 </head>
@@ -69,91 +83,120 @@
     <div id="toast">✅ Kaydedildi</div>
     <h1>TUS Sarmal Takip</h1>
     
-    <!-- TAKVİM -->
-    <div class="takvim-nav">
-        <button class="nav-ok" onclick="tarihDegistir(-1)">❮</button>
-        <div class="yuvarlaklar">
-            <div class="yuvarlak" id="y-dunku" onclick="tarihDegistir(-1)">-</div>
-            <div class="yuvarlak aktif" id="y-bugunku">-</div>
-            <div class="yuvarlak" id="y-yarin" onclick="tarihDegistir(1)">-</div>
-        </div>
-        <button class="nav-ok" onclick="tarihDegistir(1)">❯</button>
+    <div class="tabs">
+        <button class="tab-btn active" id="tab-plan-btn" onclick="sekmeDegistir('plan')">Çalışma Planı</button>
+        <button class="tab-btn" id="tab-ist-btn" onclick="sekmeDegistir('istatistik')">İstatistik & Analiz</button>
     </div>
-    <div class="tarih-alt-yazi" id="tarih-metni">Tarih Hesaplanıyor...</div>
 
-    <!-- HEDEF KARTI -->
-    <div id="aktif-ders-karti" class="hedef-karti">
-        <div class="hedef-baslik">
-            <h2 id="kart-ders-adi">Yükleniyor</h2>
-            <span id="kart-tur-gun" class="badge">...</span>
+    <!-- SEKME 1: ÇALIŞMA PLANI -->
+    <div id="sekme-plan">
+        <div class="takvim-nav">
+            <button class="nav-ok" onclick="tarihDegistir(-1)">❮</button>
+            <div class="yuvarlaklar">
+                <div class="yuvarlak" id="y-dunku" onclick="tarihDegistir(-1)">-</div>
+                <div class="yuvarlak aktif" id="y-bugunku">-</div>
+                <div class="yuvarlak" id="y-yarin" onclick="tarihDegistir(1)">-</div>
+            </div>
+            <button class="nav-ok" onclick="tarihDegistir(1)">❯</button>
+        </div>
+        <div class="tarih-alt-yazi" id="tarih-metni">Tarih Hesaplanıyor...</div>
+
+        <div id="aktif-ders-karti" class="hedef-karti">
+            <div class="hedef-baslik">
+                <h2 id="kart-ders-adi">Yükleniyor</h2>
+                <span id="kart-tur-gun" class="badge">...</span>
+            </div>
+
+            <div class="gorev-item" id="konu-modulu">
+                <strong style="color: var(--primary);">📖 <span id="konu-ders-isim">Ders</span> Konusu</strong>
+                <div id="konu-sayfa" class="sayfa-bilgisi">...</div>
+                <label class="checkbox-container">
+                    <input type="checkbox" id="konu-check" onchange="firebaseKaydet()"> Hedefi Tamamladım
+                </label>
+            </div>
+
+            <div class="gorev-item" id="soru-modulu">
+                <strong style="color: var(--secondary);">🎯 <span id="soru-ders-isim">Ders</span> Sorusu</strong>
+                <div id="soru-sayfa" class="sayfa-bilgisi">...</div>
+                <label class="checkbox-container">
+                    <input type="checkbox" id="soru-check" onchange="firebaseKaydet()"> Hedefi Tamamladım
+                </label>
+            </div>
+            
+            <div class="gorev-item" id="deneme-modulu" style="display: none; border-left: 3px solid #ff9800;">
+                <strong id="deneme-baslik" style="color: var(--warning);">🔥 Deneme Modülü</strong>
+                <label class="checkbox-container" style="margin-bottom: 8px;">
+                    <input type="checkbox" id="temel-check" onchange="firebaseKaydet()"> 1 Temel Bilimler (100 S)
+                </label>
+                <label class="checkbox-container">
+                    <input type="checkbox" id="klinik-check" onchange="firebaseKaydet()"> 1 Klinik Bilimler (100 S)
+                </label>
+            </div>
         </div>
 
-        <div class="gorev-item" id="konu-modulu">
-            <strong style="color: var(--primary);">📖 <span id="konu-ders-isim">Ders</span> Konusu</strong>
-            <div id="konu-sayfa" class="sayfa-bilgisi">...</div>
-            <label class="checkbox-container">
-                <input type="checkbox" id="konu-check" onchange="firebaseKaydet()"> Hedefi Tamamladım
-            </label>
+        <div id="tatil-karti" class="hedef-karti tatil-karti">
+            <h2 style="color: var(--warning); text-align: center; margin-bottom: 10px;">🌴 Mola / Opsiyon Günü</h2>
+            <p style="text-align: center; font-size: 14px; color: var(--text-muted);">Sarmal takvim bugün ilerlemez.</p>
         </div>
 
-        <div class="gorev-item" id="soru-modulu">
-            <strong style="color: var(--secondary);">🎯 <span id="soru-ders-isim">Ders</span> Sorusu</strong>
-            <div id="soru-sayfa" class="sayfa-bilgisi">...</div>
-            <label class="checkbox-container">
-                <input type="checkbox" id="soru-check" onchange="firebaseKaydet()"> Hedefi Tamamladım
-            </label>
+        <!-- BRANŞ DENEMESİ EKLE -->
+        <button class="btn-acilir" onclick="bransModuluGoster()">
+            <span>➕ Branş Denemesi Gir</span>
+            <span id="brans-ok">▼</span>
+        </button>
+        <div id="brans-icerik" class="brans-modulu-icerik">
+            <div class="form-group">
+                <label>Ders Seç</label>
+                <select id="brans-ders">
+                    <option value="Dahiliye">Dahiliye</option>
+                    <option value="Fizyoloji">Fizyoloji</option>
+                    <option value="Patoloji">Patoloji</option>
+                    <option value="Biyokimya">Biyokimya</option>
+                    <option value="Pediatri">Pediatri</option>
+                    <option value="Mikrobiyoloji">Mikrobiyoloji</option>
+                    <option value="Farmakoloji">Farmakoloji</option>
+                    <option value="Anatomi">Anatomi</option>
+                    <option value="Küçük Stajlar">Küçük Stajlar</option>
+                    <option value="Genel Cerrahi">Genel Cerrahi</option>
+                    <option value="Kadın Doğum">Kadın Doğum</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Doğru</label>
+                    <input type="number" id="brans-dogru" min="0" placeholder="Örn: 18">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Yanlış</label>
+                    <input type="number" id="brans-yanlis" min="0" placeholder="Örn: 4">
+                </div>
+            </div>
+            <button class="btn-kaydet" onclick="bransDenemeKaydet()">Sonucu İşle</button>
         </div>
+    </div>
+
+    <!-- SEKME 2: İSTATİSTİKLER -->
+    <div id="sekme-istatistik" style="display: none;">
         
-        <div class="gorev-item" id="deneme-modulu" style="display: none; border-left: 3px solid #ff9800;">
-            <strong id="deneme-baslik" style="color: var(--warning);">🔥 Deneme Modülü</strong>
-            <label class="checkbox-container" style="margin-bottom: 8px;">
-                <input type="checkbox" id="temel-check" onchange="firebaseKaydet()"> 1 Temel Bilimler (100 S)
-            </label>
-            <label class="checkbox-container">
-                <input type="checkbox" id="klinik-check" onchange="firebaseKaydet()"> 1 Klinik Bilimler (100 S)
-            </label>
-        </div>
-    </div>
-
-    <!-- TATİL KARTI -->
-    <div id="tatil-karti" class="hedef-karti tatil-karti">
-        <h2 style="color: var(--warning); text-align: center; margin-bottom: 10px;">🌴 Mola / Opsiyon Günü</h2>
-        <p style="text-align: center; font-size: 14px; color: var(--text-muted);">Sarmal takvim bugün ilerlemez.</p>
-    </div>
-
-    <!-- BRANŞ DENEMESİ AKORDİYON -->
-    <button class="btn-acilir" onclick="bransModuluGoster()">
-        <span>➕ Branş Denemesi Gir</span>
-        <span id="brans-ok">▼</span>
-    </button>
-    <div id="brans-icerik" class="brans-modulu-icerik">
-        <div class="form-group">
-            <label>Ders Seç</label>
-            <select id="brans-ders">
-                <option value="Dahiliye">Dahiliye</option>
-                <option value="Fizyoloji">Fizyoloji</option>
-                <option value="Patoloji">Patoloji</option>
-                <option value="Biyokimya">Biyokimya</option>
-                <option value="Pediatri">Pediatri</option>
-                <option value="Mikrobiyoloji">Mikrobiyoloji</option>
-                <option value="Farmakoloji">Farmakoloji</option>
-                <option value="Anatomi">Anatomi</option>
-                <option value="Küçük Stajlar">Küçük Stajlar</option>
-                <option value="Genel Cerrahi">Genel Cerrahi</option>
-                <option value="Kadın Doğum">Kadın Doğum</option>
-            </select>
-        </div>
         <div style="display: flex; gap: 10px;">
-            <div class="form-group" style="flex: 1;">
-                <label>Doğru</label>
-                <input type="number" id="brans-dogru" min="0" placeholder="Örn: 18">
+            <div class="istatistik-kutu" style="flex: 1; border-bottom: 3px solid var(--primary);">
+                <div class="istatistik-baslik">Mevcut Durum</div>
+                <div class="istatistik-deger" id="ist-mevcut-tur">-</div>
+                <div style="font-size: 13px; color: #fff;" id="ist-mevcut-gun">...</div>
             </div>
-            <div class="form-group" style="flex: 1;">
-                <label>Yanlış</label>
-                <input type="number" id="brans-yanlis" min="0" placeholder="Örn: 4">
+            <div class="istatistik-kutu" style="flex: 1; border-bottom: 3px solid var(--success);">
+                <div class="istatistik-baslik">Tamamlanan Görev</div>
+                <div class="istatistik-deger" id="ist-tamamlanan">-</div>
+                <div style="font-size: 13px; color: #fff;">Gün (Konu/Soru)</div>
             </div>
         </div>
-        <button class="btn-kaydet" onclick="bransDenemeKaydet()">Sonucu İşle</button>
+
+        <div class="hedef-karti" style="border-left-color: var(--secondary);">
+            <h2 style="font-size: 16px; margin-bottom: 10px; color: #fff;">📊 Branş Deneme Karnesi</h2>
+            <div id="analiz-icerik" style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 20px 0;">
+                Yükleniyor...
+            </div>
+        </div>
     </div>
 
 </div>
@@ -174,7 +217,6 @@
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const db = firebase.database();
 
-    // DERS HACİMLERİ 
     const planData = {
         dahiliye: { isim: "Dahiliye", konu: 450, soru: 750, konuK: "BBB Tıp Ak.", soruK: "Prime" },
         pediatri: { isim: "Pediatri", konu: 200, soru: 450, konuK: "Speet", soruK: "Ahmet Erkek" },
@@ -203,28 +245,28 @@
     ];
 
     let calismaGunleri = [];
-    sarmalAkil.forEach(t => {
-        t.seq.forEach(s => { for(let i=1; i<=s.g; i++) { calismaGunleri.push({ tur: t.tur, ders: s.d, gun: i, toplamGun: s.g }); } });
-    });
+    sarmalAkil.forEach(t => { t.seq.forEach(s => { for(let i=1; i<=s.g; i++) { calismaGunleri.push({ tur: t.tur, ders: s.d, gun: i, toplamGun: s.g }); } }); });
 
-    let globalGunVerisi = null;
-    let globalSoruDersiKey = null;
-    let globalDurum = "";
-    
+    let globalGunVerisi = null; let globalSoruDersiKey = null; let globalDurum = "";
     let aktifTarih = new Date(new Date().setHours(0,0,0,0));
+    let bugunSayaci = 0; // İstatistik için
 
     window.onload = () => { gunuHesaplaVeArayuzuCiz(); };
+
+    function sekmeDegistir(sekme) {
+        document.getElementById('sekme-plan').style.display = (sekme === 'plan') ? 'block' : 'none';
+        document.getElementById('sekme-istatistik').style.display = (sekme === 'istatistik') ? 'block' : 'none';
+        document.getElementById('tab-plan-btn').className = (sekme === 'plan') ? 'tab-btn active' : 'tab-btn';
+        document.getElementById('tab-ist-btn').className = (sekme === 'istatistik') ? 'tab-btn active' : 'tab-btn';
+
+        if(sekme === 'istatistik') istatistikleriYukle();
+    }
 
     function bransModuluGoster() {
         const icerik = document.getElementById("brans-icerik");
         const ok = document.getElementById("brans-ok");
-        if(icerik.style.display === "block") {
-            icerik.style.display = "none";
-            ok.innerText = "▼";
-        } else {
-            icerik.style.display = "block";
-            ok.innerText = "▲";
-        }
+        if(icerik.style.display === "block") { icerik.style.display = "none"; ok.innerText = "▼"; } 
+        else { icerik.style.display = "block"; ok.innerText = "▲"; }
     }
 
     function tarihDegistir(gunFarki) {
@@ -257,14 +299,13 @@
             else if (currentDate >= new Date(2026, 9, 4) && gunHafta === 0) { isWorkDay = false; }
 
             if (currentDate.getTime() === aktifTarih.getTime()) {
-                if (!isWorkDay) {
-                    bugunDurum = (gunHafta === 0 && currentDate >= new Date(2026, 9, 4)) ? "pazar_deneme" : "mola";
-                }
+                if (!isWorkDay) bugunDurum = (gunHafta === 0 && currentDate >= new Date(2026, 9, 4)) ? "pazar_deneme" : "mola";
             }
             if (isWorkDay) isGunuSayaci++;
             currentDate.setDate(currentDate.getDate() + 1);
         }
 
+        bugunSayaci = isGunuSayaci;
         globalDurum = bugunDurum;
         arayuzuUygula(isGunuSayaci, bugunDurum);
         firebaseDurumGetir(); 
@@ -275,7 +316,6 @@
         const kartTatil = document.getElementById("tatil-karti");
         const denemeModulu = document.getElementById("deneme-modulu");
 
-        // UI Reset
         document.getElementById("konu-check").checked = false;
         document.getElementById("soru-check").checked = false;
         document.getElementById("temel-check").checked = false;
@@ -321,15 +361,12 @@
         globalGunVerisi = aktif;
         const konuVeri = planData[aktif.ders];
 
-        // SARMAL MANTIĞI: Bir önceki dersi bul
         let oncekiDersKey = aktif.ders;
         let sarmalTur = sarmalAkil.find(t => t.tur === aktif.tur);
         let seqIdx = sarmalTur.seq.findIndex(s => s.d === aktif.ders);
 
-        if (seqIdx > 0) {
-            oncekiDersKey = sarmalTur.seq[seqIdx - 1].d;
-        } else if (aktif.tur > 1) {
-            // Eğer turun ilk dersiyse, bir önceki turun son dersini al
+        if (seqIdx > 0) { oncekiDersKey = sarmalTur.seq[seqIdx - 1].d; } 
+        else if (aktif.tur > 1) {
             let oncekiTur = sarmalAkil.find(t => t.tur === aktif.tur - 1);
             oncekiDersKey = oncekiTur.seq[oncekiTur.seq.length - 1].d;
         }
@@ -337,48 +374,36 @@
         globalSoruDersiKey = oncekiDersKey;
         const soruVeri = planData[oncekiDersKey];
 
-        // Başlıklar ve Ders İsimleri
         document.getElementById("kart-ders-adi").innerText = `Çalışma Planı`;
         document.getElementById("kart-tur-gun").innerText = `${aktif.tur}. Tur (${aktif.gun}/${aktif.toplamGun} Gün)`;
-        
         document.getElementById("konu-ders-isim").innerText = konuVeri.isim;
         
-        if(aktif.tur === 1 && seqIdx === 0) {
-            document.getElementById("soru-ders-isim").innerText = konuVeri.isim; // İlk derste önceki ders yoktur
-        } else {
-            document.getElementById("soru-ders-isim").innerText = soruVeri.isim;
-        }
+        if(aktif.tur === 1 && seqIdx === 0) document.getElementById("soru-ders-isim").innerText = konuVeri.isim;
+        else document.getElementById("soru-ders-isim").innerText = soruVeri.isim;
 
         denemeModulu.style.display = (aktif.tur >= 5) ? "block" : "none";
 
-        // Matematiksel Bölme İşlemi (Konu kendi gününe, Soru önceki dersin toplam sayfasının anlık dersin gününe bölümü)
         const gKonu = Math.ceil(konuVeri.konu / aktif.toplamGun);
         const gSoru = soruVeri.soru > 0 ? Math.ceil(soruVeri.soru / aktif.toplamGun) : 0;
 
-        let kB = ((aktif.gun - 1) * gKonu) + 1;
-        let kBi = aktif.gun * gKonu;
+        let kB = ((aktif.gun - 1) * gKonu) + 1; let kBi = aktif.gun * gKonu;
         if (kBi > konuVeri.konu || aktif.gun === aktif.toplamGun) kBi = konuVeri.konu;
 
-        let sB = ((aktif.gun - 1) * gSoru) + 1;
-        let sBi = aktif.gun * gSoru;
+        let sB = ((aktif.gun - 1) * gSoru) + 1; let sBi = aktif.gun * gSoru;
         if (sBi > soruVeri.soru || aktif.gun === aktif.toplamGun) sBi = soruVeri.soru;
 
-        // Ekrana Yazdırma
         if (aktif.tur >= 3) {
             document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Hızlı spot/açık kapatma)`;
-            document.getElementById("soru-sayfa").innerText = soruVeri.isim === "Anatomi" 
-                ? "Ayrı SB yok, Speet soruları/spotları." : `${soruVeri.soruK} - Elenmiş (Ort. Sf ${sB} - ${sBi})`;
+            document.getElementById("soru-sayfa").innerText = soruVeri.isim === "Anatomi" ? "Ayrı SB yok, Speet soruları." : `${soruVeri.soruK} - Elenmiş (Ort. Sf ${sB} - ${sBi})`;
         } else {
             document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Sayfa ${kB} - ${kBi})`;
-            document.getElementById("soru-sayfa").innerText = soruVeri.isim === "Anatomi" 
-                ? "Ayrı SB yok, Speet içi okuma." : `${soruVeri.soruK} (Sayfa ${sB} - ${sBi})`;
+            document.getElementById("soru-sayfa").innerText = soruVeri.isim === "Anatomi" ? "Ayrı SB yok, Speet içi okuma." : `${soruVeri.soruK} (Sayfa ${sB} - ${sBi})`;
         }
     }
 
     function firebaseDurumGetir() {
         const offset = aktifTarih.getTimezoneOffset();
         const seciliGunStr = new Date(aktifTarih.getTime() - (offset*60*1000)).toISOString().split('T')[0];
-        
         db.ref('tus_gunluk_kayitlar/' + seciliGunStr).once('value').then((snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.val();
@@ -393,12 +418,10 @@
     function firebaseKaydet() {
         const offset = aktifTarih.getTimezoneOffset();
         const seciliGunStr = new Date(aktifTarih.getTime() - (offset*60*1000)).toISOString().split('T')[0];
-        
         let kayit = { tarih: seciliGunStr, kayit_zamani: firebase.database.ServerValue.TIMESTAMP };
 
-        if (globalDurum === "mola") {
-            kayit.durum = "Mola Günü";
-        } else if (globalDurum === "pazar_deneme") {
+        if (globalDurum === "mola") { kayit.durum = "Mola Günü"; } 
+        else if (globalDurum === "pazar_deneme") {
             kayit.durum = "Pazar Denemesi";
             kayit.temel_deneme = document.getElementById("temel-check").checked;
             kayit.klinik_deneme = document.getElementById("klinik-check").checked;
@@ -407,18 +430,14 @@
             kayit.tur = globalGunVerisi ? globalGunVerisi.tur : "Kamp";
             kayit.konu_dersi = globalGunVerisi ? planData[globalGunVerisi.ders].isim : "Soru Kampı";
             kayit.soru_dersi = globalSoruDersiKey ? planData[globalSoruDersiKey].isim : "Karma";
-            kayit.konu_bitti = document.getElementById("konu-check") ? document.getElementById("konu-check").checked : false;
-            kayit.soru_bitti = document.getElementById("soru-check") ? document.getElementById("soru-check").checked : false;
-            
+            kayit.konu_bitti = document.getElementById("konu-check").checked;
+            kayit.soru_bitti = document.getElementById("soru-check").checked;
             if (globalGunVerisi && globalGunVerisi.tur >= 5) {
                 kayit.son48_temel = document.getElementById("temel-check").checked;
                 kayit.son48_klinik = document.getElementById("klinik-check").checked;
             }
         }
-
-        db.ref('tus_gunluk_kayitlar/' + seciliGunStr).set(kayit)
-        .then(() => toastGoster("✅ Otomatik Kaydedildi"))
-        .catch(err => console.error("Kayıt başarısız", err));
+        db.ref('tus_gunluk_kayitlar/' + seciliGunStr).set(kayit).then(() => toastGoster("✅ Otomatik Kaydedildi"));
     }
 
     function bransDenemeKaydet() {
@@ -434,16 +453,71 @@
             tarih: bugun, ders: ders, dogru: dogru, yanlis: yanlis, net: net, timestamp: firebase.database.ServerValue.TIMESTAMP
         }).then(() => {
             toastGoster("🎯 Net Başarıyla İşlendi");
-            document.getElementById("brans-dogru").value = "";
-            document.getElementById("brans-yanlis").value = "";
-            bransModuluGoster(); 
+            document.getElementById("brans-dogru").value = ""; document.getElementById("brans-yanlis").value = "";
+            bransModuluGoster(); istatistikleriYukle();
+        });
+    }
+
+    function istatistikleriYukle() {
+        // Mevcut Durum Özeti (Geçmiş günler)
+        if(globalGunVerisi) {
+            document.getElementById("ist-mevcut-tur").innerText = `${globalGunVerisi.tur}. Tur`;
+            document.getElementById("ist-mevcut-gun").innerText = `Çalışılan: ${bugunSayaci} Gün`;
+        } else {
+            document.getElementById("ist-mevcut-tur").innerText = "Kamp";
+            document.getElementById("ist-mevcut-gun").innerText = "Sona Yaklaşıldı";
+        }
+
+        // Toplam Tamamlanan Görev Sayımı
+        db.ref('tus_gunluk_kayitlar').once('value').then((snapshot) => {
+            let tamamlananKonu = 0;
+            if (snapshot.exists()) {
+                snapshot.forEach((child) => {
+                    const data = child.val();
+                    if(data.konu_bitti) tamamlananKonu++;
+                });
+            }
+            document.getElementById("ist-tamamlanan").innerText = tamamlananKonu;
+        });
+
+        // Branş Deneme Analizi
+        db.ref('tus_brans_denemeleri').once('value').then((snapshot) => {
+            if (!snapshot.exists()) {
+                document.getElementById("analiz-icerik").innerText = "Henüz girilmiş bir branş denemesi yok.";
+                return;
+            }
+
+            const dersVerileri = {};
+            snapshot.forEach((child) => {
+                const data = child.val();
+                if(!dersVerileri[data.ders]) dersVerileri[data.ders] = { toplamNet: 0, count: 0, maxNet: -99 };
+                
+                dersVerileri[data.ders].toplamNet += data.net;
+                dersVerileri[data.ders].count++;
+                if(data.net > dersVerileri[data.ders].maxNet) dersVerileri[data.ders].maxNet = data.net;
+            });
+
+            let html = `<table class="analiz-tablo">
+                          <tr><th>Ders</th><th>Ort. Net</th><th>Max</th><th>Adet</th></tr>`;
+            
+            for (const [ders, stat] of Object.entries(dersVerileri)) {
+                let ortalama = (stat.toplamNet / stat.count).toFixed(2);
+                let max = stat.maxNet.toFixed(2);
+                html += `<tr>
+                            <td>${ders}</td>
+                            <td style="color:var(--success); font-weight:bold;">${ortalama}</td>
+                            <td>${max}</td>
+                            <td>${stat.count}</td>
+                         </tr>`;
+            }
+            html += `</table>`;
+            document.getElementById("analiz-icerik").innerHTML = html;
         });
     }
 
     function toastGoster(mesaj) {
         const toast = document.getElementById("toast");
-        toast.innerText = mesaj;
-        toast.style.opacity = "1";
+        toast.innerText = mesaj; toast.style.opacity = "1";
         setTimeout(() => { toast.style.opacity = "0"; }, 2000);
     }
 </script>
