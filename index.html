@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TUS Takip & Analiz</title>
+    <title>TUS Takip & Sarmal Analiz</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -43,7 +43,7 @@
         .badge { background: var(--primary-variant); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
         
         .gorev-item { margin-bottom: 12px; background: #303030; padding: 12px; border-radius: 8px; }
-        .gorev-item strong { color: var(--secondary); display: block; margin-bottom: 4px; font-size: 13px; text-transform: uppercase; }
+        .gorev-item strong { display: block; margin-bottom: 4px; font-size: 14px; text-transform: uppercase; }
         .sayfa-bilgisi { font-size: 14px; margin-bottom: 10px; color: #fff; }
         
         .checkbox-container { display: flex; align-items: center; cursor: pointer; user-select: none; font-size: 14px; color: #ccc; }
@@ -67,7 +67,7 @@
 
 <div class="container">
     <div id="toast">✅ Kaydedildi</div>
-    <h1>TUS Takip Sistemi</h1>
+    <h1>TUS Sarmal Takip</h1>
     
     <!-- TAKVİM -->
     <div class="takvim-nav">
@@ -89,16 +89,15 @@
         </div>
 
         <div class="gorev-item" id="konu-modulu">
-            <strong>📖 Konu Hedefi</strong>
+            <strong style="color: var(--primary);">📖 <span id="konu-ders-isim">Ders</span> Konusu</strong>
             <div id="konu-sayfa" class="sayfa-bilgisi">...</div>
             <label class="checkbox-container">
-                <!-- onchange eventiyle basıldığı an firebaseKaydet() çalışır -->
                 <input type="checkbox" id="konu-check" onchange="firebaseKaydet()"> Hedefi Tamamladım
             </label>
         </div>
 
         <div class="gorev-item" id="soru-modulu">
-            <strong>🎯 Soru Hedefi</strong>
+            <strong style="color: var(--secondary);">🎯 <span id="soru-ders-isim">Ders</span> Sorusu</strong>
             <div id="soru-sayfa" class="sayfa-bilgisi">...</div>
             <label class="checkbox-container">
                 <input type="checkbox" id="soru-check" onchange="firebaseKaydet()"> Hedefi Tamamladım
@@ -106,7 +105,7 @@
         </div>
         
         <div class="gorev-item" id="deneme-modulu" style="display: none; border-left: 3px solid #ff9800;">
-            <strong id="deneme-baslik">🔥 Deneme Modülü</strong>
+            <strong id="deneme-baslik" style="color: var(--warning);">🔥 Deneme Modülü</strong>
             <label class="checkbox-container" style="margin-bottom: 8px;">
                 <input type="checkbox" id="temel-check" onchange="firebaseKaydet()"> 1 Temel Bilimler (100 S)
             </label>
@@ -209,9 +208,9 @@
     });
 
     let globalGunVerisi = null;
+    let globalSoruDersiKey = null;
     let globalDurum = "";
     
-    // Uygulama açılınca o anki gün
     let aktifTarih = new Date(new Date().setHours(0,0,0,0));
 
     window.onload = () => { gunuHesaplaVeArayuzuCiz(); };
@@ -234,7 +233,6 @@
     }
 
     function gunuHesaplaVeArayuzuCiz() {
-        // Yuvarlakları Güncelle
         const dun = new Date(aktifTarih); dun.setDate(dun.getDate() - 1);
         const yarin = new Date(aktifTarih); yarin.setDate(yarin.getDate() + 1);
         
@@ -242,7 +240,6 @@
         document.getElementById("y-bugunku").innerText = aktifTarih.getDate();
         document.getElementById("y-yarin").innerText = yarin.getDate();
 
-        // Alt Tarih Metni
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById("tarih-metni").innerText = aktifTarih.toLocaleDateString('tr-TR', options);
 
@@ -283,6 +280,7 @@
         document.getElementById("soru-check").checked = false;
         document.getElementById("temel-check").checked = false;
         document.getElementById("klinik-check").checked = false;
+        globalSoruDersiKey = null;
 
         if (durum === "mola") {
             kartDers.style.display = "none";
@@ -299,7 +297,6 @@
             document.getElementById("konu-modulu").style.display = "none";
             document.getElementById("soru-modulu").style.display = "none";
             denemeModulu.style.display = "block";
-            document.getElementById("deneme-baslik").innerText = "🔥 Pazar Rutini";
             return;
         }
 
@@ -309,10 +306,12 @@
 
         if (isGunuSayaci > calismaGunleri.length) {
             kartDers.style.display = "block";
-            document.getElementById("kart-ders-adi").innerText = "🔥 Soru Kampı & Kapanış";
+            document.getElementById("kart-ders-adi").innerText = "🔥 Soru Kampı";
             document.getElementById("kart-tur-gun").innerText = "Son Düzlük";
+            document.getElementById("konu-ders-isim").innerText = "Genel";
+            document.getElementById("soru-ders-isim").innerText = "Karma";
             document.getElementById("konu-sayfa").innerText = "Eksik Kapatma / Spot Taraması";
-            document.getElementById("soru-sayfa").innerText = "Karma Soru Bankası & Deneme Çözümü";
+            document.getElementById("soru-sayfa").innerText = "Karma Soru Bankası Çözümü";
             denemeModulu.style.display = "block";
             return;
         }
@@ -320,33 +319,59 @@
         kartDers.style.display = "block";
         const aktif = calismaGunleri[isGunuSayaci - 1];
         globalGunVerisi = aktif;
-        const veri = planData[aktif.ders];
+        const konuVeri = planData[aktif.ders];
 
-        document.getElementById("kart-ders-adi").innerText = veri.isim;
+        // SARMAL MANTIĞI: Bir önceki dersi bul
+        let oncekiDersKey = aktif.ders;
+        let sarmalTur = sarmalAkil.find(t => t.tur === aktif.tur);
+        let seqIdx = sarmalTur.seq.findIndex(s => s.d === aktif.ders);
+
+        if (seqIdx > 0) {
+            oncekiDersKey = sarmalTur.seq[seqIdx - 1].d;
+        } else if (aktif.tur > 1) {
+            // Eğer turun ilk dersiyse, bir önceki turun son dersini al
+            let oncekiTur = sarmalAkil.find(t => t.tur === aktif.tur - 1);
+            oncekiDersKey = oncekiTur.seq[oncekiTur.seq.length - 1].d;
+        }
+        
+        globalSoruDersiKey = oncekiDersKey;
+        const soruVeri = planData[oncekiDersKey];
+
+        // Başlıklar ve Ders İsimleri
+        document.getElementById("kart-ders-adi").innerText = `Çalışma Planı`;
         document.getElementById("kart-tur-gun").innerText = `${aktif.tur}. Tur (${aktif.gun}/${aktif.toplamGun} Gün)`;
+        
+        document.getElementById("konu-ders-isim").innerText = konuVeri.isim;
+        
+        if(aktif.tur === 1 && seqIdx === 0) {
+            document.getElementById("soru-ders-isim").innerText = konuVeri.isim; // İlk derste önceki ders yoktur
+        } else {
+            document.getElementById("soru-ders-isim").innerText = soruVeri.isim;
+        }
 
         denemeModulu.style.display = (aktif.tur >= 5) ? "block" : "none";
-        if(aktif.tur >= 5) document.getElementById("deneme-baslik").innerText = "🔥 Son 48 Gün Seri Deneme";
 
-        const gKonu = Math.ceil(veri.konu / aktif.toplamGun);
-        const gSoru = veri.soru > 0 ? Math.ceil(veri.soru / aktif.toplamGun) : 0;
+        // Matematiksel Bölme İşlemi (Konu kendi gününe, Soru önceki dersin toplam sayfasının anlık dersin gününe bölümü)
+        const gKonu = Math.ceil(konuVeri.konu / aktif.toplamGun);
+        const gSoru = soruVeri.soru > 0 ? Math.ceil(soruVeri.soru / aktif.toplamGun) : 0;
 
         let kB = ((aktif.gun - 1) * gKonu) + 1;
         let kBi = aktif.gun * gKonu;
-        if (kBi > veri.konu || aktif.gun === aktif.toplamGun) kBi = veri.konu;
+        if (kBi > konuVeri.konu || aktif.gun === aktif.toplamGun) kBi = konuVeri.konu;
 
         let sB = ((aktif.gun - 1) * gSoru) + 1;
         let sBi = aktif.gun * gSoru;
-        if (sBi > veri.soru || aktif.gun === aktif.toplamGun) sBi = veri.soru;
+        if (sBi > soruVeri.soru || aktif.gun === aktif.toplamGun) sBi = soruVeri.soru;
 
+        // Ekrana Yazdırma
         if (aktif.tur >= 3) {
-            document.getElementById("konu-sayfa").innerText = `${veri.konuK} (Hızlı spot/açık kapatma)`;
-            document.getElementById("soru-sayfa").innerText = veri.isim === "Anatomi" 
-                ? "Ayrı SB yok, Speet soruları/spotları." : `${veri.soruK} - Elenmiş (Ort. Sf ${sB} - ${sBi})`;
+            document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Hızlı spot/açık kapatma)`;
+            document.getElementById("soru-sayfa").innerText = soruVeri.isim === "Anatomi" 
+                ? "Ayrı SB yok, Speet soruları/spotları." : `${soruVeri.soruK} - Elenmiş (Ort. Sf ${sB} - ${sBi})`;
         } else {
-            document.getElementById("konu-sayfa").innerText = `${veri.konuK} (Sayfa ${kB} - ${kBi})`;
-            document.getElementById("soru-sayfa").innerText = veri.isim === "Anatomi" 
-                ? "Ayrı SB yok, Speet içi okuma." : `${veri.soruK} (Sayfa ${sB} - ${sBi})`;
+            document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Sayfa ${kB} - ${kBi})`;
+            document.getElementById("soru-sayfa").innerText = soruVeri.isim === "Anatomi" 
+                ? "Ayrı SB yok, Speet içi okuma." : `${soruVeri.soruK} (Sayfa ${sB} - ${sBi})`;
         }
     }
 
@@ -365,7 +390,6 @@
         });
     }
 
-    // Checkbox'a tıklanınca tetiklenen Oto-Kayıt
     function firebaseKaydet() {
         const offset = aktifTarih.getTimezoneOffset();
         const seciliGunStr = new Date(aktifTarih.getTime() - (offset*60*1000)).toISOString().split('T')[0];
@@ -373,7 +397,7 @@
         let kayit = { tarih: seciliGunStr, kayit_zamani: firebase.database.ServerValue.TIMESTAMP };
 
         if (globalDurum === "mola") {
-            kayit.durum = "Mola Günü (Çalışma Yapılmadı)";
+            kayit.durum = "Mola Günü";
         } else if (globalDurum === "pazar_deneme") {
             kayit.durum = "Pazar Denemesi";
             kayit.temel_deneme = document.getElementById("temel-check").checked;
@@ -381,7 +405,8 @@
         } else {
             kayit.durum = "Sarmal Çalışma";
             kayit.tur = globalGunVerisi ? globalGunVerisi.tur : "Kamp";
-            kayit.ders = globalGunVerisi ? planData[globalGunVerisi.ders].isim : "Soru Kampı";
+            kayit.konu_dersi = globalGunVerisi ? planData[globalGunVerisi.ders].isim : "Soru Kampı";
+            kayit.soru_dersi = globalSoruDersiKey ? planData[globalSoruDersiKey].isim : "Karma";
             kayit.konu_bitti = document.getElementById("konu-check") ? document.getElementById("konu-check").checked : false;
             kayit.soru_bitti = document.getElementById("soru-check") ? document.getElementById("soru-check").checked : false;
             
@@ -411,11 +436,10 @@
             toastGoster("🎯 Net Başarıyla İşlendi");
             document.getElementById("brans-dogru").value = "";
             document.getElementById("brans-yanlis").value = "";
-            bransModuluGoster(); // Formu otomatik kapat
+            bransModuluGoster(); 
         });
     }
 
-    // Ufak bilgilendirme mesajı (Ekranda belirip kaybolur)
     function toastGoster(mesaj) {
         const toast = document.getElementById("toast");
         toast.innerText = mesaj;
