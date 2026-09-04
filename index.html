@@ -14,6 +14,7 @@
             --primary-variant: #3700b3; --secondary: #03dac6; 
             --text: #e0e0e0; --text-muted: #a0a0a0; 
             --success: #4caf50; --border: #333333; --warning: #ff9800;
+            --danger: #e53935; --info: #2196F3;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -73,6 +74,20 @@
         .scroll-liste::-webkit-scrollbar-track { background: #222; }
 
         #toast { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--success); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 10; }
+
+        /* Yeni Takvim CSS */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
+        .cal-day-header { text-align: center; font-size: 11px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; padding-bottom: 5px; }
+        .cal-cell { background: #222; border: 1px solid #333; border-radius: 4px; min-height: 65px; padding: 4px; display: flex; flex-direction: column; cursor: pointer; transition: 0.2s; user-select: none; }
+        .cal-cell:hover { background: #333; border-color: var(--primary); }
+        .cal-cell.empty { background: transparent; border: none; cursor: default; }
+        .cal-date { font-size: 12px; font-weight: bold; color: #ccc; margin-bottom: 4px; text-align: right; }
+        .cal-badge { font-size: 9px; padding: 2px 4px; border-radius: 3px; font-weight: bold; text-align: center; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-nobet { background: var(--danger); color: #fff; }
+        .badge-ders { background: #333; border: 1px solid var(--primary); color: #fff; }
+        .badge-mola { background: var(--info); color: #fff; }
+        .badge-deneme { background: var(--warning); color: #000; }
+        .cal-cell.bugun-cell { border: 2px solid var(--success); }
     </style>
 </head>
 <body>
@@ -86,6 +101,7 @@
         <button class="tab-btn" id="tab-ist-btn" onclick="sekmeDegistir('istatistik')">İstatistik & Analiz</button>
     </div>
 
+    <!-- SEKME 1: ÇALIŞMA PLANI -->
     <div id="sekme-plan">
         <div class="takvim-nav">
             <button class="nav-ok" onclick="tarihDegistir(-1)">❮</button>
@@ -169,12 +185,35 @@
         </div>
     </div>
 
+    <!-- SEKME 2: İSTATİSTİKLER & TAKVİM -->
     <div id="sekme-istatistik" style="display: none;">
         
         <div class="istatistik-kutu">
             <div class="istatistik-baslik">Mevcut Durum</div>
             <div class="istatistik-deger" id="ist-mevcut-tur">-</div>
             <div style="font-size: 13px; color: #fff;" id="ist-mevcut-gun">...</div>
+        </div>
+
+        <!-- YENİ: AYLIK TAKVİM & NÖBET MODÜLÜ -->
+        <div class="hedef-karti" style="border-left-color: var(--primary); padding: 12px;">
+            <div class="takvim-nav" style="margin-bottom:10px;">
+                <button class="nav-ok" onclick="takvimAyDegistir(-1)">❮</button>
+                <h2 id="takvim-ay-baslik" style="font-size: 15px; margin:0; color: #fff; letter-spacing: 1px;">AY YÜKLENİYOR</h2>
+                <button class="nav-ok" onclick="takvimAyDegistir(1)">❯</button>
+            </div>
+            
+            <div class="calendar-grid">
+                <div class="cal-day-header">Pzt</div><div class="cal-day-header">Sal</div>
+                <div class="cal-day-header">Çar</div><div class="cal-day-header">Per</div>
+                <div class="cal-day-header">Cum</div><div class="cal-day-header">Cmt</div>
+                <div class="cal-day-header" style="color: var(--danger);">Paz</div>
+            </div>
+            <div class="calendar-grid" id="takvim-grid">
+                <!-- Javascript ile Doldurulacak -->
+            </div>
+            <div style="text-align:center; font-size:11px; color:#888; margin-top:12px;">
+                👆 Nöbet eklemek/kaldırmak için takvimdeki günlere tıklayabilirsin.
+            </div>
         </div>
 
         <div class="hedef-karti" style="border-left-color: var(--success);">
@@ -210,17 +249,17 @@
     const db = firebase.database();
 
     const planData = {
-        dahiliye: { isim: "Dahiliye", konu: 450, soru: 750, konuK: "BBB Tıp Ak.", soruK: "Prime" },
-        pediatri: { isim: "Pediatri", konu: 200, soru: 450, konuK: "Speet", soruK: "Ahmet Erkek" },
-        fizyoloji: { isim: "Fizyoloji", konu: 100, soru: 400, konuK: "Speet", soruK: "Prime" },
-        patoloji: { isim: "Patoloji", konu: 100, soru: 450, konuK: "Speet", soruK: "SST" },
-        biyokimya: { isim: "Biyokimya", konu: 200, soru: 200, konuK: "Tıp Ak.", soruK: "Tıp Ak." },
-        mikrobiyoloji: { isim: "Mikrobiyoloji", konu: 250, soru: 400, konuK: "Tıp Ak.", soruK: "Prime" },
-        farmakoloji: { isim: "Farmakoloji", konu: 100, soru: 400, konuK: "Speet", soruK: "Prime" },
-        anatomi: { isim: "Anatomi", konu: 100, soru: 0, konuK: "Speet", soruK: "Yok" },
-        kucukstajlar: { isim: "Küçük Stajlar", konu: 170, soru: 400, konuK: "Speet", soruK: "Prime" },
-        genelcerrahi: { isim: "Genel Cerrahi", konu: 400, soru: 450, konuK: "Ahmet Erkek", soruK: "Ahmet Erkek" },
-        kadindogum: { isim: "Kadın Doğum", konu: 100, soru: 400, konuK: "Speet", soruK: "Prime" }
+        dahiliye: { isim: "Dahiliye", kisa: "DAH", konu: 450, soru: 750, konuK: "BBB Tıp Ak.", soruK: "Prime" },
+        pediatri: { isim: "Pediatri", kisa: "PED", konu: 200, soru: 450, konuK: "Speet", soruK: "Ahmet Erkek" },
+        fizyoloji: { isim: "Fizyoloji", kisa: "FİZ", konu: 100, soru: 400, konuK: "Speet", soruK: "Prime" },
+        patoloji: { isim: "Patoloji", kisa: "PAT", konu: 100, soru: 450, konuK: "Speet", soruK: "SST" },
+        biyokimya: { isim: "Biyokimya", kisa: "BİYO", konu: 200, soru: 200, konuK: "Tıp Ak.", soruK: "Tıp Ak." },
+        mikrobiyoloji: { isim: "Mikrobiyoloji", kisa: "MİK", konu: 250, soru: 400, konuK: "Tıp Ak.", soruK: "Prime" },
+        farmakoloji: { isim: "Farmakoloji", kisa: "FAR", konu: 100, soru: 400, konuK: "Speet", soruK: "Prime" },
+        anatomi: { isim: "Anatomi", kisa: "ANA", konu: 100, soru: 0, konuK: "Speet", soruK: "Yok" },
+        kucukstajlar: { isim: "Küçük Stajlar", kisa: "K.STJ", konu: 170, soru: 400, konuK: "Speet", soruK: "Prime" },
+        genelcerrahi: { isim: "Genel Cerrahi", kisa: "G.CER", konu: 400, soru: 450, konuK: "Ahmet Erkek", soruK: "Ahmet Erkek" },
+        kadindogum: { isim: "Kadın Doğum", kisa: "K.DOĞ", konu: 100, soru: 400, konuK: "Speet", soruK: "Prime" }
     };
 
     const t345 = [
@@ -238,7 +277,6 @@
 
     let calismaGunleri = [];
     let hedefGunler = { 1:{}, 2:{}, 3:{}, 4:{}, 5:{} };
-
     sarmalAkil.forEach(t => { 
         t.seq.forEach(s => { 
             hedefGunler[t.tur][planData[s.d].isim] = s.g;
@@ -250,15 +288,68 @@
     let globalSon60Info = null;
     let aktifTarih = new Date(new Date().setHours(0,0,0,0));
     let bugunSayaci = 0; 
+    
+    // Takvim state
+    let gosterilenTakvimAyi = new Date(aktifTarih.getFullYear(), aktifTarih.getMonth(), 1);
+    let sarmalHaritasi = {}; // YYYY-MM-DD -> { abbr: 'DAH', tip: 'ders' }
 
-    // Tarih Farkı Hesabı (UTC üzerinden güvenli hesap)
     function gunFarkiBul(d1, d2) {
         const utc1 = Date.UTC(d1.getFullYear(), d1.getMonth(), d1.getDate());
         const utc2 = Date.UTC(d2.getFullYear(), d2.getMonth(), d2.getDate());
         return Math.floor((utc2 - utc1) / (1000 * 60 * 60 * 24));
     }
 
-    window.onload = () => { gunuHesaplaVeArayuzuCiz(); };
+    // ARKA PLAN SARMAL SİMÜLASYONU (Tüm takvim hesaplanıp belleğe alınır)
+    function sarmalHaritasiniOlustur() {
+        const startDate = new Date(2026, 7, 28);
+        const son60GunBaslangic = new Date(2027, 0, 13);
+        const sinavTarihi = new Date(2027, 2, 14);
+
+        let iterDate = new Date(startDate);
+        let workDaySayaci = 0;
+
+        while (iterDate <= sinavTarihi) {
+            const dateStr = localToISO(iterDate);
+            let isWorkDay = true;
+            let m = iterDate.getMonth(); let d = iterDate.getDate(); let y = iterDate.getFullYear();
+            let gunHafta = iterDate.getDay(); 
+
+            if (y === 2026 && m === 8 && (d === 11 || d === 12 || d === 13)) { isWorkDay = false; }
+            else if (iterDate >= new Date(2026, 9, 4) && iterDate < son60GunBaslangic && gunHafta === 0) { isWorkDay = false; }
+
+            if (gunFarkiBul(iterDate, sinavTarihi) === 0) {
+                sarmalHaritasi[dateStr] = { abbr: 'TUS!', tip: 'sinav' };
+            } else if (iterDate >= son60GunBaslangic && iterDate < sinavTarihi) {
+                const gunNo = gunFarkiBul(son60GunBaslangic, iterDate) + 1;
+                sarmalHaritasi[dateStr] = { abbr: (gunNo % 2 === 1) ? 'T.DEN' : 'K.DEN', tip: 'deneme' };
+            } else if (!isWorkDay) {
+                if (gunHafta === 0 && iterDate >= new Date(2026, 9, 4)) {
+                    sarmalHaritasi[dateStr] = { abbr: 'G.DEN', tip: 'deneme' };
+                } else {
+                    sarmalHaritasi[dateStr] = { abbr: 'Tatil', tip: 'mola' };
+                }
+            } else {
+                workDaySayaci++;
+                if (workDaySayaci <= calismaGunleri.length) {
+                    const aktifDers = calismaGunleri[workDaySayaci - 1].ders;
+                    sarmalHaritasi[dateStr] = { abbr: planData[aktifDers].kisa, tip: 'ders' };
+                } else {
+                    sarmalHaritasi[dateStr] = { abbr: 'KAMP', tip: 'ders' };
+                }
+            }
+            iterDate.setDate(iterDate.getDate() + 1);
+        }
+    }
+
+    function localToISO(dateObj) {
+        const offset = dateObj.getTimezoneOffset();
+        return new Date(dateObj.getTime() - (offset*60*1000)).toISOString().split('T')[0];
+    }
+
+    window.onload = () => { 
+        sarmalHaritasiniOlustur();
+        gunuHesaplaVeArayuzuCiz(); 
+    };
 
     function sekmeDegistir(sekme) {
         document.getElementById('sekme-plan').style.display = (sekme === 'plan') ? 'block' : 'none';
@@ -268,6 +359,73 @@
         if(sekme === 'istatistik') istatistikleriYukle();
     }
 
+    // --- TAKVİM FONKSİYONLARI ---
+    function takvimAyDegistir(fark) {
+        gosterilenTakvimAyi.setMonth(gosterilenTakvimAyi.getMonth() + fark);
+        istatistikleriYukle(); // Firebase datasıyla birlikte renderla
+    }
+
+    function aylikTakvimiCiz(firebaseKayitlar) {
+        const y = gosterilenTakvimAyi.getFullYear();
+        const m = gosterilenTakvimAyi.getMonth();
+        const aylar = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+        document.getElementById("takvim-ay-baslik").innerText = `${aylar[m]} ${y}`;
+
+        const ilkGunTarih = new Date(y, m, 1);
+        const sonGunTarih = new Date(y, m + 1, 0);
+        let baslangicBosluk = ilkGunTarih.getDay(); // 0: Sun, 1: Mon
+        baslangicBosluk = baslangicBosluk === 0 ? 6 : baslangicBosluk - 1; // Pzt: 0, Paz: 6
+
+        let html = "";
+        for (let i = 0; i < baslangicBosluk; i++) {
+            html += `<div class="cal-cell empty"></div>`;
+        }
+
+        const bugunStr = localToISO(new Date());
+
+        for (let d = 1; d <= sonGunTarih.getDate(); d++) {
+            const tempDate = new Date(y, m, d);
+            const dateStr = localToISO(tempDate);
+            
+            const gunData = firebaseKayitlar[dateStr] || {};
+            const harita = sarmalHaritasi[dateStr];
+            
+            const isBugun = (dateStr === bugunStr) ? "bugun-cell" : "";
+            const isNobet = gunData.nobet === true;
+
+            html += `<div class="cal-cell ${isBugun}" onclick="nobetToggle('${dateStr}')">
+                        <div class="cal-date" style="color: ${isNobet ? '#fff' : '#ccc'}">${d}</div>`;
+            
+            // Eğer Nöbet varsa, ilk sıraya yaz
+            if (isNobet) {
+                html += `<div class="cal-badge badge-nobet">Nöbet</div>`;
+            }
+
+            // Sarmal dersi / tatili varsa ekle
+            if (harita) {
+                let badgeClass = "badge-ders";
+                if(harita.tip === 'mola') badgeClass = "badge-mola";
+                if(harita.tip === 'deneme' || harita.tip === 'sinav') badgeClass = "badge-deneme";
+                
+                html += `<div class="cal-badge ${badgeClass}">${harita.abbr}</div>`;
+            }
+            html += `</div>`;
+        }
+        document.getElementById("takvim-grid").innerHTML = html;
+    }
+
+    function nobetToggle(tarihStr) {
+        const ref = db.ref('tus_gunluk_kayitlar/' + tarihStr + '/nobet');
+        ref.once('value').then(snap => {
+            const suankiDurum = snap.val() || false;
+            ref.set(!suankiDurum).then(() => {
+                toastGoster(suankiDurum ? "⛔ Nöbet Kaldırıldı" : "🏥 Nöbet Eklendi");
+                istatistikleriYukle(); // Takvimi yenile
+            });
+        });
+    }
+
+    // --- NORMAL PLANLAYICI FONKSİYONLARI ---
     function bransModuluGoster() {
         const icerik = document.getElementById("brans-icerik");
         const ok = document.getElementById("brans-ok");
@@ -291,15 +449,14 @@
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById("tarih-metni").innerText = aktifTarih.toLocaleDateString('tr-TR', options);
 
-        const startDate = new Date(2026, 7, 28); // 28 Ağustos 2026
-        const son60GunBaslangic = new Date(2027, 0, 13); // 13 Ocak 2027 (Son 60 günün 1. günü)
-        const sinavTarihi = new Date(2027, 2, 14); // 14 Mart 2027
+        const startDate = new Date(2026, 7, 28); 
+        const son60GunBaslangic = new Date(2027, 0, 13);
+        const sinavTarihi = new Date(2027, 2, 14);
 
         let currentDate = new Date(startDate);
         let isGunuSayaci = 0;
         let bugunDurum = "normal";
 
-        // Sınav Günü Kontrolü
         if (gunFarkiBul(aktifTarih, sinavTarihi) === 0) {
             bugunDurum = "sinav_gunu";
         }
@@ -309,14 +466,8 @@
             let m = currentDate.getMonth(); let d = currentDate.getDate(); let y = currentDate.getFullYear();
             let gunHafta = currentDate.getDay(); 
 
-            // Özel Mola (11-12-13 Eylül 2026)
-            if (y === 2026 && m === 8 && (d === 11 || d === 12 || d === 13)) { 
-                isWorkDay = false; 
-            }
-            // 4 Ekim 2026 - 12 Ocak 2027 arası Pazarlar (Sarmal durur, Genel Deneme)
-            else if (currentDate >= new Date(2026, 9, 4) && currentDate < son60GunBaslangic && gunHafta === 0) { 
-                isWorkDay = false; 
-            }
+            if (y === 2026 && m === 8 && (d === 11 || d === 12 || d === 13)) { isWorkDay = false; }
+            else if (currentDate >= new Date(2026, 9, 4) && currentDate < son60GunBaslangic && gunHafta === 0) { isWorkDay = false; }
 
             if (currentDate.getTime() === aktifTarih.getTime() && bugunDurum !== "sinav_gunu") {
                 if (currentDate >= son60GunBaslangic && currentDate < sinavTarihi) {
@@ -329,18 +480,12 @@
             currentDate.setDate(currentDate.getDate() + 1);
         }
 
-        // Son 60 Gün Seri Deneme Bilgisi (13 Ocak - 13 Mart arası = 60 gün)
         globalSon60Info = null;
         if (aktifTarih >= son60GunBaslangic && aktifTarih < sinavTarihi) {
-            const gunNo = gunFarkiBul(son60GunBaslangic, aktifTarih) + 1; // 1 ile 60 arası
+            const gunNo = gunFarkiBul(son60GunBaslangic, aktifTarih) + 1;
             const isTemel = (gunNo % 2 === 1);
             const siraNo = isTemel ? Math.ceil(gunNo / 2) : (gunNo / 2);
-            globalSon60Info = {
-                gunNo: gunNo,
-                tur: isTemel ? "Temel Bilimler" : "Klinik Bilimler",
-                siraNo: siraNo,
-                soruSayisi: 100
-            };
+            globalSon60Info = { gunNo: gunNo, tur: isTemel ? "Temel Bilimler" : "Klinik Bilimler", siraNo: siraNo };
         }
 
         bugunSayaci = isGunuSayaci;
@@ -359,19 +504,15 @@
         document.getElementById("deneme-check").checked = false;
         globalSoruDersiKey = null;
 
-        // 1. SINAV GÜNÜ
         if (durum === "sinav_gunu") {
-            kartDers.style.display = "none";
-            kartTatil.style.display = "block";
+            kartDers.style.display = "none"; kartTatil.style.display = "block";
             document.getElementById("tatil-baslik").innerText = "🎯 BÜYÜK GÜN: TUS SINAVI!";
             document.getElementById("tatil-aciklama").innerText = "Emeklerinin karşılığını alma vakti. Sakin kal ve başar Başhekim!";
             return;
         }
 
-        // 2. ÖZEL MOLA
         if (durum === "mola") {
-            kartDers.style.display = "none";
-            kartTatil.style.display = "block";
+            kartDers.style.display = "none"; kartTatil.style.display = "block";
             document.getElementById("tatil-baslik").innerText = "🌴 Mola / Dinlenme Günü";
             document.getElementById("tatil-aciklama").innerText = "Sarmal takvim bugün ilerlemez. Zihnini dinlendir.";
             return;
@@ -379,7 +520,6 @@
 
         kartTatil.style.display = "none";
 
-        // 3. PAZAR GENEL DENEMESİ (4 Ekim - 12 Ocak Arası)
         if (durum === "pazar_deneme_genel") {
             kartDers.style.display = "block";
             document.getElementById("kart-ders-adi").innerText = "Pazar Deneme Günü";
@@ -394,13 +534,11 @@
             return;
         }
 
-        // 4. SARMAL VEYA SON 60 GÜN DURUMU
         kartDers.style.display = "block";
         document.getElementById("kart-tur-gun").style.display = "inline-block";
         document.getElementById("konu-modulu").style.display = "block";
         document.getElementById("soru-modulu").style.display = "block";
 
-        // Sarmal Turlar Bittiğinde
         if (isGunuSayaci > calismaGunleri.length) {
             document.getElementById("kart-ders-adi").innerText = "🔥 Seri Soru & Eksik Kampı";
             document.getElementById("kart-tur-gun").innerText = "Son Düzlük";
@@ -451,7 +589,6 @@
             }
         }
 
-        // 5. SON 60 GÜN DENEME MODÜLÜ AKTİVASYONU
         if (durum === "son_60_gun" && globalSon60Info) {
             denemeModulu.style.display = "block";
             const icon = globalSon60Info.tur.includes("Temel") ? "🔬" : "🩺";
@@ -464,8 +601,7 @@
     }
 
     function firebaseDurumGetir() {
-        const offset = aktifTarih.getTimezoneOffset();
-        const seciliGunStr = new Date(aktifTarih.getTime() - (offset*60*1000)).toISOString().split('T')[0];
+        const seciliGunStr = localToISO(aktifTarih);
         db.ref('tus_gunluk_kayitlar/' + seciliGunStr).once('value').then((snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.val();
@@ -479,38 +615,37 @@
     }
 
     function firebaseKaydet() {
-        const offset = aktifTarih.getTimezoneOffset();
-        const seciliGunStr = new Date(aktifTarih.getTime() - (offset*60*1000)).toISOString().split('T')[0];
-        let kayit = { tarih: seciliGunStr, kayit_zamani: firebase.database.ServerValue.TIMESTAMP };
+        const seciliGunStr = localToISO(aktifTarih);
+        
+        // Önce mevcut durumu çek ki nöbet verisi ezilmesin
+        db.ref('tus_gunluk_kayitlar/' + seciliGunStr).once('value').then(snap => {
+            let kayit = snap.val() || {};
+            kayit.tarih = seciliGunStr;
+            kayit.kayit_zamani = firebase.database.ServerValue.TIMESTAMP;
 
-        if (globalDurum === "sinav_gunu") {
-            kayit.durum = "TUS Sınav Günü";
-        }
-        else if (globalDurum === "mola") { 
-            kayit.durum = "Mola Günü"; 
-        } 
-        else if (globalDurum === "pazar_deneme_genel") {
-            kayit.durum = "Pazar Denemesi (Genel)";
-            kayit.deneme_bitti = document.getElementById("deneme-check").checked;
-            kayit.genel_deneme = document.getElementById("deneme-check").checked;
-        } 
-        else {
-            kayit.durum = (globalDurum === "son_60_gun") ? "Son 60 Gün Deneme + Sarmal" : "Sarmal Çalışma";
-            kayit.tur = globalGunVerisi ? globalGunVerisi.tur : "Kamp";
-            kayit.konu_dersi = globalGunVerisi ? planData[globalGunVerisi.ders].isim : "Soru Kampı";
-            kayit.soru_dersi = globalSoruDersiKey ? planData[globalSoruDersiKey].isim : "Karma";
-            kayit.konu_bitti = document.getElementById("konu-check").checked;
-            kayit.soru_bitti = document.getElementById("soru-check").checked;
-
-            if (globalDurum === "son_60_gun" && globalSon60Info) {
+            if (globalDurum === "sinav_gunu") { kayit.durum = "TUS Sınav Günü"; }
+            else if (globalDurum === "mola") { kayit.durum = "Mola Günü"; } 
+            else if (globalDurum === "pazar_deneme_genel") {
+                kayit.durum = "Pazar Denemesi (Genel)";
                 kayit.deneme_bitti = document.getElementById("deneme-check").checked;
-                kayit.deneme_turu = globalSon60Info.tur;
-                kayit.deneme_sirasi = globalSon60Info.siraNo;
-                if(globalSon60Info.tur === "Temel Bilimler") kayit.temel_deneme = document.getElementById("deneme-check").checked;
-                if(globalSon60Info.tur === "Klinik Bilimler") kayit.klinik_deneme = document.getElementById("deneme-check").checked;
+                kayit.genel_deneme = document.getElementById("deneme-check").checked;
+            } 
+            else {
+                kayit.durum = (globalDurum === "son_60_gun") ? "Son 60 Gün Deneme + Sarmal" : "Sarmal Çalışma";
+                kayit.tur = globalGunVerisi ? globalGunVerisi.tur : "Kamp";
+                kayit.konu_dersi = globalGunVerisi ? planData[globalGunVerisi.ders].isim : "Soru Kampı";
+                kayit.soru_dersi = globalSoruDersiKey ? planData[globalSoruDersiKey].isim : "Karma";
+                kayit.konu_bitti = document.getElementById("konu-check").checked;
+                kayit.soru_bitti = document.getElementById("soru-check").checked;
+
+                if (globalDurum === "son_60_gun" && globalSon60Info) {
+                    kayit.deneme_bitti = document.getElementById("deneme-check").checked;
+                    kayit.deneme_turu = globalSon60Info.tur;
+                    kayit.deneme_sirasi = globalSon60Info.siraNo;
+                }
             }
-        }
-        db.ref('tus_gunluk_kayitlar/' + seciliGunStr).set(kayit).then(() => toastGoster("✅ Otomatik Kaydedildi"));
+            db.ref('tus_gunluk_kayitlar/' + seciliGunStr).update(kayit).then(() => toastGoster("✅ Otomatik Kaydedildi"));
+        });
     }
 
     function bransDenemeKaydet() {
@@ -521,7 +656,7 @@
 
         if(dogru === 0 && yanlis === 0) return alert("Doğru/yanlış sayısı girin!");
 
-        const bugun = new Date().toISOString().split('T')[0];
+        const bugun = localToISO(new Date());
         db.ref('tus_brans_denemeleri').push({
             tarih: bugun, ders: ders, dogru: dogru, yanlis: yanlis, net: net, timestamp: firebase.database.ServerValue.TIMESTAMP
         }).then(() => {
@@ -541,6 +676,11 @@
         }
 
         db.ref('tus_gunluk_kayitlar').once('value').then((snapshot) => {
+            const dataDump = snapshot.val() || {};
+            
+            // TAKVİMİ ÇİZ (Firebase'deki nöbet verileriyle birlikte)
+            aylikTakvimiCiz(dataDump);
+
             const yapilanlar = {};
             for(let t=1; t<=5; t++) {
                 yapilanlar[t] = {};
