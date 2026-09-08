@@ -20,7 +20,7 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 15px; }
-        .container { background-color: var(--surface); padding: 20px; border-radius: 12px; width: 100%; max-width: 480px; box-shadow: 0 4px 20px rgba(0,0,0,0.6); position: relative; }
+        .container { background-color: var(--surface); padding: 20px; border-radius: 12px; width: 100%; max-width: 480px; box-shadow: 0 4px 20px rgba(0,0,0,0.6); position: relative; overflow: hidden; }
         
         h1 { text-align: center; color: var(--primary); margin-bottom: 15px; font-size: 22px; font-weight: 700; }
 
@@ -44,6 +44,10 @@
         .hedef-karti { background: #262626; border-left: 4px solid var(--secondary); padding: 16px; border-radius: 8px; margin-bottom: 15px; }
         .tatil-karti { border-left-color: var(--warning); display: none; }
         
+        /* YENİ: NÖBET BANNERI */
+        .nobet-banner { background: rgba(229, 57, 53, 0.15); border: 1px solid var(--danger); color: #fff; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; text-align: center; margin-bottom: 12px; display: none; }
+        .nobet-banner span { color: var(--danger); }
+
         .hedef-baslik { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
         .hedef-baslik h2 { font-size: 18px; color: #fff; }
         .badge { background: var(--primary-variant); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
@@ -85,7 +89,6 @@
         .ders-ilerleme-dolgu { background: linear-gradient(90deg, var(--primary), var(--secondary)); height: 100%; border-radius: 6px; transition: width 0.5s ease; width: 0%; }
 
         .trend-select { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: #303030; color: #fff; margin-bottom: 10px; }
-
         .btn-export { width: 100%; background: transparent; border: 1px solid var(--secondary); color: var(--secondary); padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; transition: 0.2s; }
         .btn-export:hover { background: var(--secondary); color: #000; }
 
@@ -96,14 +99,22 @@
         #toast { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--success); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 10; }
         #toast.hata { background: var(--danger); color: #fff; }
 
-        /* Takvim CSS */
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
-        .cal-day-header { text-align: center; font-size: 11px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; padding-bottom: 5px; }
-        .cal-cell { background: #222; border: 1px solid #333; border-radius: 4px; min-height: 65px; padding: 4px; display: flex; flex-direction: column; cursor: pointer; transition: 0.2s; user-select: none; }
+        /* MOBİL UYUMLU YENİ TAKVİM CSS */
+        .calendar-wrapper { width: 100%; overflow-x: auto; padding-bottom: 8px; }
+        .calendar-wrapper::-webkit-scrollbar { height: 4px; }
+        .calendar-wrapper::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+        
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; min-width: 320px; margin-top: 5px; }
+        .cal-day-header { text-align: center; font-size: 10px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; padding-bottom: 5px; }
+        
+        .cal-cell { background: #222; border: 1px solid #333; border-radius: 4px; min-height: 52px; padding: 3px; display: flex; flex-direction: column; cursor: pointer; transition: 0.2s; user-select: none; }
         .cal-cell:hover { background: #333; border-color: var(--primary); }
         .cal-cell.empty { background: transparent; border: none; cursor: default; }
-        .cal-date { font-size: 12px; font-weight: bold; color: #ccc; margin-bottom: 4px; text-align: right; }
-        .cal-badge { font-size: 9px; padding: 2px 4px; border-radius: 3px; font-weight: bold; text-align: center; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .cal-date { font-size: 11px; font-weight: bold; color: #ccc; margin-bottom: 3px; text-align: right; }
+        
+        /* Badgeler mobil için daraltıldı ve taşması engellendi */
+        .cal-badge { font-size: 8px; padding: 2px; border-radius: 3px; font-weight: bold; text-align: center; margin-bottom: 2px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0; }
+        
         .badge-nobet { background: var(--danger); color: #fff; }
         .badge-ders { background: #333; border: 1px solid var(--primary); color: #fff; }
         .badge-mola { background: var(--info); color: #fff; }
@@ -140,6 +151,11 @@
             <div class="hedef-baslik">
                 <h2 id="kart-ders-adi">Yükleniyor</h2>
                 <span id="kart-tur-gun" class="badge">...</span>
+            </div>
+
+            <!-- NÖBET MODU UYARISI -->
+            <div id="nobet-banner" class="nobet-banner">
+                🏥 <span>NÖBET MODU AKTİF:</span> Hedefler %50 esnetildi.
             </div>
 
             <div class="gorev-item" id="konu-modulu">
@@ -237,15 +253,19 @@
                 <button class="nav-ok" onclick="takvimAyDegistir(1)">❯</button>
             </div>
             
-            <div class="calendar-grid">
-                <div class="cal-day-header">Pzt</div><div class="cal-day-header">Sal</div>
-                <div class="cal-day-header">Çar</div><div class="cal-day-header">Per</div>
-                <div class="cal-day-header">Cum</div><div class="cal-day-header">Cmt</div>
-                <div class="cal-day-header" style="color: var(--danger);">Paz</div>
+            <!-- MOBİL İÇİN SCROLL KAPSAYICISI -->
+            <div class="calendar-wrapper">
+                <div class="calendar-grid">
+                    <div class="cal-day-header">Pzt</div><div class="cal-day-header">Sal</div>
+                    <div class="cal-day-header">Çar</div><div class="cal-day-header">Per</div>
+                    <div class="cal-day-header">Cum</div><div class="cal-day-header">Cmt</div>
+                    <div class="cal-day-header" style="color: var(--danger);">Paz</div>
+                </div>
+                <div class="calendar-grid" id="takvim-grid" style="margin-top:0;">
+                    <!-- Javascript ile Doldurulacak -->
+                </div>
             </div>
-            <div class="calendar-grid" id="takvim-grid">
-                <!-- Javascript ile Doldurulacak -->
-            </div>
+
             <div style="text-align:center; font-size:11px; color:#888; margin-top:12px;">
                 👆 Nöbet eklemek/kaldırmak için takvimdeki günlere tıklayabilirsin.
             </div>
@@ -332,7 +352,6 @@
         }); 
     });
 
-    // Sabit tarihler - tek yerden yönetiliyor
     const startDate = new Date(2026, 7, 28);
     const son60GunBaslangic = new Date(2027, 0, 13);
     const sinavTarihi = new Date(2027, 2, 14);
@@ -342,9 +361,7 @@
     let aktifTarih = new Date(new Date().setHours(0,0,0,0));
     let bugunSayaci = 0; 
     
-    // Takvim state
     let gosterilenTakvimAyi = new Date(aktifTarih.getFullYear(), aktifTarih.getMonth(), 1);
-    // Tek doğruluk kaynağı: her tarih için { durum, abbr, tip, workDaySayaci, son60 }
     let gunBilgisi = {};
     let dersNetGecmisi = {};
 
@@ -359,7 +376,6 @@
         return new Date(dateObj.getTime() - (offset*60*1000)).toISOString().split('T')[0];
     }
 
-    // TEK KAYNAKTAN GÜN BİLGİSİ HARİTASI (takvim ve günlük kart ikisi de burayı kullanır)
     function gunBilgisiHaritasiniOlustur() {
         let iterDate = new Date(startDate);
         let workDaySayaci = 0;
@@ -383,11 +399,8 @@
                 const isTemel = (gunNo % 2 === 1);
                 const siraNo = isTemel ? Math.ceil(gunNo / 2) : (gunNo / 2);
                 info = {
-                    durum: 'son_60_gun',
-                    abbr: isTemel ? 'T.DEN' : 'K.DEN',
-                    tip: 'deneme',
-                    workDaySayaci: workDaySayaci,
-                    son60: { gunNo: gunNo, tur: isTemel ? "Temel Bilimler" : "Klinik Bilimler", siraNo: siraNo }
+                    durum: 'son_60_gun', abbr: isTemel ? 'T.DEN' : 'K.DEN', tip: 'deneme',
+                    workDaySayaci: workDaySayaci, son60: { gunNo: gunNo, tur: isTemel ? "Temel Bilimler" : "Klinik Bilimler", siraNo: siraNo }
                 };
             } else if (!isWorkDay) {
                 if (gunHafta === 0 && iterDate >= new Date(2026, 9, 4)) {
@@ -421,7 +434,6 @@
         if(sekme === 'istatistik') istatistikleriYukle();
     }
 
-    // --- GERİ SAYIM ---
     function updateCountdown() {
         const bugun = new Date(); bugun.setHours(0,0,0,0);
         const kalan = gunFarkiBul(bugun, sinavTarihi);
@@ -491,9 +503,11 @@
             return ref.set(!suankiDurum).then(() => {
                 toastGoster(suankiDurum ? "⛔ Nöbet Kaldırıldı" : "🏥 Nöbet Eklendi");
                 istatistikleriYukle();
+                // Eğer bugüne tıkladıysak ana plan ekranını da hemen güncelle
+                if (tarihStr === localToISO(aktifTarih)) { gunuHesaplaVeArayuzuCiz(); }
             });
         }).catch(err => {
-            toastGoster("❌ Nöbet kaydedilemedi, internet kontrol et", true);
+            toastGoster("❌ Nöbet kaydedilemedi", true);
             console.error(err);
         });
     }
@@ -513,6 +527,39 @@
     function tarihDegistir(gunFarki) {
         aktifTarih.setDate(aktifTarih.getDate() + gunFarki);
         gunuHesaplaVeArayuzuCiz();
+    }
+
+    // Nöbet esnemesine göre sayfaları hesaplar
+    function hedefleriEkranaBas(isNobet) {
+        if (!globalGunVerisi || globalDurum === "kamp") return;
+
+        const aktif = globalGunVerisi;
+        const konuVeri = planData[aktif.ders];
+        const soruVeri = planData[globalSoruDersiKey];
+
+        const gKonu = Math.ceil(konuVeri.konu / aktif.toplamGun);
+        const gSoru = soruVeri.soru > 0 ? Math.ceil(soruVeri.soru / aktif.toplamGun) : 0;
+
+        // Nöbet modu aktifse hedefler yarıya düşer
+        const carpan = isNobet ? 0.5 : 1;
+        const basKonu = Math.ceil(gKonu * carpan);
+        const basSoru = Math.ceil(gSoru * carpan);
+
+        let kB = ((aktif.gun - 1) * gKonu) + 1; 
+        let kBi = Math.min(kB + basKonu - 1, konuVeri.konu);
+        if (aktif.gun === aktif.toplamGun && !isNobet) kBi = konuVeri.konu;
+
+        let sB = ((aktif.gun - 1) * gSoru) + 1; 
+        let sBi = Math.min(sB + basSoru - 1, soruVeri.soru);
+        if (aktif.gun === aktif.toplamGun && !isNobet) sBi = soruVeri.soru;
+
+        if (aktif.tur >= 3) {
+            document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Hızlı spot/açık kapatma)`;
+            document.getElementById("soru-sayfa").innerText = soruVeri.isim === "Anatomi" ? "Ayrı SB yok, Speet soruları." : `${soruVeri.soruK} - Elenmiş (Ort. Sf ${sB} - ${sBi})`;
+        } else {
+            document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Sayfa ${kB} - ${kBi})`;
+            document.getElementById("soru-sayfa").innerText = soruVeri.isim === "Anatomi" ? "Ayrı SB yok, Speet içi okuma." : `${soruVeri.soruK} (Sayfa ${sB} - ${sBi})`;
+        }
     }
 
     function gunuHesaplaVeArayuzuCiz() {
@@ -541,7 +588,6 @@
         globalDurum = info.durum;
         globalSon60Info = info.son60;
 
-        // Bug fix: globalGunVerisi her seferinde haritadan taze hesaplanır, önceki günden asla taşınmaz
         globalGunVerisi = null;
         if ((info.durum === 'normal' || info.durum === 'son_60_gun') && info.workDaySayaci >= 1 && info.workDaySayaci <= calismaGunleri.length) {
             globalGunVerisi = calismaGunleri[info.workDaySayaci - 1];
@@ -560,6 +606,7 @@
         document.getElementById("konu-check").checked = false;
         document.getElementById("soru-check").checked = false;
         document.getElementById("deneme-check").checked = false;
+        document.getElementById("nobet-banner").style.display = "none";
         globalSoruDersiKey = null;
 
         if (durum === "sinav_gunu") {
@@ -628,31 +675,16 @@
             }
             
             globalSoruDersiKey = oncekiDersKey;
-            const soruVeri = planData[oncekiDersKey];
 
             document.getElementById("kart-ders-adi").innerText = `Çalışma Planı`;
             document.getElementById("kart-tur-gun").innerText = `${aktif.tur}. Tur (${aktif.gun}/${aktif.toplamGun} Gün)`;
             document.getElementById("konu-ders-isim").innerText = konuVeri.isim;
             
             if(aktif.tur === 1 && seqIdx === 0) document.getElementById("soru-ders-isim").innerText = konuVeri.isim;
-            else document.getElementById("soru-ders-isim").innerText = soruVeri.isim;
+            else document.getElementById("soru-ders-isim").innerText = planData[oncekiDersKey].isim;
 
-            const gKonu = Math.ceil(konuVeri.konu / aktif.toplamGun);
-            const gSoru = soruVeri.soru > 0 ? Math.ceil(soruVeri.soru / aktif.toplamGun) : 0;
-
-            let kB = ((aktif.gun - 1) * gKonu) + 1; let kBi = aktif.gun * gKonu;
-            if (kBi > konuVeri.konu || aktif.gun === aktif.toplamGun) kBi = konuVeri.konu;
-
-            let sB = ((aktif.gun - 1) * gSoru) + 1; let sBi = aktif.gun * gSoru;
-            if (sBi > soruVeri.soru || aktif.gun === aktif.toplamGun) sBi = soruVeri.soru;
-
-            if (aktif.tur >= 3) {
-                document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Hızlı spot/açık kapatma)`;
-                document.getElementById("soru-sayfa").innerText = soruVeri.isim === "Anatomi" ? "Ayrı SB yok, Speet soruları." : `${soruVeri.soruK} - Elenmiş (Ort. Sf ${sB} - ${sBi})`;
-            } else {
-                document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Sayfa ${kB} - ${kBi})`;
-                document.getElementById("soru-sayfa").innerText = soruVeri.isim === "Anatomi" ? "Ayrı SB yok, Speet içi okuma." : `${soruVeri.soruK} (Sayfa ${sB} - ${sBi})`;
-            }
+            // Nöbetsiz normal hedef hesabını default olarak çağır
+            hedefleriEkranaBas(false);
 
             const gunYuzde = (aktif.gun / aktif.toplamGun) * 100;
             document.getElementById("konu-progress").style.width = gunYuzde + "%";
@@ -675,15 +707,26 @@
         db.ref('tus_gunluk_kayitlar/' + seciliGunStr).once('value').then((snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.val();
+                
+                // Checkboxların durumunu getir
                 if(document.getElementById("konu-check")) document.getElementById("konu-check").checked = data.konu_bitti || false;
                 if(document.getElementById("soru-check")) document.getElementById("soru-check").checked = data.soru_bitti || false;
                 if(document.getElementById("deneme-check")) {
                     document.getElementById("deneme-check").checked = data.deneme_bitti || data.genel_deneme || data.temel_deneme || data.klinik_deneme || false;
                 }
+                
+                // NÖBET MODU KONTROLÜ
+                if(data.nobet === true && globalDurum !== "mola" && globalDurum !== "pazar_deneme_genel" && globalDurum !== "sinav_gunu") {
+                    document.getElementById("nobet-banner").style.display = "block";
+                    hedefleriEkranaBas(true); // Hedefleri %50 esneterek tekrar yazdır
+                } else {
+                    document.getElementById("nobet-banner").style.display = "none";
+                }
+            } else {
+                document.getElementById("nobet-banner").style.display = "none";
             }
         }).catch(err => {
-            toastGoster("❌ Veri okunamadı, internet kontrol et", true);
-            console.error(err);
+            console.error("Veri okunamadı", err);
         });
     }
 
@@ -740,12 +783,11 @@
             document.getElementById("brans-dogru").value = ""; document.getElementById("brans-yanlis").value = "";
             bransModuluGoster(); istatistikleriYukle();
         }).catch(err => {
-            toastGoster("❌ Kayıt başarısız, internet kontrol et", true);
+            toastGoster("❌ Kayıt başarısız", true);
             console.error(err);
         });
     }
 
-    // --- SERİ (STREAK) HESABI ---
     function serimiHesapla(dataDump) {
         let d = new Date(); d.setHours(0,0,0,0);
 
@@ -757,7 +799,6 @@
             return !!(kayit && kayit.konu_bitti && kayit.soru_bitti);
         }
 
-        // Bugün henüz tamamlanmadıysa seriyi bozma, dünden başlayarak say
         const todayStr = localToISO(d);
         const todayHarita = gunBilgisi[todayStr];
         if (todayHarita && todayHarita.tip !== 'mola' && todayHarita.tip !== 'sinav') {
@@ -777,7 +818,6 @@
         return streak;
     }
 
-    // --- JSON YEDEKLEME ---
     function verileriYedekle() {
         Promise.all([
             db.ref('tus_gunluk_kayitlar').once('value'),
@@ -804,7 +844,6 @@
         });
     }
 
-    // --- NET TREND GRAFİĞİ ---
     function trendGrafigiCiz(ders) {
         const container = document.getElementById("trend-grafik-alani");
         const veri = dersNetGecmisi[ders];
@@ -908,7 +947,6 @@
             if(htmlListe === '') htmlListe = '<div style="text-align:center; color:#888; font-size:13px; margin-top:10px;">Henüz tüm günleri tamamlanmış bir ders yok. İlk tiki atmaya çok yakınsın!</div>';
             document.getElementById("ist-tamamlanan-liste").innerHTML = htmlListe;
 
-            // Ders bazlı genel ilerleme (tüm turlar toplamı)
             const dersIlerlemeler = [];
             for(let key in planData) {
                 const dersAd = planData[key].isim;
