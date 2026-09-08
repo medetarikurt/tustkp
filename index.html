@@ -107,7 +107,8 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; min-width: 320px; margin-top: 5px; }
         .cal-day-header { text-align: center; font-size: 10px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; padding-bottom: 5px; }
         
-        .cal-cell { background: #222; border: 1px solid #333; border-radius: 4px; min-height: 52px; padding: 3px; display: flex; flex-direction: column; cursor: pointer; transition: 0.2s; user-select: none; }
+        /* cal-cell yüksekliği ders+deneme+nöbet sığması için 62px yapıldı */
+        .cal-cell { background: #222; border: 1px solid #333; border-radius: 4px; min-height: 62px; padding: 3px; display: flex; flex-direction: column; cursor: pointer; transition: 0.2s; user-select: none; }
         .cal-cell:hover { background: #333; border-color: var(--primary); }
         .cal-cell.empty { background: transparent; border: none; cursor: default; }
         .cal-date { font-size: 11px; font-weight: bold; color: #ccc; margin-bottom: 3px; text-align: right; }
@@ -152,7 +153,6 @@
                 <span id="kart-tur-gun" class="badge">...</span>
             </div>
 
-            <!-- NÖBET GÜNÜ UYARISI (Hedef eksiltmez, sadece görsel) -->
             <div id="nobet-banner" class="nobet-banner">
                 🏥 <span>BUGÜN NÖBET:</span> Hedefler sabit. Eksikleri nöbet öncesi/sonrası sen telafi ediyorsun!
             </div>
@@ -244,7 +244,6 @@
             </div>
         </div>
 
-        <!-- AYLIK TAKVİM & NÖBET MODÜLÜ -->
         <div class="hedef-karti" style="border-left-color: var(--primary); padding: 12px;">
             <div class="takvim-nav" style="margin-bottom:10px;">
                 <button class="nav-ok" onclick="takvimAyDegistir(-1)">❮</button>
@@ -252,7 +251,6 @@
                 <button class="nav-ok" onclick="takvimAyDegistir(1)">❯</button>
             </div>
             
-            <!-- MOBİL İÇİN SCROLL KAPSAYICISI -->
             <div class="calendar-wrapper">
                 <div class="calendar-grid">
                     <div class="cal-day-header">Pzt</div><div class="cal-day-header">Sal</div>
@@ -390,16 +388,29 @@
 
             if (isWorkDay) workDaySayaci++;
 
+            // O günün "Ders" bilgisini çıkaralım (Sarmal bitse de KAMP olarak döner)
+            let dersAbbr = "";
+            if (isWorkDay && workDaySayaci <= calismaGunleri.length) {
+                dersAbbr = planData[calismaGunleri[workDaySayaci - 1].ders].kisa;
+            } else if (isWorkDay) {
+                dersAbbr = "KAMP";
+            }
+
             let info;
             if (gunFarkiBul(iterDate, sinavTarihi) === 0) {
                 info = { durum: 'sinav_gunu', abbr: 'TUS!', tip: 'sinav', workDaySayaci: workDaySayaci, son60: null };
             } else if (iterDate >= son60GunBaslangic && iterDate < sinavTarihi) {
+                // YENİ: Son 60 gün geldiğinde hem dersi hem denemeyi obje içine gömüyoruz
                 const gunNo = gunFarkiBul(son60GunBaslangic, iterDate) + 1;
                 const isTemel = (gunNo % 2 === 1);
                 const siraNo = isTemel ? Math.ceil(gunNo / 2) : (gunNo / 2);
                 info = {
-                    durum: 'son_60_gun', abbr: isTemel ? 'T.DEN' : 'K.DEN', tip: 'deneme',
-                    workDaySayaci: workDaySayaci, son60: { gunNo: gunNo, tur: isTemel ? "Temel Bilimler" : "Klinik Bilimler", siraNo: siraNo }
+                    durum: 'son_60_gun', 
+                    abbr: dersAbbr, // Ders bilgisini tuttuk
+                    denemeAbbr: isTemel ? 'T.DEN' : 'K.DEN', // Deneme bilgisini tuttuk
+                    tip: 'son60', // İki badge basılacak özel tip
+                    workDaySayaci: workDaySayaci, 
+                    son60: { gunNo: gunNo, tur: isTemel ? "Temel Bilimler" : "Klinik Bilimler", siraNo: siraNo }
                 };
             } else if (!isWorkDay) {
                 if (gunHafta === 0 && iterDate >= new Date(2026, 9, 4)) {
@@ -408,13 +419,9 @@
                     info = { durum: 'mola', abbr: 'Tatil', tip: 'mola', workDaySayaci: workDaySayaci, son60: null };
                 }
             } else {
-                if (workDaySayaci <= calismaGunleri.length) {
-                    const aktifDers = calismaGunleri[workDaySayaci - 1].ders;
-                    info = { durum: 'normal', abbr: planData[aktifDers].kisa, tip: 'ders', workDaySayaci: workDaySayaci, son60: null };
-                } else {
-                    info = { durum: 'kamp', abbr: 'KAMP', tip: 'ders', workDaySayaci: workDaySayaci, son60: null };
-                }
+                info = { durum: (workDaySayaci <= calismaGunleri.length) ? 'normal' : 'kamp', abbr: dersAbbr, tip: 'ders', workDaySayaci: workDaySayaci, son60: null };
             }
+            
             gunBilgisi[dateStr] = info;
             iterDate.setDate(iterDate.getDate() + 1);
         }
@@ -442,7 +449,6 @@
         else { el.innerText = `✅ TUS geride kaldı (${Math.abs(kalan)} gün önce)`; }
     }
 
-    // --- TAKVİM FONKSİYONLARI ---
     function takvimAyDegistir(fark) {
         gosterilenTakvimAyi.setMonth(gosterilenTakvimAyi.getMonth() + fark);
         istatistikleriYukle();
@@ -484,11 +490,17 @@
             }
 
             if (harita) {
-                let badgeClass = "badge-ders";
-                if(harita.tip === 'mola') badgeClass = "badge-mola";
-                if(harita.tip === 'deneme' || harita.tip === 'sinav') badgeClass = "badge-deneme";
-                
-                html += `<div class="cal-badge ${badgeClass}">${harita.abbr}</div>`;
+                if (harita.tip === 'son60') {
+                    // YENİ: Son 60 günde hem ders hem de deneme badge'i alt alta çıkacak
+                    html += `<div class="cal-badge badge-ders">${harita.abbr}</div>`;
+                    html += `<div class="cal-badge badge-deneme">${harita.denemeAbbr}</div>`;
+                } else {
+                    let badgeClass = "badge-ders";
+                    if(harita.tip === 'mola') badgeClass = "badge-mola";
+                    if(harita.tip === 'deneme' || harita.tip === 'sinav') badgeClass = "badge-deneme";
+                    
+                    html += `<div class="cal-badge ${badgeClass}">${harita.abbr}</div>`;
+                }
             }
             html += `</div>`;
         }
@@ -648,7 +660,6 @@
             if(aktif.tur === 1 && seqIdx === 0) document.getElementById("soru-ders-isim").innerText = konuVeri.isim;
             else document.getElementById("soru-ders-isim").innerText = soruVeri.isim;
 
-            // STANDART HEDEF HESAPLAMA (Esneme Yok)
             const gKonu = Math.ceil(konuVeri.konu / aktif.toplamGun);
             const gSoru = soruVeri.soru > 0 ? Math.ceil(soruVeri.soru / aktif.toplamGun) : 0;
 
@@ -696,7 +707,6 @@
                     document.getElementById("deneme-check").checked = data.deneme_bitti || data.genel_deneme || data.temel_deneme || data.klinik_deneme || false;
                 }
                 
-                // NÖBET MODU KONTROLÜ (Sadece görsel uyarı)
                 if(data.nobet === true && globalDurum !== "mola" && globalDurum !== "pazar_deneme_genel" && globalDurum !== "sinav_gunu") {
                     document.getElementById("nobet-banner").style.display = "block";
                 } else {
@@ -742,7 +752,7 @@
             return db.ref('tus_gunluk_kayitlar/' + seciliGunStr).update(kayit);
         }).then(() => toastGoster("✅ Otomatik Kaydedildi"))
         .catch(err => {
-            toastGoster("❌ Kaydedilemedi, internet kontrol et", true);
+            toastGoster("❌ Kaydedilemedi", true);
             console.error(err);
         });
     }
