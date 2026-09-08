@@ -15,6 +15,7 @@
             --text: #e0e0e0; --text-muted: #a0a0a0; 
             --success: #4caf50; --border: #333333; --warning: #ff9800;
             --danger: #e53935; --info: #2196F3;
+            color-scheme: dark;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -22,6 +23,8 @@
         .container { background-color: var(--surface); padding: 20px; border-radius: 12px; width: 100%; max-width: 480px; box-shadow: 0 4px 20px rgba(0,0,0,0.6); position: relative; }
         
         h1 { text-align: center; color: var(--primary); margin-bottom: 15px; font-size: 22px; font-weight: 700; }
+
+        .countdown-banner { text-align: center; background: linear-gradient(135deg, var(--primary-variant), var(--primary)); color: #fff; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 14px; margin-bottom: 15px; letter-spacing: 0.3px; }
         
         .tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
         .tab-btn { flex: 1; background: transparent; color: var(--text-muted); border: none; padding: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.3s; }
@@ -47,7 +50,11 @@
         
         .gorev-item { margin-bottom: 12px; background: #303030; padding: 12px; border-radius: 8px; }
         .gorev-item strong { display: block; margin-bottom: 4px; font-size: 14px; text-transform: uppercase; }
-        .sayfa-bilgisi { font-size: 14px; margin-bottom: 10px; color: #fff; }
+        .sayfa-bilgisi { font-size: 14px; margin-bottom: 8px; color: #fff; }
+
+        .progress-bar-container { background: #1a1a1a; border-radius: 6px; height: 6px; overflow: hidden; margin-bottom: 10px; }
+        .progress-bar-fill { background: var(--primary); height: 100%; border-radius: 6px; transition: width 0.4s ease; width: 0%; }
+        #soru-modulu .progress-bar-fill { background: var(--secondary); }
         
         .checkbox-container { display: flex; align-items: center; cursor: pointer; user-select: none; font-size: 14px; color: #ccc; }
         .checkbox-container input { margin-right: 10px; width: 18px; height: 18px; accent-color: var(--success); cursor: pointer; }
@@ -61,21 +68,35 @@
         .form-group input, .form-group select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: #303030; color: #fff; outline: none; }
         .btn-kaydet { width: 100%; background: var(--primary); color: #000; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 5px; }
 
+        .stats-row { display: flex; gap: 10px; margin-bottom: 15px; }
+        .stats-row .istatistik-kutu { flex: 1; margin-bottom: 0; }
         .istatistik-kutu { background: #262626; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center; border-bottom: 3px solid var(--primary); }
-        .istatistik-deger { font-size: 24px; font-weight: bold; color: var(--primary); margin: 5px 0; }
+        .istatistik-deger { font-size: 22px; font-weight: bold; color: var(--primary); margin: 5px 0; }
         .istatistik-baslik { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
         
         .analiz-tablo { width: 100%; border-collapse: collapse; margin-top: 10px; }
         .analiz-tablo th { background: #333; color: var(--secondary); padding: 10px; text-align: left; font-size: 13px; }
         .analiz-tablo td { padding: 10px; border-bottom: 1px solid var(--border); color: #e0e0e0; font-size: 14px; }
 
+        .ders-ilerleme-item { margin-bottom: 12px; }
+        .ders-ilerleme-baslik { display: flex; justify-content: space-between; font-size: 13px; color: #ddd; margin-bottom: 4px; }
+        .ders-ilerleme-yuzde { color: var(--primary); font-weight: bold; }
+        .ders-ilerleme-bar { background: #1a1a1a; border-radius: 6px; height: 8px; overflow: hidden; }
+        .ders-ilerleme-dolgu { background: linear-gradient(90deg, var(--primary), var(--secondary)); height: 100%; border-radius: 6px; transition: width 0.5s ease; width: 0%; }
+
+        .trend-select { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: #303030; color: #fff; margin-bottom: 10px; }
+
+        .btn-export { width: 100%; background: transparent; border: 1px solid var(--secondary); color: var(--secondary); padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        .btn-export:hover { background: var(--secondary); color: #000; }
+
         .scroll-liste::-webkit-scrollbar { width: 6px; }
         .scroll-liste::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
         .scroll-liste::-webkit-scrollbar-track { background: #222; }
 
         #toast { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--success); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 10; }
+        #toast.hata { background: var(--danger); color: #fff; }
 
-        /* Yeni Takvim CSS */
+        /* Takvim CSS */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .cal-day-header { text-align: center; font-size: 11px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; padding-bottom: 5px; }
         .cal-cell { background: #222; border: 1px solid #333; border-radius: 4px; min-height: 65px; padding: 4px; display: flex; flex-direction: column; cursor: pointer; transition: 0.2s; user-select: none; }
@@ -95,6 +116,7 @@
 <div class="container">
     <div id="toast">✅ Kaydedildi</div>
     <h1>TUS Sarmal Takip</h1>
+    <div class="countdown-banner" id="countdown-banner">📅 Hesaplanıyor...</div>
     
     <div class="tabs">
         <button class="tab-btn active" id="tab-plan-btn" onclick="sekmeDegistir('plan')">Çalışma Planı</button>
@@ -123,6 +145,7 @@
             <div class="gorev-item" id="konu-modulu">
                 <strong style="color: var(--primary);">📖 <span id="konu-ders-isim">Ders</span> Konusu</strong>
                 <div id="konu-sayfa" class="sayfa-bilgisi">...</div>
+                <div class="progress-bar-container"><div class="progress-bar-fill" id="konu-progress"></div></div>
                 <label class="checkbox-container">
                     <input type="checkbox" id="konu-check" onchange="firebaseKaydet()"> Hedefi Tamamladım
                 </label>
@@ -131,6 +154,7 @@
             <div class="gorev-item" id="soru-modulu">
                 <strong style="color: var(--secondary);">🎯 <span id="soru-ders-isim">Ders</span> Sorusu</strong>
                 <div id="soru-sayfa" class="sayfa-bilgisi">...</div>
+                <div class="progress-bar-container"><div class="progress-bar-fill" id="soru-progress"></div></div>
                 <label class="checkbox-container">
                     <input type="checkbox" id="soru-check" onchange="firebaseKaydet()"> Hedefi Tamamladım
                 </label>
@@ -155,6 +179,10 @@
             <span id="brans-ok">▼</span>
         </button>
         <div id="brans-icerik" class="brans-modulu-icerik">
+            <div class="form-group">
+                <label>Deneme Tarihi</label>
+                <input type="date" id="brans-tarih">
+            </div>
             <div class="form-group">
                 <label>Ders Seç</label>
                 <select id="brans-ders">
@@ -188,13 +216,20 @@
     <!-- SEKME 2: İSTATİSTİKLER & TAKVİM -->
     <div id="sekme-istatistik" style="display: none;">
         
-        <div class="istatistik-kutu">
-            <div class="istatistik-baslik">Mevcut Durum</div>
-            <div class="istatistik-deger" id="ist-mevcut-tur">-</div>
-            <div style="font-size: 13px; color: #fff;" id="ist-mevcut-gun">...</div>
+        <div class="stats-row">
+            <div class="istatistik-kutu">
+                <div class="istatistik-baslik">Mevcut Durum</div>
+                <div class="istatistik-deger" id="ist-mevcut-tur">-</div>
+                <div style="font-size: 13px; color: #fff;" id="ist-mevcut-gun">...</div>
+            </div>
+            <div class="istatistik-kutu">
+                <div class="istatistik-baslik">Seri</div>
+                <div class="istatistik-deger" id="ist-streak-deger">🔥 -</div>
+                <div style="font-size: 13px; color: #fff;">gün üst üste</div>
+            </div>
         </div>
 
-        <!-- YENİ: AYLIK TAKVİM & NÖBET MODÜLÜ -->
+        <!-- AYLIK TAKVİM & NÖBET MODÜLÜ -->
         <div class="hedef-karti" style="border-left-color: var(--primary); padding: 12px;">
             <div class="takvim-nav" style="margin-bottom:10px;">
                 <button class="nav-ok" onclick="takvimAyDegistir(-1)">❮</button>
@@ -223,12 +258,25 @@
             </div>
         </div>
 
+        <div class="hedef-karti" style="border-left-color: var(--primary);">
+            <h2 style="font-size: 16px; margin-bottom: 10px; color: #fff;">📊 Ders Bazlı Genel İlerleme</h2>
+            <div id="ders-ilerleme-icerik">Yükleniyor...</div>
+        </div>
+
         <div class="hedef-karti" style="border-left-color: var(--secondary);">
             <h2 style="font-size: 16px; margin-bottom: 10px; color: #fff;">📊 Branş Deneme Karnesi</h2>
             <div id="analiz-icerik" style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 15px 0;">
                 Yükleniyor...
             </div>
         </div>
+
+        <div class="hedef-karti" id="trend-secim-alani" style="border-left-color: var(--primary); display:none;">
+            <h2 style="font-size: 16px; margin-bottom: 10px; color: #fff;">📈 Net Trend Grafiği</h2>
+            <select id="trend-ders-secim" class="trend-select" onchange="trendGrafigiCiz(this.value)"></select>
+            <div id="trend-grafik-alani"></div>
+        </div>
+
+        <button class="btn-export" onclick="verileriYedekle()">💾 Tüm Verileri Yedekle (JSON)</button>
     </div>
 
 </div>
@@ -284,6 +332,11 @@
         }); 
     });
 
+    // Sabit tarihler - tek yerden yönetiliyor
+    const startDate = new Date(2026, 7, 28);
+    const son60GunBaslangic = new Date(2027, 0, 13);
+    const sinavTarihi = new Date(2027, 2, 14);
+
     let globalGunVerisi = null; let globalSoruDersiKey = null; let globalDurum = "";
     let globalSon60Info = null;
     let aktifTarih = new Date(new Date().setHours(0,0,0,0));
@@ -291,7 +344,9 @@
     
     // Takvim state
     let gosterilenTakvimAyi = new Date(aktifTarih.getFullYear(), aktifTarih.getMonth(), 1);
-    let sarmalHaritasi = {}; // YYYY-MM-DD -> { abbr: 'DAH', tip: 'ders' }
+    // Tek doğruluk kaynağı: her tarih için { durum, abbr, tip, workDaySayaci, son60 }
+    let gunBilgisi = {};
+    let dersNetGecmisi = {};
 
     function gunFarkiBul(d1, d2) {
         const utc1 = Date.UTC(d1.getFullYear(), d1.getMonth(), d1.getDate());
@@ -299,12 +354,13 @@
         return Math.floor((utc2 - utc1) / (1000 * 60 * 60 * 24));
     }
 
-    // ARKA PLAN SARMAL SİMÜLASYONU (Tüm takvim hesaplanıp belleğe alınır)
-    function sarmalHaritasiniOlustur() {
-        const startDate = new Date(2026, 7, 28);
-        const son60GunBaslangic = new Date(2027, 0, 13);
-        const sinavTarihi = new Date(2027, 2, 14);
+    function localToISO(dateObj) {
+        const offset = dateObj.getTimezoneOffset();
+        return new Date(dateObj.getTime() - (offset*60*1000)).toISOString().split('T')[0];
+    }
 
+    // TEK KAYNAKTAN GÜN BİLGİSİ HARİTASI (takvim ve günlük kart ikisi de burayı kullanır)
+    function gunBilgisiHaritasiniOlustur() {
         let iterDate = new Date(startDate);
         let workDaySayaci = 0;
 
@@ -312,42 +368,48 @@
             const dateStr = localToISO(iterDate);
             let isWorkDay = true;
             let m = iterDate.getMonth(); let d = iterDate.getDate(); let y = iterDate.getFullYear();
-            let gunHafta = iterDate.getDay(); 
+            let gunHafta = iterDate.getDay();
 
             if (y === 2026 && m === 8 && (d === 11 || d === 12 || d === 13)) { isWorkDay = false; }
             else if (iterDate >= new Date(2026, 9, 4) && iterDate < son60GunBaslangic && gunHafta === 0) { isWorkDay = false; }
 
+            if (isWorkDay) workDaySayaci++;
+
+            let info;
             if (gunFarkiBul(iterDate, sinavTarihi) === 0) {
-                sarmalHaritasi[dateStr] = { abbr: 'TUS!', tip: 'sinav' };
+                info = { durum: 'sinav_gunu', abbr: 'TUS!', tip: 'sinav', workDaySayaci: workDaySayaci, son60: null };
             } else if (iterDate >= son60GunBaslangic && iterDate < sinavTarihi) {
                 const gunNo = gunFarkiBul(son60GunBaslangic, iterDate) + 1;
-                sarmalHaritasi[dateStr] = { abbr: (gunNo % 2 === 1) ? 'T.DEN' : 'K.DEN', tip: 'deneme' };
+                const isTemel = (gunNo % 2 === 1);
+                const siraNo = isTemel ? Math.ceil(gunNo / 2) : (gunNo / 2);
+                info = {
+                    durum: 'son_60_gun',
+                    abbr: isTemel ? 'T.DEN' : 'K.DEN',
+                    tip: 'deneme',
+                    workDaySayaci: workDaySayaci,
+                    son60: { gunNo: gunNo, tur: isTemel ? "Temel Bilimler" : "Klinik Bilimler", siraNo: siraNo }
+                };
             } else if (!isWorkDay) {
                 if (gunHafta === 0 && iterDate >= new Date(2026, 9, 4)) {
-                    sarmalHaritasi[dateStr] = { abbr: 'G.DEN', tip: 'deneme' };
+                    info = { durum: 'pazar_deneme_genel', abbr: 'G.DEN', tip: 'deneme', workDaySayaci: workDaySayaci, son60: null };
                 } else {
-                    sarmalHaritasi[dateStr] = { abbr: 'Tatil', tip: 'mola' };
+                    info = { durum: 'mola', abbr: 'Tatil', tip: 'mola', workDaySayaci: workDaySayaci, son60: null };
                 }
             } else {
-                workDaySayaci++;
                 if (workDaySayaci <= calismaGunleri.length) {
                     const aktifDers = calismaGunleri[workDaySayaci - 1].ders;
-                    sarmalHaritasi[dateStr] = { abbr: planData[aktifDers].kisa, tip: 'ders' };
+                    info = { durum: 'normal', abbr: planData[aktifDers].kisa, tip: 'ders', workDaySayaci: workDaySayaci, son60: null };
                 } else {
-                    sarmalHaritasi[dateStr] = { abbr: 'KAMP', tip: 'ders' };
+                    info = { durum: 'kamp', abbr: 'KAMP', tip: 'ders', workDaySayaci: workDaySayaci, son60: null };
                 }
             }
+            gunBilgisi[dateStr] = info;
             iterDate.setDate(iterDate.getDate() + 1);
         }
     }
 
-    function localToISO(dateObj) {
-        const offset = dateObj.getTimezoneOffset();
-        return new Date(dateObj.getTime() - (offset*60*1000)).toISOString().split('T')[0];
-    }
-
     window.onload = () => { 
-        sarmalHaritasiniOlustur();
+        gunBilgisiHaritasiniOlustur();
         gunuHesaplaVeArayuzuCiz(); 
     };
 
@@ -359,10 +421,20 @@
         if(sekme === 'istatistik') istatistikleriYukle();
     }
 
+    // --- GERİ SAYIM ---
+    function updateCountdown() {
+        const bugun = new Date(); bugun.setHours(0,0,0,0);
+        const kalan = gunFarkiBul(bugun, sinavTarihi);
+        const el = document.getElementById("countdown-banner");
+        if (kalan > 0) { el.innerText = `📅 TUS'a ${kalan} gün kaldı`; }
+        else if (kalan === 0) { el.innerText = `🎯 BUGÜN TUS GÜNÜ! Başarılar!`; }
+        else { el.innerText = `✅ TUS geride kaldı (${Math.abs(kalan)} gün önce)`; }
+    }
+
     // --- TAKVİM FONKSİYONLARI ---
     function takvimAyDegistir(fark) {
         gosterilenTakvimAyi.setMonth(gosterilenTakvimAyi.getMonth() + fark);
-        istatistikleriYukle(); // Firebase datasıyla birlikte renderla
+        istatistikleriYukle();
     }
 
     function aylikTakvimiCiz(firebaseKayitlar) {
@@ -373,8 +445,8 @@
 
         const ilkGunTarih = new Date(y, m, 1);
         const sonGunTarih = new Date(y, m + 1, 0);
-        let baslangicBosluk = ilkGunTarih.getDay(); // 0: Sun, 1: Mon
-        baslangicBosluk = baslangicBosluk === 0 ? 6 : baslangicBosluk - 1; // Pzt: 0, Paz: 6
+        let baslangicBosluk = ilkGunTarih.getDay();
+        baslangicBosluk = baslangicBosluk === 0 ? 6 : baslangicBosluk - 1;
 
         let html = "";
         for (let i = 0; i < baslangicBosluk; i++) {
@@ -388,7 +460,7 @@
             const dateStr = localToISO(tempDate);
             
             const gunData = firebaseKayitlar[dateStr] || {};
-            const harita = sarmalHaritasi[dateStr];
+            const harita = gunBilgisi[dateStr];
             
             const isBugun = (dateStr === bugunStr) ? "bugun-cell" : "";
             const isNobet = gunData.nobet === true;
@@ -396,12 +468,10 @@
             html += `<div class="cal-cell ${isBugun}" onclick="nobetToggle('${dateStr}')">
                         <div class="cal-date" style="color: ${isNobet ? '#fff' : '#ccc'}">${d}</div>`;
             
-            // Eğer Nöbet varsa, ilk sıraya yaz
             if (isNobet) {
                 html += `<div class="cal-badge badge-nobet">Nöbet</div>`;
             }
 
-            // Sarmal dersi / tatili varsa ekle
             if (harita) {
                 let badgeClass = "badge-ders";
                 if(harita.tip === 'mola') badgeClass = "badge-mola";
@@ -418,10 +488,13 @@
         const ref = db.ref('tus_gunluk_kayitlar/' + tarihStr + '/nobet');
         ref.once('value').then(snap => {
             const suankiDurum = snap.val() || false;
-            ref.set(!suankiDurum).then(() => {
+            return ref.set(!suankiDurum).then(() => {
                 toastGoster(suankiDurum ? "⛔ Nöbet Kaldırıldı" : "🏥 Nöbet Eklendi");
-                istatistikleriYukle(); // Takvimi yenile
+                istatistikleriYukle();
             });
+        }).catch(err => {
+            toastGoster("❌ Nöbet kaydedilemedi, internet kontrol et", true);
+            console.error(err);
         });
     }
 
@@ -430,7 +503,11 @@
         const icerik = document.getElementById("brans-icerik");
         const ok = document.getElementById("brans-ok");
         if(icerik.style.display === "block") { icerik.style.display = "none"; ok.innerText = "▼"; } 
-        else { icerik.style.display = "block"; ok.innerText = "▲"; }
+        else { 
+            icerik.style.display = "block"; ok.innerText = "▲";
+            const tarihInput = document.getElementById("brans-tarih");
+            if(!tarihInput.value) tarihInput.value = localToISO(aktifTarih);
+        }
     }
 
     function tarihDegistir(gunFarki) {
@@ -449,48 +526,29 @@
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById("tarih-metni").innerText = aktifTarih.toLocaleDateString('tr-TR', options);
 
-        const startDate = new Date(2026, 7, 28); 
-        const son60GunBaslangic = new Date(2027, 0, 13);
-        const sinavTarihi = new Date(2027, 2, 14);
+        const dateStr = localToISO(aktifTarih);
+        let info = gunBilgisi[dateStr];
 
-        let currentDate = new Date(startDate);
-        let isGunuSayaci = 0;
-        let bugunDurum = "normal";
-
-        if (gunFarkiBul(aktifTarih, sinavTarihi) === 0) {
-            bugunDurum = "sinav_gunu";
-        }
-
-        while (currentDate <= aktifTarih) {
-            let isWorkDay = true;
-            let m = currentDate.getMonth(); let d = currentDate.getDate(); let y = currentDate.getFullYear();
-            let gunHafta = currentDate.getDay(); 
-
-            if (y === 2026 && m === 8 && (d === 11 || d === 12 || d === 13)) { isWorkDay = false; }
-            else if (currentDate >= new Date(2026, 9, 4) && currentDate < son60GunBaslangic && gunHafta === 0) { isWorkDay = false; }
-
-            if (currentDate.getTime() === aktifTarih.getTime() && bugunDurum !== "sinav_gunu") {
-                if (currentDate >= son60GunBaslangic && currentDate < sinavTarihi) {
-                    bugunDurum = "son_60_gun";
-                } else if (!isWorkDay) {
-                    bugunDurum = (gunHafta === 0 && currentDate >= new Date(2026, 9, 4)) ? "pazar_deneme_genel" : "mola";
-                }
+        if (!info) {
+            if (aktifTarih < startDate) {
+                info = { durum: 'mola', abbr: 'Tatil', tip: 'mola', workDaySayaci: 0, son60: null };
+            } else {
+                info = { durum: 'sinav_sonrasi', abbr: '', tip: 'mola', workDaySayaci: calismaGunleri.length, son60: null };
             }
-            if (isWorkDay) isGunuSayaci++;
-            currentDate.setDate(currentDate.getDate() + 1);
         }
 
-        globalSon60Info = null;
-        if (aktifTarih >= son60GunBaslangic && aktifTarih < sinavTarihi) {
-            const gunNo = gunFarkiBul(son60GunBaslangic, aktifTarih) + 1;
-            const isTemel = (gunNo % 2 === 1);
-            const siraNo = isTemel ? Math.ceil(gunNo / 2) : (gunNo / 2);
-            globalSon60Info = { gunNo: gunNo, tur: isTemel ? "Temel Bilimler" : "Klinik Bilimler", siraNo: siraNo };
+        bugunSayaci = info.workDaySayaci;
+        globalDurum = info.durum;
+        globalSon60Info = info.son60;
+
+        // Bug fix: globalGunVerisi her seferinde haritadan taze hesaplanır, önceki günden asla taşınmaz
+        globalGunVerisi = null;
+        if ((info.durum === 'normal' || info.durum === 'son_60_gun') && info.workDaySayaci >= 1 && info.workDaySayaci <= calismaGunleri.length) {
+            globalGunVerisi = calismaGunleri[info.workDaySayaci - 1];
         }
 
-        bugunSayaci = isGunuSayaci;
-        globalDurum = bugunDurum;
-        arayuzuUygula(isGunuSayaci, bugunDurum);
+        arayuzuUygula(info.workDaySayaci, info.durum);
+        updateCountdown();
         firebaseDurumGetir(); 
     }
 
@@ -508,6 +566,13 @@
             kartDers.style.display = "none"; kartTatil.style.display = "block";
             document.getElementById("tatil-baslik").innerText = "🎯 BÜYÜK GÜN: TUS SINAVI!";
             document.getElementById("tatil-aciklama").innerText = "Emeklerinin karşılığını alma vakti. Sakin kal ve başar Başhekim!";
+            return;
+        }
+
+        if (durum === "sinav_sonrasi") {
+            kartDers.style.display = "none"; kartTatil.style.display = "block";
+            document.getElementById("tatil-baslik").innerText = "🎉 TUS Geride Kaldı!";
+            document.getElementById("tatil-aciklama").innerText = "Artık sonuçları bekleme zamanı. Emeğine sağlık!";
             return;
         }
 
@@ -539,16 +604,17 @@
         document.getElementById("konu-modulu").style.display = "block";
         document.getElementById("soru-modulu").style.display = "block";
 
-        if (isGunuSayaci > calismaGunleri.length) {
+        if (durum === "kamp" || !globalGunVerisi) {
             document.getElementById("kart-ders-adi").innerText = "🔥 Seri Soru & Eksik Kampı";
             document.getElementById("kart-tur-gun").innerText = "Son Düzlük";
             document.getElementById("konu-ders-isim").innerText = "Genel";
             document.getElementById("soru-ders-isim").innerText = "Karma";
             document.getElementById("konu-sayfa").innerText = "Eksik Kapatma / Spot Taraması";
             document.getElementById("soru-sayfa").innerText = "Karma Soru Bankası & Çıkmış Sorular";
+            document.getElementById("konu-progress").style.width = "0%";
+            document.getElementById("soru-progress").style.width = "0%";
         } else {
-            const aktif = calismaGunleri[isGunuSayaci - 1];
-            globalGunVerisi = aktif;
+            const aktif = globalGunVerisi;
             const konuVeri = planData[aktif.ders];
 
             let oncekiDersKey = aktif.ders;
@@ -587,6 +653,10 @@
                 document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Sayfa ${kB} - ${kBi})`;
                 document.getElementById("soru-sayfa").innerText = soruVeri.isim === "Anatomi" ? "Ayrı SB yok, Speet içi okuma." : `${soruVeri.soruK} (Sayfa ${sB} - ${sBi})`;
             }
+
+            const gunYuzde = (aktif.gun / aktif.toplamGun) * 100;
+            document.getElementById("konu-progress").style.width = gunYuzde + "%";
+            document.getElementById("soru-progress").style.width = gunYuzde + "%";
         }
 
         if (durum === "son_60_gun" && globalSon60Info) {
@@ -611,13 +681,15 @@
                     document.getElementById("deneme-check").checked = data.deneme_bitti || data.genel_deneme || data.temel_deneme || data.klinik_deneme || false;
                 }
             }
+        }).catch(err => {
+            toastGoster("❌ Veri okunamadı, internet kontrol et", true);
+            console.error(err);
         });
     }
 
     function firebaseKaydet() {
         const seciliGunStr = localToISO(aktifTarih);
         
-        // Önce mevcut durumu çek ki nöbet verisi ezilmesin
         db.ref('tus_gunluk_kayitlar/' + seciliGunStr).once('value').then(snap => {
             let kayit = snap.val() || {};
             kayit.tarih = seciliGunStr;
@@ -644,11 +716,16 @@
                     kayit.deneme_sirasi = globalSon60Info.siraNo;
                 }
             }
-            db.ref('tus_gunluk_kayitlar/' + seciliGunStr).update(kayit).then(() => toastGoster("✅ Otomatik Kaydedildi"));
+            return db.ref('tus_gunluk_kayitlar/' + seciliGunStr).update(kayit);
+        }).then(() => toastGoster("✅ Otomatik Kaydedildi"))
+        .catch(err => {
+            toastGoster("❌ Kaydedilemedi, internet kontrol et", true);
+            console.error(err);
         });
     }
 
     function bransDenemeKaydet() {
+        const tarih = document.getElementById("brans-tarih").value || localToISO(aktifTarih);
         const ders = document.getElementById("brans-ders").value;
         const dogru = parseFloat(document.getElementById("brans-dogru").value) || 0;
         const yanlis = parseFloat(document.getElementById("brans-yanlis").value) || 0;
@@ -656,14 +733,110 @@
 
         if(dogru === 0 && yanlis === 0) return alert("Doğru/yanlış sayısı girin!");
 
-        const bugun = localToISO(new Date());
         db.ref('tus_brans_denemeleri').push({
-            tarih: bugun, ders: ders, dogru: dogru, yanlis: yanlis, net: net, timestamp: firebase.database.ServerValue.TIMESTAMP
+            tarih: tarih, ders: ders, dogru: dogru, yanlis: yanlis, net: net, timestamp: firebase.database.ServerValue.TIMESTAMP
         }).then(() => {
             toastGoster("🎯 Net Başarıyla İşlendi");
             document.getElementById("brans-dogru").value = ""; document.getElementById("brans-yanlis").value = "";
             bransModuluGoster(); istatistikleriYukle();
+        }).catch(err => {
+            toastGoster("❌ Kayıt başarısız, internet kontrol et", true);
+            console.error(err);
         });
+    }
+
+    // --- SERİ (STREAK) HESABI ---
+    function serimiHesapla(dataDump) {
+        let d = new Date(); d.setHours(0,0,0,0);
+
+        function gunTamamMi(dateStr, harita) {
+            const kayit = dataDump[dateStr];
+            if (harita.tip === 'deneme') {
+                return !!(kayit && (kayit.deneme_bitti || kayit.genel_deneme || kayit.temel_deneme || kayit.klinik_deneme));
+            }
+            return !!(kayit && kayit.konu_bitti && kayit.soru_bitti);
+        }
+
+        // Bugün henüz tamamlanmadıysa seriyi bozma, dünden başlayarak say
+        const todayStr = localToISO(d);
+        const todayHarita = gunBilgisi[todayStr];
+        if (todayHarita && todayHarita.tip !== 'mola' && todayHarita.tip !== 'sinav') {
+            if (!gunTamamMi(todayStr, todayHarita)) { d.setDate(d.getDate() - 1); }
+        }
+
+        let streak = 0;
+        while (true) {
+            const dateStr = localToISO(d);
+            const harita = gunBilgisi[dateStr];
+            if (!harita) break;
+            if (harita.tip === 'mola' || harita.tip === 'sinav') { d.setDate(d.getDate() - 1); continue; }
+
+            if (gunTamamMi(dateStr, harita)) { streak++; d.setDate(d.getDate() - 1); }
+            else break;
+        }
+        return streak;
+    }
+
+    // --- JSON YEDEKLEME ---
+    function verileriYedekle() {
+        Promise.all([
+            db.ref('tus_gunluk_kayitlar').once('value'),
+            db.ref('tus_brans_denemeleri').once('value')
+        ]).then(([gunlukSnap, bransSnap]) => {
+            const yedek = {
+                olusturma_tarihi: new Date().toISOString(),
+                gunluk_kayitlar: gunlukSnap.val() || {},
+                brans_denemeleri: bransSnap.val() || {}
+            };
+            const blob = new Blob([JSON.stringify(yedek, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `tus_takip_yedek_${localToISO(new Date())}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toastGoster("💾 Yedek indirildi");
+        }).catch(err => {
+            toastGoster("❌ Yedekleme başarısız", true);
+            console.error(err);
+        });
+    }
+
+    // --- NET TREND GRAFİĞİ ---
+    function trendGrafigiCiz(ders) {
+        const container = document.getElementById("trend-grafik-alani");
+        const veri = dersNetGecmisi[ders];
+        if (!veri || veri.length === 0) { container.innerHTML = '<div style="text-align:center;color:#888;font-size:13px;">Veri yok</div>'; return; }
+        
+        if (veri.length === 1) {
+            container.innerHTML = `<div style="text-align:center;color:#888;font-size:13px;padding:10px 0;">Trend için en az 2 deneme gerekli. Şu an: ${veri[0].net.toFixed(2)} net</div>`;
+            return;
+        }
+
+        const w = 300, h = 120, padding = 25;
+        const nets = veri.map(v => v.net);
+        const minNet = Math.min(...nets, 0);
+        const maxNet = Math.max(...nets, 1);
+        const range = (maxNet - minNet) || 1;
+
+        const pts = veri.map((v, i) => {
+            const x = padding + (i / (veri.length - 1)) * (w - padding * 2);
+            const y = h - padding - ((v.net - minNet) / range) * (h - padding * 2);
+            return { x: x, y: y, net: v.net, tarih: v.tarih };
+        });
+
+        const polyPoints = pts.map(p => `${p.x},${p.y}`).join(' ');
+        const circles = pts.map(p => `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="var(--primary)" stroke="#1e1e1e" stroke-width="1.5"><title>${p.tarih}: ${p.net.toFixed(2)} net</title></circle>`).join('');
+
+        const svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%; height:auto; overflow:visible;">
+            <polyline points="${polyPoints}" fill="none" stroke="var(--secondary)" stroke-width="2"/>
+            ${circles}
+            <text x="${padding}" y="${h-5}" fill="#888" font-size="9">${veri[0].tarih.slice(5)}</text>
+            <text x="${w-padding}" y="${h-5}" fill="#888" font-size="9" text-anchor="end">${veri[veri.length-1].tarih.slice(5)}</text>
+        </svg>`;
+        container.innerHTML = svg;
     }
 
     function istatistikleriYukle() {
@@ -678,8 +851,10 @@
         db.ref('tus_gunluk_kayitlar').once('value').then((snapshot) => {
             const dataDump = snapshot.val() || {};
             
-            // TAKVİMİ ÇİZ (Firebase'deki nöbet verileriyle birlikte)
             aylikTakvimiCiz(dataDump);
+
+            const streak = serimiHesapla(dataDump);
+            document.getElementById("ist-streak-deger").innerText = `🔥 ${streak}`;
 
             const yapilanlar = {};
             for(let t=1; t<=5; t++) {
@@ -732,21 +907,63 @@
 
             if(htmlListe === '') htmlListe = '<div style="text-align:center; color:#888; font-size:13px; margin-top:10px;">Henüz tüm günleri tamamlanmış bir ders yok. İlk tiki atmaya çok yakınsın!</div>';
             document.getElementById("ist-tamamlanan-liste").innerHTML = htmlListe;
+
+            // Ders bazlı genel ilerleme (tüm turlar toplamı)
+            const dersIlerlemeler = [];
+            for(let key in planData) {
+                const dersAd = planData[key].isim;
+                let toplamHedefKonu = 0, toplamYapilanKonu = 0;
+                let toplamHedefSoru = 0, toplamYapilanSoru = 0;
+                for(let t=1; t<=5; t++) {
+                    const hedef = hedefGunler[t][dersAd];
+                    if(!hedef) continue;
+                    toplamHedefKonu += hedef;
+                    toplamYapilanKonu += Math.min(yapilanlar[t][dersAd].konu, hedef);
+                    if(dersAd !== "Anatomi") {
+                        toplamHedefSoru += hedef;
+                        toplamYapilanSoru += Math.min(yapilanlar[t][dersAd].soru, hedef);
+                    }
+                }
+                const konuYuzde = toplamHedefKonu > 0 ? (toplamYapilanKonu / toplamHedefKonu * 100) : 0;
+                const soruYuzde = toplamHedefSoru > 0 ? (toplamYapilanSoru / toplamHedefSoru * 100) : null;
+                const genelYuzde = soruYuzde !== null ? ((konuYuzde + soruYuzde) / 2) : konuYuzde;
+                dersIlerlemeler.push({ dersAd: dersAd, genelYuzde: genelYuzde });
+            }
+            dersIlerlemeler.sort((a,b) => b.genelYuzde - a.genelYuzde);
+            let ilerlemeHtml = '';
+            dersIlerlemeler.forEach(item => {
+                ilerlemeHtml += `<div class="ders-ilerleme-item">
+                    <div class="ders-ilerleme-baslik"><span>${item.dersAd}</span><span class="ders-ilerleme-yuzde">%${item.genelYuzde.toFixed(0)}</span></div>
+                    <div class="ders-ilerleme-bar"><div class="ders-ilerleme-dolgu" style="width:${item.genelYuzde.toFixed(0)}%"></div></div>
+                </div>`;
+            });
+            document.getElementById("ders-ilerleme-icerik").innerHTML = ilerlemeHtml;
+        }).catch(err => {
+            toastGoster("❌ İstatistikler yüklenemedi", true);
+            console.error(err);
         });
 
         db.ref('tus_brans_denemeleri').once('value').then((snapshot) => {
             if (!snapshot.exists()) {
                 document.getElementById("analiz-icerik").innerText = "Henüz girilmiş bir branş denemesi yok.";
+                document.getElementById("trend-secim-alani").style.display = "none";
                 return;
             }
             const dersVerileri = {};
+            dersNetGecmisi = {};
             snapshot.forEach((child) => {
                 const data = child.val();
                 if(!dersVerileri[data.ders]) dersVerileri[data.ders] = { toplamNet: 0, count: 0, maxNet: -99 };
                 dersVerileri[data.ders].toplamNet += data.net;
                 dersVerileri[data.ders].count++;
                 if(data.net > dersVerileri[data.ders].maxNet) dersVerileri[data.ders].maxNet = data.net;
+
+                if(!dersNetGecmisi[data.ders]) dersNetGecmisi[data.ders] = [];
+                dersNetGecmisi[data.ders].push({ tarih: data.tarih, net: data.net });
             });
+            for(let ders in dersNetGecmisi) {
+                dersNetGecmisi[ders].sort((a,b) => a.tarih.localeCompare(b.tarih));
+            }
 
             let html = `<table class="analiz-tablo"><tr><th>Ders</th><th>Ort. Net</th><th>Max</th><th>Adet</th></tr>`;
             for (const [ders, stat] of Object.entries(dersVerileri)) {
@@ -760,13 +977,25 @@
             }
             html += `</table>`;
             document.getElementById("analiz-icerik").innerHTML = html;
+
+            const secim = document.getElementById("trend-ders-secim");
+            const oncekiSecim = secim.value;
+            secim.innerHTML = Object.keys(dersNetGecmisi).sort().map(d => `<option value="${d}">${d}</option>`).join('');
+            document.getElementById("trend-secim-alani").style.display = "block";
+            if(oncekiSecim && dersNetGecmisi[oncekiSecim]) secim.value = oncekiSecim;
+            trendGrafigiCiz(secim.value);
+        }).catch(err => {
+            toastGoster("❌ Deneme verileri yüklenemedi", true);
+            console.error(err);
         });
     }
 
-    function toastGoster(mesaj) {
+    function toastGoster(mesaj, hataMi) {
         const toast = document.getElementById("toast");
-        toast.innerText = mesaj; toast.style.opacity = "1";
-        setTimeout(() => { toast.style.opacity = "0"; }, 2000);
+        toast.innerText = mesaj;
+        toast.className = hataMi ? "hata" : "";
+        toast.style.opacity = "1";
+        setTimeout(() => { toast.style.opacity = "0"; }, hataMi ? 3500 : 2000);
     }
 </script>
 </body>
