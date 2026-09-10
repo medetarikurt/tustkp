@@ -107,7 +107,6 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; min-width: 320px; margin-top: 5px; }
         .cal-day-header { text-align: center; font-size: 10px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; padding-bottom: 5px; }
         
-        /* cal-cell yüksekliği ders+deneme+nöbet sığması için 62px yapıldı */
         .cal-cell { background: #222; border: 1px solid #333; border-radius: 4px; min-height: 62px; padding: 3px; display: flex; flex-direction: column; cursor: pointer; transition: 0.2s; user-select: none; }
         .cal-cell:hover { background: #333; border-color: var(--primary); }
         .cal-cell.empty { background: transparent; border: none; cursor: default; }
@@ -383,12 +382,12 @@
             let m = iterDate.getMonth(); let d = iterDate.getDate(); let y = iterDate.getFullYear();
             let gunHafta = iterDate.getDay();
 
-            if (y === 2026 && m === 8 && (d === 11 || d === 12 || d === 13)) { isWorkDay = false; }
+            // YENİ TATİL TARİHİ: 18-19-20 Eylül 2026
+            if (y === 2026 && m === 8 && (d === 18 || d === 19 || d === 20)) { isWorkDay = false; }
             else if (iterDate >= new Date(2026, 9, 4) && iterDate < son60GunBaslangic && gunHafta === 0) { isWorkDay = false; }
 
             if (isWorkDay) workDaySayaci++;
 
-            // O günün "Ders" bilgisini çıkaralım (Sarmal bitse de KAMP olarak döner)
             let dersAbbr = "";
             if (isWorkDay && workDaySayaci <= calismaGunleri.length) {
                 dersAbbr = planData[calismaGunleri[workDaySayaci - 1].ders].kisa;
@@ -400,15 +399,14 @@
             if (gunFarkiBul(iterDate, sinavTarihi) === 0) {
                 info = { durum: 'sinav_gunu', abbr: 'TUS!', tip: 'sinav', workDaySayaci: workDaySayaci, son60: null };
             } else if (iterDate >= son60GunBaslangic && iterDate < sinavTarihi) {
-                // YENİ: Son 60 gün geldiğinde hem dersi hem denemeyi obje içine gömüyoruz
                 const gunNo = gunFarkiBul(son60GunBaslangic, iterDate) + 1;
                 const isTemel = (gunNo % 2 === 1);
                 const siraNo = isTemel ? Math.ceil(gunNo / 2) : (gunNo / 2);
                 info = {
                     durum: 'son_60_gun', 
-                    abbr: dersAbbr, // Ders bilgisini tuttuk
-                    denemeAbbr: isTemel ? 'T.DEN' : 'K.DEN', // Deneme bilgisini tuttuk
-                    tip: 'son60', // İki badge basılacak özel tip
+                    abbr: dersAbbr,
+                    denemeAbbr: isTemel ? 'T.DEN' : 'K.DEN',
+                    tip: 'son60', 
                     workDaySayaci: workDaySayaci, 
                     son60: { gunNo: gunNo, tur: isTemel ? "Temel Bilimler" : "Klinik Bilimler", siraNo: siraNo }
                 };
@@ -491,7 +489,6 @@
 
             if (harita) {
                 if (harita.tip === 'son60') {
-                    // YENİ: Son 60 günde hem ders hem de deneme badge'i alt alta çıkacak
                     html += `<div class="cal-badge badge-ders">${harita.abbr}</div>`;
                     html += `<div class="cal-badge badge-deneme">${harita.denemeAbbr}</div>`;
                 } else {
