@@ -380,7 +380,6 @@
             let m = iterDate.getMonth(); let d = iterDate.getDate(); let y = iterDate.getFullYear();
             let gunHafta = iterDate.getDay();
 
-            // Tatil Tarihi: 18-19-20 Eylül 2026
             if (y === 2026 && m === 8 && (d === 18 || d === 19 || d === 20)) { isWorkDay = false; }
             else if (iterDate >= new Date(2026, 9, 4) && iterDate < son60GunBaslangic && gunHafta === 0) { isWorkDay = false; }
 
@@ -583,7 +582,7 @@
         if (durum === "sinav_gunu") {
             kartDers.style.display = "none"; kartTatil.style.display = "block";
             document.getElementById("tatil-baslik").innerText = "🎯 BÜYÜK GÜN: TUS SINAVI!";
-            document.getElementById("tatil-aciklama").innerText = "Emeklerinin karşılığını alma vakti. Sakin kal ve başar Başhekim!";
+            document.getElementById("tatil-aciklama").innerText = "Emeklerinin karşılığını alma vakti. Sakin kal ve başar Komutanım!";
             return;
         }
 
@@ -671,7 +670,13 @@
                 document.getElementById("soru-sayfa").innerText = soruVeri.isim === "Anatomi" ? "Ayrı SB yok, Speet soruları." : `${soruVeri.soruK} - Elenmiş (Ort. Sf ${sB} - ${sBi})`;
             } else {
                 document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Sayfa ${kB} - ${kBi})`;
-                document.getElementById("soru-sayfa").innerText = soruVeri.isim === "Anatomi" ? "Ayrı SB yok, Speet içi okuma." : `${soruVeri.soruK} (Sayfa ${sB} - ${sBi})`;
+                
+                // BİYOKİMYA & PATOLOJİ 1. TUR TTS OPTİMİZASYONU
+                if (aktif.tur === 1 && (soruVeri.isim === "Patoloji" || soruVeri.isim === "Biyokimya")) {
+                    document.getElementById("soru-sayfa").innerText = `TTS Çıkmış Sorular (${aktif.gun}/${aktif.toplamGun}. Gün Parçası)`;
+                } else {
+                    document.getElementById("soru-sayfa").innerText = soruVeri.isim === "Anatomi" ? "Ayrı SB yok, Speet içi okuma." : `${soruVeri.soruK} (Sayfa ${sB} - ${sBi})`;
+                }
             }
 
             const gunYuzde = (aktif.gun / aktif.toplamGun) * 100;
@@ -829,7 +834,6 @@
         });
     }
 
-    // YENİ TREND GRAFİĞİ FONKSİYONU (Son 10 deneme + net skorları yazılı)
     function trendGrafigiCiz(ders) {
         const container = document.getElementById("trend-grafik-alani");
         const hamVeri = dersNetGecmisi[ders];
@@ -844,10 +848,8 @@
             return;
         }
 
-        // SADECE SON 10 DENEMEYİ AL
         const veri = hamVeri.slice(-10);
 
-        // Yazılar sığsın diye SVG yüksekliğini (h) ve padding'i biraz artırdım
         const w = 300, h = 140, padding = 30; 
         const nets = veri.map(v => v.net);
         const minNet = Math.min(...nets, 0);
@@ -864,7 +866,6 @@
         
         const circles = pts.map(p => `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="var(--primary)" stroke="#1e1e1e" stroke-width="1.5"><title>${p.tarih}: ${p.net.toFixed(2)} net</title></circle>`).join('');
         
-        // YENİ: Noktaların tam üstüne neti yazdıran Text elementleri
         const texts = pts.map(p => `<text x="${p.x}" y="${p.y - 8}" fill="#fff" font-size="9" text-anchor="middle" font-weight="bold">${p.net % 1 === 0 ? p.net : p.net.toFixed(2)}</text>`).join('');
 
         const svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%; height:auto; overflow:visible;">
@@ -875,7 +876,6 @@
             <text x="${w-padding}" y="${h-5}" fill="#888" font-size="9" text-anchor="middle">${veri[veri.length-1].tarih.slice(5)}</text>
         </svg>`;
 
-        // Tabloda hepsi var ama grafikte kaç tane gösterildiğinin minik bilgisi
         let ekstraBilgi = '';
         if (hamVeri.length > 10) {
             ekstraBilgi = `<div style="text-align:center; font-size:10px; color:#888; margin-top:5px;">(Veritabanında ${hamVeri.length} denemen var, grafikte en güncel 10 tanesi gösteriliyor)</div>`;
@@ -987,7 +987,6 @@
             console.error(err);
         });
 
-        // Branş Deneme Karnesini Çizerken TÜM VERİLERİ Kullanır
         db.ref('tus_brans_denemeleri').once('value').then((snapshot) => {
             if (!snapshot.exists()) {
                 document.getElementById("analiz-icerik").innerText = "Henüz girilmiş bir branş denemesi yok.";
