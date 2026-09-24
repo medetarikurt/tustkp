@@ -62,6 +62,14 @@
         .checkbox-container { display: flex; align-items: center; cursor: pointer; user-select: none; font-size: 14px; color: #ccc; }
         .checkbox-container input { margin-right: 10px; width: 18px; height: 18px; accent-color: var(--success); cursor: pointer; }
         
+        /* YENİ: GENEL NOT PANOSU CSS */
+        .not-panosu { background: #262626; border-left: 4px solid var(--info); padding: 14px; border-radius: 8px; margin-bottom: 15px; }
+        .not-panosu h2 { font-size: 15px; color: #fff; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+        .not-status { font-size: 11px; color: var(--success); font-weight: normal; }
+        .not-textarea { width: 100%; height: 80px; background: #1e1e1e; color: #e0e0e0; border: 1px solid var(--border); border-radius: 6px; padding: 10px; font-size: 13px; resize: vertical; outline: none; transition: 0.3s; }
+        .not-textarea:focus { border-color: var(--info); }
+        .not-textarea::placeholder { color: #666; }
+
         .btn-acilir { width: 100%; background: #333; color: #fff; border: 1px solid var(--border); padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
         .btn-acilir:hover { background: #444; }
         
@@ -184,6 +192,12 @@
         <div id="tatil-karti" class="hedef-karti tatil-karti">
             <h2 id="tatil-baslik" style="color: var(--warning); text-align: center; margin-bottom: 10px;">🌴 Mola Günü</h2>
             <p id="tatil-aciklama" style="text-align: center; font-size: 14px; color: var(--text-muted);">Sarmal takvim bugün ilerlemez.</p>
+        </div>
+
+        <!-- YENİ: GENEL NOT PANOSU -->
+        <div class="not-panosu">
+            <h2>📝 Genel Not Panosu <span class="not-status" id="not-status"></span></h2>
+            <textarea id="genel-not-input" class="not-textarea" placeholder="Örn: Biyokimya'dan 10 sayfa sarkanı yarınki nöbette erit... Yazdıkların otomatik kaydedilir." oninput="notYazildi()" onblur="notKaydet()"></textarea>
         </div>
 
         <button class="btn-acilir" onclick="bransModuluGoster()">
@@ -358,6 +372,9 @@
     let gosterilenTakvimAyi = new Date(aktifTarih.getFullYear(), aktifTarih.getMonth(), 1);
     let gunBilgisi = {};
     let dersNetGecmisi = {};
+    
+    // Genel Not Otomatik Kayıt Timer
+    let notTimer;
 
     function gunFarkiBul(d1, d2) {
         const utc1 = Date.UTC(d1.getFullYear(), d1.getMonth(), d1.getDate());
@@ -425,7 +442,37 @@
     window.onload = () => { 
         gunBilgisiHaritasiniOlustur();
         gunuHesaplaVeArayuzuCiz(); 
+        genelNotGetir();
     };
+
+    // --- GENEL NOT PANOSU ---
+    function genelNotGetir() {
+        db.ref('tus_genel_notlar/metin').once('value').then(snap => {
+            if(snap.exists()) {
+                document.getElementById('genel-not-input').value = snap.val();
+            }
+        });
+    }
+
+    function notYazildi() {
+        document.getElementById('not-status').style.color = "var(--text-muted)";
+        document.getElementById('not-status').innerText = "Yazılıyor...";
+        clearTimeout(notTimer);
+        notTimer = setTimeout(notKaydet, 1500); // 1.5 sn sonra otomatik kaydet
+    }
+
+    function notKaydet() {
+        const metin = document.getElementById('genel-not-input').value;
+        db.ref('tus_genel_notlar/metin').set(metin).then(() => {
+            document.getElementById('not-status').style.color = "var(--success)";
+            document.getElementById('not-status').innerText = "✅ Kaydedildi";
+            setTimeout(() => { document.getElementById('not-status').innerText = ""; }, 2500);
+        }).catch(err => {
+            document.getElementById('not-status').style.color = "var(--danger)";
+            document.getElementById('not-status').innerText = "❌ Hata";
+        });
+    }
+    // -------------------------
 
     function sekmeDegistir(sekme) {
         document.getElementById('sekme-plan').style.display = (sekme === 'plan') ? 'block' : 'none';
@@ -671,7 +718,6 @@
             } else {
                 document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Sayfa ${kB} - ${kBi})`;
                 
-                // BİYOKİMYA & PATOLOJİ 1. TUR TTS OPTİMİZASYONU
                 if (aktif.tur === 1 && (soruVeri.isim === "Patoloji" || soruVeri.isim === "Biyokimya")) {
                     document.getElementById("soru-sayfa").innerText = `TTS Çıkmış Sorular (${aktif.gun}/${aktif.toplamGun}. Gün Parçası)`;
                 } else {
