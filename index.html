@@ -62,7 +62,6 @@
         .checkbox-container { display: flex; align-items: center; cursor: pointer; user-select: none; font-size: 14px; color: #ccc; }
         .checkbox-container input { margin-right: 10px; width: 18px; height: 18px; accent-color: var(--success); cursor: pointer; }
         
-        /* YENİ: GENEL NOT PANOSU CSS */
         .not-panosu { background: #262626; border-left: 4px solid var(--info); padding: 14px; border-radius: 8px; margin-bottom: 15px; }
         .not-panosu h2 { font-size: 15px; color: #fff; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
         .not-status { font-size: 11px; color: var(--success); font-weight: normal; }
@@ -194,7 +193,6 @@
             <p id="tatil-aciklama" style="text-align: center; font-size: 14px; color: var(--text-muted);">Sarmal takvim bugün ilerlemez.</p>
         </div>
 
-        <!-- YENİ: GENEL NOT PANOSU -->
         <div class="not-panosu">
             <h2>📝 Genel Not Panosu <span class="not-status" id="not-status"></span></h2>
             <textarea id="genel-not-input" class="not-textarea" placeholder="Örn: Biyokimya'dan 10 sayfa sarkanı yarınki nöbette erit... Yazdıkların otomatik kaydedilir." oninput="notYazildi()" onblur="notKaydet()"></textarea>
@@ -373,7 +371,6 @@
     let gunBilgisi = {};
     let dersNetGecmisi = {};
     
-    // Genel Not Otomatik Kayıt Timer
     let notTimer;
 
     function gunFarkiBul(d1, d2) {
@@ -445,7 +442,6 @@
         genelNotGetir();
     };
 
-    // --- GENEL NOT PANOSU ---
     function genelNotGetir() {
         db.ref('tus_genel_notlar/metin').once('value').then(snap => {
             if(snap.exists()) {
@@ -458,7 +454,7 @@
         document.getElementById('not-status').style.color = "var(--text-muted)";
         document.getElementById('not-status').innerText = "Yazılıyor...";
         clearTimeout(notTimer);
-        notTimer = setTimeout(notKaydet, 1500); // 1.5 sn sonra otomatik kaydet
+        notTimer = setTimeout(notKaydet, 1500);
     }
 
     function notKaydet() {
@@ -472,7 +468,6 @@
             document.getElementById('not-status').innerText = "❌ Hata";
         });
     }
-    // -------------------------
 
     function sekmeDegistir(sekme) {
         document.getElementById('sekme-plan').style.display = (sekme === 'plan') ? 'block' : 'none';
@@ -961,6 +956,11 @@
                         if(data.soru_bitti && data.soru_dersi && yapilanlar[data.tur] && yapilanlar[data.tur][data.soru_dersi]) yapilanlar[data.tur][data.soru_dersi].soru++;
                     }
                 });
+            }
+
+            // KOMUTAN OPTİMİZASYONU: 1. Tur Pediatri Ahmet Erkek Soruları Tamamlandı
+            if (yapilanlar[1] && yapilanlar[1]["Pediatri"]) {
+                yapilanlar[1]["Pediatri"].soru = hedefGunler[1]["Pediatri"];
             }
 
             let htmlListe = '';
