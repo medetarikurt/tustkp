@@ -88,19 +88,9 @@
         .analiz-tablo th { background: #333; color: var(--secondary); padding: 10px; text-align: left; font-size: 13px; }
         .analiz-tablo td { padding: 10px; border-bottom: 1px solid var(--border); color: #e0e0e0; font-size: 14px; }
 
-        .ders-ilerleme-item { margin-bottom: 12px; }
-        .ders-ilerleme-baslik { display: flex; justify-content: space-between; font-size: 13px; color: #ddd; margin-bottom: 4px; }
-        .ders-ilerleme-yuzde { color: var(--primary); font-weight: bold; }
-        .ders-ilerleme-bar { background: #1a1a1a; border-radius: 6px; height: 8px; overflow: hidden; }
-        .ders-ilerleme-dolgu { background: linear-gradient(90deg, var(--primary), var(--secondary)); height: 100%; border-radius: 6px; transition: width 0.5s ease; width: 0%; }
-
         .trend-select { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: #303030; color: #fff; margin-bottom: 10px; }
         .btn-export { width: 100%; background: transparent; border: 1px solid var(--secondary); color: var(--secondary); padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; transition: 0.2s; }
         .btn-export:hover { background: var(--secondary); color: #000; }
-
-        .scroll-liste::-webkit-scrollbar { width: 6px; }
-        .scroll-liste::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
-        .scroll-liste::-webkit-scrollbar-track { background: #222; }
 
         #toast { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--success); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 10; }
         #toast.hata { background: var(--danger); color: #fff; }
@@ -124,6 +114,22 @@
         .badge-mola { background: var(--info); color: #fff; }
         .badge-deneme { background: var(--warning); color: #000; }
         .cal-cell.bugun-cell { border: 2px solid var(--success); }
+
+        /* YENİ: SARMAL KOMUTA MATRİSİ CSS */
+        .matris-wrapper { width: 100%; overflow-x: auto; padding-bottom: 8px; }
+        .matris-wrapper::-webkit-scrollbar { height: 6px; }
+        .matris-wrapper::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+        .matris-tablo { width: 100%; border-collapse: collapse; min-width: 420px; text-align: center; }
+        .matris-tablo th { background: #333; color: var(--secondary); padding: 8px 4px; font-size: 11px; text-transform: uppercase; border: 1px solid #444; font-weight: bold;}
+        .matris-tablo td { padding: 8px 4px; border: 1px solid #444; font-size: 12px; color: #e0e0e0; vertical-align: middle; }
+        .matris-ders-isim { text-align: left !important; font-weight: bold; color: #fff; padding-left: 8px !important; }
+        .durum-kutu { display: inline-block; padding: 3px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; min-width: 24px;}
+        .durum-bos { background: #2a2a2a; color: #555; }
+        .durum-k { background: rgba(187, 134, 252, 0.15); color: var(--primary); border: 1px solid var(--primary); }
+        .durum-s { background: rgba(3, 218, 198, 0.15); color: var(--secondary); border: 1px solid var(--secondary); }
+        .durum-tam { background: rgba(76, 175, 80, 0.15); color: var(--success); border: 1px solid var(--success); }
+        .matris-bar-container { background: #1a1a1a; border-radius: 4px; height: 5px; width: 100%; overflow: hidden; margin-top: 4px; }
+        .matris-bar-fill { background: linear-gradient(90deg, var(--primary), var(--secondary)); height: 100%; border-radius: 4px; transition: width 0.5s ease; }
     </style>
 </head>
 <body>
@@ -277,16 +283,17 @@
             </div>
         </div>
 
-        <div class="hedef-karti" style="border-left-color: var(--success);">
-            <h2 style="font-size: 16px; margin-bottom: 10px; color: #fff;">🏆 Tamamlanan Görevler</h2>
-            <div id="ist-tamamlanan-liste" class="scroll-liste" style="max-height: 220px; overflow-y: auto; padding-right: 8px;">
-                <div style="text-align:center; color:#888; font-size:13px; margin-top:10px;">Yükleniyor...</div>
+        <!-- YENİ: SARMAL KOMUTA MATRİSİ -->
+        <div class="hedef-karti" style="border-left-color: var(--success); padding: 16px 12px;">
+            <h2 style="font-size: 16px; margin-bottom: 12px; color: #fff; display:flex; justify-content:space-between; align-items:center;">
+                🧩 Sarmal Komuta Matrisi
+                <span style="font-size:10px; color:#888; font-weight:normal;">K: Konu | S: Soru</span>
+            </h2>
+            <div class="matris-wrapper">
+                <table class="matris-tablo" id="sarmal-matris-tablosu">
+                    <!-- Javascript ile Doldurulacak -->
+                </table>
             </div>
-        </div>
-
-        <div class="hedef-karti" style="border-left-color: var(--primary);">
-            <h2 style="font-size: 16px; margin-bottom: 10px; color: #fff;">📊 Ders Bazlı Genel İlerleme</h2>
-            <div id="ders-ilerleme-icerik">Yükleniyor...</div>
         </div>
 
         <div class="hedef-karti" style="border-left-color: var(--secondary);">
@@ -958,52 +965,17 @@
                 });
             }
 
-            // KOMUTAN OPTİMİZASYONU: 1. Tur Pediatri Ahmet Erkek Soruları Tamamlandı
             if (yapilanlar[1] && yapilanlar[1]["Pediatri"]) {
                 yapilanlar[1]["Pediatri"].soru = hedefGunler[1]["Pediatri"];
             }
 
-            let htmlListe = '';
-            for(let t=1; t<=5; t++) {
-                let turIcerik = '';
-                for(let key in planData) {
-                    const dersAd = planData[key].isim;
-                    const hedefGun = hedefGunler[t][dersAd];
-                    if(hedefGun) {
-                        const konuBittiMi = yapilanlar[t][dersAd].konu >= hedefGun;
-                        const soruBittiMi = yapilanlar[t][dersAd].soru >= hedefGun;
-
-                        if (konuBittiMi || soruBittiMi) {
-                            turIcerik += `<div style="font-size:13px; color:#e0e0e0; border-bottom:1px solid #333; padding:8px 0; display:flex; align-items:center;">`;
-                            if (dersAd === "Anatomi") {
-                                if (konuBittiMi) turIcerik += `✅ <b>${dersAd}</b> &nbsp;<span style="color:#a0a0a0;">(Konu Bitti)</span>`;
-                            } else {
-                                if (konuBittiMi && soruBittiMi) {
-                                    turIcerik += `✅✅ <b>${dersAd}</b> &nbsp;<span style="color:var(--success); font-weight:bold;">(Konu + Soru Bitti)</span>`;
-                                } else if (konuBittiMi) {
-                                    turIcerik += `✅ <b>${dersAd}</b> &nbsp;<span style="color:var(--primary);">(Sadece Konu)</span>`;
-                                } else if (soruBittiMi) {
-                                    turIcerik += `✅ <b>${dersAd}</b> &nbsp;<span style="color:var(--secondary);">(Sadece Soru)</span>`;
-                                }
-                            }
-                            turIcerik += `</div>`;
-                        }
-                    }
-                }
-                if(turIcerik !== '') {
-                    htmlListe += `<h3 style="color:var(--primary); font-size:14px; margin-top:15px; margin-bottom:5px; text-transform:uppercase;">${t}. Tur Bitenler</h3>`;
-                    htmlListe += turIcerik;
-                }
-            }
-
-            if(htmlListe === '') htmlListe = '<div style="text-align:center; color:#888; font-size:13px; margin-top:10px;">Henüz tüm günleri tamamlanmış bir ders yok. İlk tiki atmaya çok yakınsın!</div>';
-            document.getElementById("ist-tamamlanan-liste").innerHTML = htmlListe;
-
+            // YENİ: SARMAL KOMUTA MATRİSİ HESAPLAMASI
             const dersIlerlemeler = [];
             for(let key in planData) {
                 const dersAd = planData[key].isim;
                 let toplamHedefKonu = 0, toplamYapilanKonu = 0;
                 let toplamHedefSoru = 0, toplamYapilanSoru = 0;
+                
                 for(let t=1; t<=5; t++) {
                     const hedef = hedefGunler[t][dersAd];
                     if(!hedef) continue;
@@ -1017,17 +989,53 @@
                 const konuYuzde = toplamHedefKonu > 0 ? (toplamYapilanKonu / toplamHedefKonu * 100) : 0;
                 const soruYuzde = toplamHedefSoru > 0 ? (toplamYapilanSoru / toplamHedefSoru * 100) : null;
                 const genelYuzde = soruYuzde !== null ? ((konuYuzde + soruYuzde) / 2) : konuYuzde;
-                dersIlerlemeler.push({ dersAd: dersAd, genelYuzde: genelYuzde });
+                
+                dersIlerlemeler.push({ dersAd: dersAd, genelYuzde: genelYuzde, key: key });
             }
+            
+            // Genel yüzdeye göre yüksekten düşüğe sıralama
             dersIlerlemeler.sort((a,b) => b.genelYuzde - a.genelYuzde);
-            let ilerlemeHtml = '';
+
+            let matrisHtml = `<tr>
+                <th style="text-align:left; padding-left:8px;">Ders</th>
+                <th>1. Tur</th><th>2. Tur</th><th>3. Tur</th><th>4. Tur</th><th>5. Tur</th>
+                <th style="width:70px;">Genel</th>
+            </tr>`;
+
             dersIlerlemeler.forEach(item => {
-                ilerlemeHtml += `<div class="ders-ilerleme-item">
-                    <div class="ders-ilerleme-baslik"><span>${item.dersAd}</span><span class="ders-ilerleme-yuzde">%${item.genelYuzde.toFixed(0)}</span></div>
-                    <div class="ders-ilerleme-bar"><div class="ders-ilerleme-dolgu" style="width:${item.genelYuzde.toFixed(0)}%"></div></div>
-                </div>`;
+                const dersAd = item.dersAd;
+                let tdHtml = `<td class="matris-ders-isim">${planData[item.key].kisa}</td>`;
+
+                for(let t=1; t<=5; t++) {
+                    const hedef = hedefGunler[t][dersAd];
+                    if(!hedef) {
+                        tdHtml += `<td><span class="durum-kutu durum-bos">-</span></td>`;
+                    } else {
+                        const konuBitti = yapilanlar[t][dersAd].konu >= hedef;
+                        const soruBitti = yapilanlar[t][dersAd].soru >= hedef;
+
+                        if (dersAd === "Anatomi") {
+                            if(konuBitti) tdHtml += `<td><span class="durum-kutu durum-tam">✅✅</span></td>`;
+                            else tdHtml += `<td><span class="durum-kutu durum-bos">...</span></td>`;
+                        } else {
+                            if (konuBitti && soruBitti) tdHtml += `<td><span class="durum-kutu durum-tam">✅✅</span></td>`;
+                            else if (konuBitti) tdHtml += `<td><span class="durum-kutu durum-k">K</span></td>`;
+                            else if (soruBitti) tdHtml += `<td><span class="durum-kutu durum-s">S</span></td>`;
+                            else tdHtml += `<td><span class="durum-kutu durum-bos">...</span></td>`;
+                        }
+                    }
+                }
+                
+                tdHtml += `<td>
+                    <div style="font-weight:bold; color:var(--primary); font-size:11px;">%${item.genelYuzde.toFixed(0)}</div>
+                    <div class="matris-bar-container"><div class="matris-bar-fill" style="width:${item.genelYuzde.toFixed(0)}%"></div></div>
+                </td>`;
+
+                matrisHtml += `<tr>${tdHtml}</tr>`;
             });
-            document.getElementById("ders-ilerleme-icerik").innerHTML = ilerlemeHtml;
+
+            document.getElementById("sarmal-matris-tablosu").innerHTML = matrisHtml;
+
         }).catch(err => {
             toastGoster("❌ İstatistikler yüklenemedi", true);
             console.error(err);
