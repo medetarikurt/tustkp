@@ -1079,6 +1079,10 @@
 
             const dersIlerlemeler = [];
             for(let key in planData) {
+                
+                // JOKER'i matristen gizleyen satır:
+                if (key === 'joker') continue; 
+
                 const dersAd = planData[key].isim;
                 let toplamHedefKonu = 0, toplamYapilanKonu = 0;
                 let toplamHedefSoru = 0, toplamYapilanSoru = 0;
