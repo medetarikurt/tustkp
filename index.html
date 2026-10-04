@@ -327,6 +327,7 @@
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const db = firebase.database();
 
+    // ANATOMİ YERİNE JOKER EKLENDİ
     const planData = {
         dahiliye: { isim: "Dahiliye", kisa: "DAH", konu: 450, soru: 750, konuK: "BBB Tıp Ak.", soruK: "Prime" },
         pediatri: { isim: "Pediatri", kisa: "PED", konu: 200, soru: 450, konuK: "Speet", soruK: "Ahmet Erkek" },
@@ -335,13 +336,12 @@
         biyokimya: { isim: "Biyokimya", kisa: "BİYO", konu: 200, soru: 200, konuK: "Tıp Ak.", soruK: "Tıp Ak." },
         mikrobiyoloji: { isim: "Mikrobiyoloji", kisa: "MİK", konu: 250, soru: 400, konuK: "Tıp Ak.", soruK: "Prime" },
         farmakoloji: { isim: "Farmakoloji", kisa: "FAR", konu: 100, soru: 400, konuK: "Speet", soruK: "Prime" },
-        anatomi: { isim: "Anatomi", kisa: "ANA", konu: 100, soru: 0, konuK: "Speet", soruK: "Yok" },
+        joker: { isim: "Soru Çözüm (Joker)", kisa: "JOKER", konu: 4, soru: 4, konuK: "Serbest", soruK: "Serbest" },
         kucukstajlar: { isim: "Küçük Stajlar", kisa: "K.STJ", konu: 170, soru: 400, konuK: "Speet", soruK: "Prime" },
         genelcerrahi: { isim: "Genel Cerrahi", kisa: "G.CER", konu: 400, soru: 450, konuK: "Ahmet Erkek", soruK: "Ahmet Erkek" },
         kadindogum: { isim: "Kadın Doğum", kisa: "K.DOĞ", konu: 100, soru: 400, konuK: "Speet", soruK: "Prime" }
     };
 
-    // KOMUTAN MANEVRASI: Anatomi 2,3,4 ve 5. Turlardan Tamamen Silindi
     const t345 = [
         { d: 'fizyoloji', g: 2 }, { d: 'patoloji', g: 3 }, { d: 'biyokimya', g: 1.5 },
         { d: 'pediatri', g: 3 }, { d: 'mikrobiyoloji', g: 2 }, { d: 'farmakoloji', g: 2 },
@@ -349,8 +349,9 @@
         { d: 'genelcerrahi', g: 3 }, { d: 'kadindogum', g: 2 }
     ];
     
+    // 1. TURA JOKER EKLENDİ, DİĞER TURLARDAN TAMAMEN ÇIKARTILDI
     const sarmalAkil = [
-        { tur: 1, seq: [{d:'dahiliye',g:6}, {d:'fizyoloji',g:4}, {d:'patoloji',g:4}, {d:'biyokimya',g:4}, {d:'pediatri',g:6}, {d:'mikrobiyoloji',g:4}, {d:'farmakoloji',g:4}, {d:'anatomi',g:4}, {d:'kucukstajlar',g:3}, {d:'genelcerrahi',g:3}, {d:'kadindogum',g:3}] },
+        { tur: 1, seq: [{d:'dahiliye',g:6}, {d:'fizyoloji',g:4}, {d:'patoloji',g:4}, {d:'biyokimya',g:4}, {d:'pediatri',g:6}, {d:'mikrobiyoloji',g:4}, {d:'farmakoloji',g:4}, {d:'joker',g:4}, {d:'kucukstajlar',g:3}, {d:'genelcerrahi',g:3}, {d:'kadindogum',g:3}] },
         { tur: 2, seq: [{d:'fizyoloji',g:3}, {d:'patoloji',g:3}, {d:'biyokimya',g:3}, {d:'pediatri',g:4}, {d:'mikrobiyoloji',g:3}, {d:'farmakoloji',g:3}, {d:'dahiliye',g:4}, {d:'kucukstajlar',g:3}, {d:'genelcerrahi',g:3}, {d:'kadindogum',g:3}] },
         { tur: 3, seq: t345 }, { tur: 4, seq: t345 }, { tur: 5, seq: t345 }
     ];
@@ -713,17 +714,21 @@
             let sBi = aktif.gun * gSoru;
             if (sBi > soruVeri.soru || aktif.gun === aktif.toplamGun) sBi = soruVeri.soru;
 
-            if (aktif.tur >= 3) {
-                document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Hızlı spot/açık kapatma)`;
-                document.getElementById("soru-sayfa").innerText = soruVeri.isim === "Anatomi" ? "Ayrı SB yok, Speet soruları." : `${soruVeri.soruK} - Elenmiş (Ort. Sf ${sB} - ${sBi})`;
+            // ÖZEL JOKER GÜNÜ METİNLERİ
+            if (konuVeri.isim === "Soru Çözüm (Joker)") {
+                document.getElementById("konu-sayfa").innerText = "Serbest Zaman / Eksik Kapatma (Düğün vs.)";
             } else {
-                document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Sayfa ${kB} - ${kBi})`;
-                
-                if (aktif.tur === 1 && (soruVeri.isim === "Patoloji" || soruVeri.isim === "Biyokimya")) {
-                    document.getElementById("soru-sayfa").innerText = `TTS Çıkmış Sorular (${aktif.gun}/${aktif.toplamGun}. Gün Parçası)`;
-                } else {
-                    document.getElementById("soru-sayfa").innerText = soruVeri.isim === "Anatomi" ? "Ayrı SB yok, Speet içi okuma." : `${soruVeri.soruK} (Sayfa ${sB} - ${sBi})`;
-                }
+                if (aktif.tur >= 3) document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Hızlı spot/açık kapatma)`;
+                else document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Sayfa ${kB} - ${kBi})`;
+            }
+
+            if (soruVeri.isim === "Soru Çözüm (Joker)") {
+                document.getElementById("soru-sayfa").innerText = "Serbest Soru Çözümü & Karma Tekrar";
+            } else if (aktif.tur === 1 && (soruVeri.isim === "Patoloji" || soruVeri.isim === "Biyokimya")) {
+                document.getElementById("soru-sayfa").innerText = `TTS Çıkmış Sorular (${aktif.gun}/${aktif.toplamGun}. Gün Parçası)`;
+            } else {
+                if (aktif.tur >= 3) document.getElementById("soru-sayfa").innerText = `${soruVeri.soruK} - Elenmiş (Ort. Sf ${sB} - ${sBi})`;
+                else document.getElementById("soru-sayfa").innerText = `${soruVeri.soruK} (Sayfa ${sB} - ${sBi})`;
             }
 
             const gunYuzde = (aktif.gun / aktif.toplamGun) * 100;
@@ -979,10 +984,8 @@
                     if(!hedef) continue;
                     toplamHedefKonu += hedef;
                     toplamYapilanKonu += Math.min(yapilanlar[t][dersAd].konu, hedef);
-                    if(dersAd !== "Anatomi") {
-                        toplamHedefSoru += hedef;
-                        toplamYapilanSoru += Math.min(yapilanlar[t][dersAd].soru, hedef);
-                    }
+                    toplamHedefSoru += hedef;
+                    toplamYapilanSoru += Math.min(yapilanlar[t][dersAd].soru, hedef);
                 }
                 const konuYuzde = toplamHedefKonu > 0 ? (toplamYapilanKonu / toplamHedefKonu * 100) : 0;
                 const soruYuzde = toplamHedefSoru > 0 ? (toplamYapilanSoru / toplamHedefSoru * 100) : null;
@@ -1011,15 +1014,10 @@
                         const konuBitti = yapilanlar[t][dersAd].konu >= hedef;
                         const soruBitti = yapilanlar[t][dersAd].soru >= hedef;
 
-                        if (dersAd === "Anatomi") {
-                            if(konuBitti) tdHtml += `<td><span class="durum-kutu durum-tam">✅✅</span></td>`;
-                            else tdHtml += `<td><span class="durum-kutu durum-bos">...</span></td>`;
-                        } else {
-                            if (konuBitti && soruBitti) tdHtml += `<td><span class="durum-kutu durum-tam">✅✅</span></td>`;
-                            else if (konuBitti) tdHtml += `<td><span class="durum-kutu durum-k">K</span></td>`;
-                            else if (soruBitti) tdHtml += `<td><span class="durum-kutu durum-s">S</span></td>`;
-                            else tdHtml += `<td><span class="durum-kutu durum-bos">...</span></td>`;
-                        }
+                        if (konuBitti && soruBitti) tdHtml += `<td><span class="durum-kutu durum-tam">✅✅</span></td>`;
+                        else if (konuBitti) tdHtml += `<td><span class="durum-kutu durum-k">K</span></td>`;
+                        else if (soruBitti) tdHtml += `<td><span class="durum-kutu durum-s">S</span></td>`;
+                        else tdHtml += `<td><span class="durum-kutu durum-bos">...</span></td>`;
                     }
                 }
                 
