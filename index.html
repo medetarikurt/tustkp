@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>TUS Takip & Sarmal Analiz</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -10,125 +10,177 @@
 
     <style>
         :root {
-            --bg: #121212; --surface: #1e1e1e; --primary: #bb86fc; 
-            --primary-variant: #3700b3; --secondary: #03dac6; 
-            --text: #e0e0e0; --text-muted: #a0a0a0; 
-            --success: #4caf50; --border: #333333; --warning: #ff9800;
-            --danger: #e53935; --info: #2196F3;
+            /* Gece nöbeti sonrası masa lambası ışığı hissi: koyu lacivert zemin + sıcak altın vurgu */
+            --bg: #0a0e17;
+            --surface: #131927;
+            --surface-card: #1a2133;
+            --surface-nested: #212a42;
+            --surface-hover: #2a3550;
+            --border: #2d3650;
+
+            --primary: #e8b55f;
+            --primary-variant: #b8863a;
+            --primary-rgb: 232, 181, 95;
+
+            --secondary: #4fd1c5;
+            --secondary-rgb: 79, 209, 197;
+
+            --text: #e8eaf0;
+            --text-muted: #8b93a7;
+
+            --success: #4ade80;
+            --success-rgb: 74, 222, 128;
+
+            --warning: #fb923c;
+            --warning-rgb: 251, 146, 60;
+
+            --danger: #f87171;
+            --danger-rgb: 248, 113, 113;
+
+            --info: #60a5fa;
+
             color-scheme: dark;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 15px; }
-        .container { background-color: var(--surface); padding: 20px; border-radius: 12px; width: 100%; max-width: 480px; box-shadow: 0 4px 20px rgba(0,0,0,0.6); position: relative; overflow: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        h1 { text-align: center; color: var(--primary); margin-bottom: 15px; font-size: 22px; font-weight: 700; }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            padding: 15px;
+            padding-top: max(15px, env(safe-area-inset-top));
+            padding-bottom: max(15px, env(safe-area-inset-bottom));
+            padding-left: max(15px, env(safe-area-inset-left));
+            padding-right: max(15px, env(safe-area-inset-right));
+            overscroll-behavior-y: contain;
+        }
 
-        .countdown-banner { text-align: center; background: linear-gradient(135deg, var(--primary-variant), var(--primary)); color: #fff; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 14px; margin-bottom: 15px; letter-spacing: 0.3px; }
+        .container { background-color: var(--surface); padding: 20px; border-radius: 14px; width: 100%; max-width: 480px; box-shadow: 0 4px 24px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
+        
+        h1 { text-align: center; color: var(--primary); margin-bottom: 15px; font-size: 22px; font-weight: 700; letter-spacing: 0.2px; }
+
+        .countdown-banner { text-align: center; background: linear-gradient(135deg, var(--primary-variant), var(--primary)); color: #1a1206; padding: 11px; border-radius: 10px; font-weight: 700; font-size: 14px; margin-bottom: 15px; letter-spacing: 0.3px; }
         
         .tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
-        .tab-btn { flex: 1; background: transparent; color: var(--text-muted); border: none; padding: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .tab-btn { flex: 1; background: transparent; color: var(--text-muted); border: none; padding: 12px 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .tab-btn.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
+        .tab-btn:active { opacity: 0.6; }
 
         .takvim-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .nav-ok { background: transparent; color: var(--text-muted); border: none; font-size: 24px; cursor: pointer; padding: 5px 15px; transition: 0.2s; }
+        .nav-ok { background: transparent; color: var(--text-muted); border: none; font-size: 24px; cursor: pointer; padding: 8px 15px; transition: 0.2s; }
         .nav-ok:hover { color: #fff; }
+        .nav-ok:active { opacity: 0.5; transform: scale(0.92); }
         
         .yuvarlaklar { display: flex; gap: 12px; align-items: center; }
-        .yuvarlak { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #2c2c2c; font-size: 16px; font-weight: bold; cursor: pointer; color: var(--text-muted); transition: 0.3s; }
-        .yuvarlak:hover { background: #3d3d3d; }
-        .yuvarlak.aktif { background: var(--primary); color: #000; transform: scale(1.1); box-shadow: 0 0 10px rgba(187, 134, 252, 0.4); }
+        .yuvarlak { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--surface-nested); font-size: 16px; font-weight: bold; cursor: pointer; color: var(--text-muted); transition: 0.25s; }
+        .yuvarlak:hover { background: var(--surface-hover); }
+        .yuvarlak:active { transform: scale(0.92); }
+        .yuvarlak.aktif { background: var(--primary); color: #1a1206; transform: scale(1.08); box-shadow: 0 0 12px rgba(var(--primary-rgb), 0.45); }
 
         .tarih-alt-yazi { text-align: center; color: var(--secondary); font-size: 13px; font-weight: 600; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .hedef-karti { background: #262626; border-left: 4px solid var(--secondary); padding: 16px; border-radius: 8px; margin-bottom: 15px; }
+        .hedef-karti { background: var(--surface-card); border-left: 4px solid var(--secondary); padding: 16px; border-radius: 10px; margin-bottom: 15px; }
         .tatil-karti { border-left-color: var(--warning); display: none; }
         
-        .nobet-banner { background: rgba(229, 57, 53, 0.15); border: 1px solid var(--danger); color: #fff; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; text-align: center; margin-bottom: 12px; display: none; }
+        .nobet-banner { background: rgba(var(--danger-rgb), 0.15); border: 1px solid var(--danger); color: #fff; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; text-align: center; margin-bottom: 12px; display: none; }
         .nobet-banner span { color: var(--danger); }
 
         .hedef-baslik { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
         .hedef-baslik h2 { font-size: 18px; color: #fff; }
-        .badge { background: var(--primary-variant); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .badge { background: var(--primary-variant); color: #1a1206; padding: 4px 9px; border-radius: 5px; font-size: 12px; font-weight: 700; }
         
-        .gorev-item { margin-bottom: 12px; background: #303030; padding: 12px; border-radius: 8px; }
+        .gorev-item { margin-bottom: 12px; background: var(--surface-nested); padding: 12px; border-radius: 10px; }
         .gorev-item strong { display: block; margin-bottom: 4px; font-size: 14px; text-transform: uppercase; }
         .sayfa-bilgisi { font-size: 14px; margin-bottom: 8px; color: #fff; }
 
-        .progress-bar-container { background: #1a1a1a; border-radius: 6px; height: 6px; overflow: hidden; margin-bottom: 10px; }
+        .progress-bar-container { background: var(--bg); border-radius: 6px; height: 6px; overflow: hidden; margin-bottom: 10px; }
         .progress-bar-fill { background: var(--primary); height: 100%; border-radius: 6px; transition: width 0.4s ease; width: 0%; }
         #soru-modulu .progress-bar-fill { background: var(--secondary); }
         
-        .checkbox-container { display: flex; align-items: center; cursor: pointer; user-select: none; font-size: 14px; color: #ccc; }
-        .checkbox-container input { margin-right: 10px; width: 18px; height: 18px; accent-color: var(--success); cursor: pointer; }
+        .checkbox-container { display: flex; align-items: center; cursor: pointer; user-select: none; font-size: 14px; color: #ccc; padding: 4px 0; }
+        .checkbox-container input { margin-right: 10px; width: 20px; height: 20px; accent-color: var(--success); cursor: pointer; }
         
-        .not-panosu { background: #262626; border-left: 4px solid var(--info); padding: 14px; border-radius: 8px; margin-bottom: 15px; }
+        .not-panosu { background: var(--surface-card); border-left: 4px solid var(--info); padding: 14px; border-radius: 10px; margin-bottom: 15px; }
         .not-panosu h2 { font-size: 15px; color: #fff; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+        .eksik-panosu { border-left-color: var(--danger); }
         .not-status { font-size: 11px; color: var(--success); font-weight: normal; }
-        .not-textarea { width: 100%; height: 80px; background: #1e1e1e; color: #e0e0e0; border: 1px solid var(--border); border-radius: 6px; padding: 10px; font-size: 13px; resize: vertical; outline: none; transition: 0.3s; }
+        .not-textarea { width: 100%; height: 80px; background: var(--bg); color: #e0e0e0; border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 16px; resize: vertical; outline: none; transition: 0.3s; font-family: inherit; }
         .not-textarea:focus { border-color: var(--info); }
-        .not-textarea::placeholder { color: #666; }
+        .eksik-panosu .not-textarea:focus { border-color: var(--danger); }
+        .not-textarea::placeholder { color: #5f6880; font-size: 13px; }
 
-        .btn-acilir { width: 100%; background: #333; color: #fff; border: 1px solid var(--border); padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
-        .btn-acilir:hover { background: #444; }
+        .btn-acilir { width: 100%; background: var(--surface-nested); color: #fff; border: 1px solid var(--border); padding: 13px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+        .btn-acilir:hover { background: var(--surface-hover); }
+        .btn-acilir:active { transform: scale(0.98); }
         
-        .brans-modulu-icerik { display: none; background: #262626; padding: 15px; border-radius: 8px; margin-top: 8px; border-left: 3px solid var(--primary); }
+        .brans-modulu-icerik { display: none; background: var(--surface-card); padding: 15px; border-radius: 10px; margin-top: 8px; border-left: 3px solid var(--primary); }
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: #303030; color: #fff; outline: none; }
-        .btn-kaydet { width: 100%; background: var(--primary); color: #000; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        .form-group input, .form-group select { width: 100%; padding: 11px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-nested); color: #fff; outline: none; font-size: 16px; font-family: inherit; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+        .btn-kaydet { width: 100%; background: var(--primary); color: #1a1206; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; font-size: 15px; transition: 0.2s; }
+        .btn-kaydet:active { transform: scale(0.98); opacity: 0.9; }
 
         .stats-row { display: flex; gap: 10px; margin-bottom: 15px; }
         .stats-row .istatistik-kutu { flex: 1; margin-bottom: 0; }
-        .istatistik-kutu { background: #262626; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center; border-bottom: 3px solid var(--primary); }
+        .istatistik-kutu { background: var(--surface-card); padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: center; border-bottom: 3px solid var(--primary); }
         .istatistik-deger { font-size: 22px; font-weight: bold; color: var(--primary); margin: 5px 0; }
         .istatistik-baslik { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
         
         .analiz-tablo { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .analiz-tablo th { background: #333; color: var(--secondary); padding: 10px; text-align: left; font-size: 13px; }
+        .analiz-tablo th { background: var(--surface-nested); color: var(--secondary); padding: 10px; text-align: left; font-size: 13px; }
         .analiz-tablo td { padding: 10px; border-bottom: 1px solid var(--border); color: #e0e0e0; font-size: 14px; }
 
-        .trend-select { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: #303030; color: #fff; margin-bottom: 10px; }
-        .btn-export { width: 100%; background: transparent; border: 1px solid var(--secondary); color: var(--secondary); padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; transition: 0.2s; }
-        .btn-export:hover { background: var(--secondary); color: #000; }
+        .trend-select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-nested); color: #fff; margin-bottom: 10px; font-size: 16px; font-family: inherit; }
+        .btn-export { width: 100%; background: transparent; border: 1px solid var(--secondary); color: var(--secondary); padding: 13px; border-radius: 10px; font-weight: 600; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        .btn-export:hover { background: var(--secondary); color: #06201d; }
+        .btn-export:active { transform: scale(0.98); }
 
-        #toast { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--success); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 10; }
-        #toast.hata { background: var(--danger); color: #fff; }
+        #toast { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--success); color: #06260f; padding: 9px 18px; border-radius: 20px; font-size: 12px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 10; box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
+        #toast.hata { background: var(--danger); color: #2b0b0b; }
 
-        .calendar-wrapper { width: 100%; overflow-x: auto; padding-bottom: 8px; }
+        .calendar-wrapper { width: 100%; overflow-x: auto; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
         .calendar-wrapper::-webkit-scrollbar { height: 4px; }
-        .calendar-wrapper::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+        .calendar-wrapper::-webkit-scrollbar-thumb { background: var(--surface-hover); border-radius: 4px; }
         
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; min-width: 320px; margin-top: 5px; }
         .cal-day-header { text-align: center; font-size: 10px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; padding-bottom: 5px; }
         
-        .cal-cell { background: #222; border: 1px solid #333; border-radius: 4px; min-height: 62px; padding: 3px; display: flex; flex-direction: column; cursor: pointer; transition: 0.2s; user-select: none; }
-        .cal-cell:hover { background: #333; border-color: var(--primary); }
+        .cal-cell { background: var(--surface-nested); border: 1px solid var(--border); border-radius: 6px; min-height: 62px; padding: 3px; display: flex; flex-direction: column; cursor: pointer; transition: 0.15s; user-select: none; }
+        .cal-cell:hover { background: var(--surface-hover); border-color: var(--primary); }
+        .cal-cell:active { transform: scale(0.95); }
         .cal-cell.empty { background: transparent; border: none; cursor: default; }
+        .cal-cell.empty:active { transform: none; }
         .cal-date { font-size: 11px; font-weight: bold; color: #ccc; margin-bottom: 3px; text-align: right; }
         
         .cal-badge { font-size: 8px; padding: 2px; border-radius: 3px; font-weight: bold; text-align: center; margin-bottom: 2px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0; }
         
-        .badge-nobet { background: var(--danger); color: #fff; }
-        .badge-ders { background: #333; border: 1px solid var(--primary); color: #fff; }
-        .badge-mola { background: var(--info); color: #fff; }
-        .badge-deneme { background: var(--warning); color: #000; }
+        .badge-nobet { background: var(--danger); color: #2b0b0b; }
+        .badge-ders { background: var(--surface-hover); border: 1px solid var(--primary); color: #fff; }
+        .badge-mola { background: var(--info); color: #061a33; }
+        .badge-deneme { background: var(--warning); color: #2b1503; }
         .cal-cell.bugun-cell { border: 2px solid var(--success); }
 
-        .matris-wrapper { width: 100%; overflow-x: auto; padding-bottom: 8px; }
+        .matris-wrapper { width: 100%; overflow-x: auto; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
         .matris-wrapper::-webkit-scrollbar { height: 6px; }
-        .matris-wrapper::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+        .matris-wrapper::-webkit-scrollbar-thumb { background: var(--surface-hover); border-radius: 4px; }
         .matris-tablo { width: 100%; border-collapse: collapse; min-width: 420px; text-align: center; }
-        .matris-tablo th { background: #333; color: var(--secondary); padding: 8px 4px; font-size: 11px; text-transform: uppercase; border: 1px solid #444; font-weight: bold;}
-        .matris-tablo td { padding: 8px 4px; border: 1px solid #444; font-size: 12px; color: #e0e0e0; vertical-align: middle; }
+        .matris-tablo th { background: var(--surface-nested); color: var(--secondary); padding: 8px 4px; font-size: 11px; text-transform: uppercase; border: 1px solid var(--border); font-weight: bold;}
+        .matris-tablo td { padding: 8px 4px; border: 1px solid var(--border); font-size: 12px; color: #e0e0e0; vertical-align: middle; }
         .matris-ders-isim { text-align: left !important; font-weight: bold; color: #fff; padding-left: 8px !important; }
-        .durum-kutu { display: inline-block; padding: 3px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; min-width: 24px;}
-        .durum-bos { background: #2a2a2a; color: #555; }
-        .durum-k { background: rgba(187, 134, 252, 0.15); color: var(--primary); border: 1px solid var(--primary); }
-        .durum-s { background: rgba(3, 218, 198, 0.15); color: var(--secondary); border: 1px solid var(--secondary); }
-        .durum-tam { background: rgba(76, 175, 80, 0.15); color: var(--success); border: 1px solid var(--success); }
-        .matris-bar-container { background: #1a1a1a; border-radius: 4px; height: 5px; width: 100%; overflow: hidden; margin-top: 4px; }
+        .durum-kutu { display: inline-block; padding: 3px 5px; border-radius: 5px; font-size: 10px; font-weight: bold; min-width: 24px;}
+        .durum-bos { background: var(--surface-nested); color: #5a6378; }
+        .durum-k { background: rgba(var(--primary-rgb), 0.15); color: var(--primary); border: 1px solid var(--primary); }
+        .durum-s { background: rgba(var(--secondary-rgb), 0.15); color: var(--secondary); border: 1px solid var(--secondary); }
+        .durum-tam { background: rgba(var(--success-rgb), 0.15); color: var(--success); border: 1px solid var(--success); }
+        .matris-bar-container { background: var(--bg); border-radius: 4px; height: 5px; width: 100%; overflow: hidden; margin-top: 4px; }
         .matris-bar-fill { background: linear-gradient(90deg, var(--primary), var(--secondary)); height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+
+        .scroll-liste::-webkit-scrollbar { width: 6px; }
+        .scroll-liste::-webkit-scrollbar-thumb { background: var(--surface-hover); border-radius: 4px; }
+        .scroll-liste::-webkit-scrollbar-track { background: var(--bg); }
     </style>
 </head>
 <body>
@@ -184,7 +236,7 @@
                 </label>
             </div>
             
-            <div class="gorev-item" id="deneme-modulu" style="display: none; border-left: 3px solid #ff9800;">
+            <div class="gorev-item" id="deneme-modulu" style="display: none; border-left: 3px solid var(--warning);">
                 <strong id="deneme-baslik" style="color: var(--warning);">🔥 Deneme Modülü</strong>
                 <div id="deneme-aciklama" style="font-size: 13px; color: #bbb; margin-bottom: 8px;"></div>
                 <label class="checkbox-container" id="lbl-deneme">
@@ -198,9 +250,16 @@
             <p id="tatil-aciklama" style="text-align: center; font-size: 14px; color: var(--text-muted);">Sarmal takvim bugün ilerlemez.</p>
         </div>
 
+        <!-- GENEL NOT PANOSU -->
         <div class="not-panosu">
             <h2>📝 Genel Not Panosu <span class="not-status" id="not-status"></span></h2>
             <textarea id="genel-not-input" class="not-textarea" placeholder="Örn: Biyokimya'dan 10 sayfa sarkanı yarınki nöbette erit... Yazdıkların otomatik kaydedilir." oninput="notYazildi()" onblur="notKaydet()"></textarea>
+        </div>
+
+        <!-- GENEL EKSİK OLDUĞUM KONULAR -->
+        <div class="not-panosu eksik-panosu">
+            <h2>📌 Genel Eksik Olduğum Konular <span class="not-status" id="eksik-status"></span></h2>
+            <textarea id="eksik-konular-input" class="not-textarea" placeholder="Örn: Guillain-Barré ayırıcı tanısı, böbrek tübüler asidoz tipleri... Netleşmemiş konuları buraya düş, tekrar döneminde önceliklendirirsin." oninput="eksikYazildi()" onblur="eksikKaydet()"></textarea>
         </div>
 
         <button class="btn-acilir" onclick="bransModuluGoster()">
@@ -222,7 +281,6 @@
                     <option value="Pediatri">Pediatri</option>
                     <option value="Mikrobiyoloji">Mikrobiyoloji</option>
                     <option value="Farmakoloji">Farmakoloji</option>
-                    <option value="Anatomi">Anatomi</option>
                     <option value="Küçük Stajlar">Küçük Stajlar</option>
                     <option value="Genel Cerrahi">Genel Cerrahi</option>
                     <option value="Kadın Doğum">Kadın Doğum</option>
@@ -327,7 +385,6 @@
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const db = firebase.database();
 
-    // ANATOMİ YERİNE JOKER EKLENDİ
     const planData = {
         dahiliye: { isim: "Dahiliye", kisa: "DAH", konu: 450, soru: 750, konuK: "BBB Tıp Ak.", soruK: "Prime" },
         pediatri: { isim: "Pediatri", kisa: "PED", konu: 200, soru: 450, konuK: "Speet", soruK: "Ahmet Erkek" },
@@ -349,7 +406,6 @@
         { d: 'genelcerrahi', g: 3 }, { d: 'kadindogum', g: 2 }
     ];
     
-    // 1. TURA JOKER EKLENDİ, DİĞER TURLARDAN TAMAMEN ÇIKARTILDI
     const sarmalAkil = [
         { tur: 1, seq: [{d:'dahiliye',g:6}, {d:'fizyoloji',g:4}, {d:'patoloji',g:4}, {d:'biyokimya',g:4}, {d:'pediatri',g:6}, {d:'mikrobiyoloji',g:4}, {d:'farmakoloji',g:4}, {d:'joker',g:4}, {d:'kucukstajlar',g:3}, {d:'genelcerrahi',g:3}, {d:'kadindogum',g:3}] },
         { tur: 2, seq: [{d:'fizyoloji',g:3}, {d:'patoloji',g:3}, {d:'biyokimya',g:3}, {d:'pediatri',g:4}, {d:'mikrobiyoloji',g:3}, {d:'farmakoloji',g:3}, {d:'dahiliye',g:4}, {d:'kucukstajlar',g:3}, {d:'genelcerrahi',g:3}, {d:'kadindogum',g:3}] },
@@ -379,6 +435,7 @@
     let dersNetGecmisi = {};
     
     let notTimer;
+    let eksikTimer;
 
     function gunFarkiBul(d1, d2) {
         const utc1 = Date.UTC(d1.getFullYear(), d1.getMonth(), d1.getDate());
@@ -447,13 +504,17 @@
         gunBilgisiHaritasiniOlustur();
         gunuHesaplaVeArayuzuCiz(); 
         genelNotGetir();
+        eksikKonularGetir();
     };
 
+    // --- GENEL NOT PANOSU ---
     function genelNotGetir() {
         db.ref('tus_genel_notlar/metin').once('value').then(snap => {
             if(snap.exists()) {
                 document.getElementById('genel-not-input').value = snap.val();
             }
+        }).catch(err => {
+            console.error("Genel not okunamadı:", err);
         });
     }
 
@@ -473,6 +534,36 @@
         }).catch(err => {
             document.getElementById('not-status').style.color = "var(--danger)";
             document.getElementById('not-status').innerText = "❌ Hata";
+        });
+    }
+
+    // --- GENEL EKSİK OLDUĞUM KONULAR PANOSU ---
+    function eksikKonularGetir() {
+        db.ref('tus_eksik_konular/metin').once('value').then(snap => {
+            if(snap.exists()) {
+                document.getElementById('eksik-konular-input').value = snap.val();
+            }
+        }).catch(err => {
+            console.error("Eksik konular okunamadı:", err);
+        });
+    }
+
+    function eksikYazildi() {
+        document.getElementById('eksik-status').style.color = "var(--text-muted)";
+        document.getElementById('eksik-status').innerText = "Yazılıyor...";
+        clearTimeout(eksikTimer);
+        eksikTimer = setTimeout(eksikKaydet, 1500);
+    }
+
+    function eksikKaydet() {
+        const metin = document.getElementById('eksik-konular-input').value;
+        db.ref('tus_eksik_konular/metin').set(metin).then(() => {
+            document.getElementById('eksik-status').style.color = "var(--success)";
+            document.getElementById('eksik-status').innerText = "✅ Kaydedildi";
+            setTimeout(() => { document.getElementById('eksik-status').innerText = ""; }, 2500);
+        }).catch(err => {
+            document.getElementById('eksik-status').style.color = "var(--danger)";
+            document.getElementById('eksik-status').innerText = "❌ Hata";
         });
     }
 
@@ -714,7 +805,6 @@
             let sBi = aktif.gun * gSoru;
             if (sBi > soruVeri.soru || aktif.gun === aktif.toplamGun) sBi = soruVeri.soru;
 
-            // ÖZEL JOKER GÜNÜ METİNLERİ
             if (konuVeri.isim === "Soru Çözüm (Joker)") {
                 document.getElementById("konu-sayfa").innerText = "Serbest Zaman / Eksik Kapatma (Düğün vs.)";
             } else {
@@ -830,15 +920,25 @@
         });
     }
 
+    // BUG FİX: son60 günlerinde "tip" artık 'deneme' değil 'son60'.
+    // Bu fonksiyon artık o günler için konu+soru+deneme'nin HEPSİNİ birden
+    // ayrı ayrı kontrol ediyor; eskisi gibi sadece deneme'ye (ya da sadece
+    // konu+soru'ya) bakıp diğerini atlamıyor.
     function serimiHesapla(dataDump) {
         let d = new Date(); d.setHours(0,0,0,0);
 
         function gunTamamMi(dateStr, harita) {
             const kayit = dataDump[dateStr];
-            if (harita.tip === 'deneme') {
-                return !!(kayit && (kayit.deneme_bitti || kayit.genel_deneme || kayit.temel_deneme || kayit.klinik_deneme));
+            const denemeTamam = !!(kayit && (kayit.deneme_bitti || kayit.genel_deneme || kayit.temel_deneme || kayit.klinik_deneme));
+            const dersTamam = !!(kayit && kayit.konu_bitti && kayit.soru_bitti);
+
+            if (harita.tip === 'son60') {
+                return dersTamam && denemeTamam;
             }
-            return !!(kayit && kayit.konu_bitti && kayit.soru_bitti);
+            if (harita.tip === 'deneme') {
+                return denemeTamam;
+            }
+            return dersTamam;
         }
 
         const todayStr = localToISO(d);
@@ -863,12 +963,16 @@
     function verileriYedekle() {
         Promise.all([
             db.ref('tus_gunluk_kayitlar').once('value'),
-            db.ref('tus_brans_denemeleri').once('value')
-        ]).then(([gunlukSnap, bransSnap]) => {
+            db.ref('tus_brans_denemeleri').once('value'),
+            db.ref('tus_genel_notlar').once('value'),
+            db.ref('tus_eksik_konular').once('value')
+        ]).then(([gunlukSnap, bransSnap, notlarSnap, eksikSnap]) => {
             const yedek = {
                 olusturma_tarihi: new Date().toISOString(),
                 gunluk_kayitlar: gunlukSnap.val() || {},
-                brans_denemeleri: bransSnap.val() || {}
+                brans_denemeleri: bransSnap.val() || {},
+                genel_notlar: notlarSnap.val() || {},
+                eksik_konular: eksikSnap.val() || {}
             };
             const blob = new Blob([JSON.stringify(yedek, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -916,7 +1020,7 @@
 
         const polyPoints = pts.map(p => `${p.x},${p.y}`).join(' ');
         
-        const circles = pts.map(p => `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="var(--primary)" stroke="#1e1e1e" stroke-width="1.5"><title>${p.tarih}: ${p.net.toFixed(2)} net</title></circle>`).join('');
+        const circles = pts.map(p => `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="var(--primary)" stroke="#1a2133" stroke-width="1.5"><title>${p.tarih}: ${p.net.toFixed(2)} net</title></circle>`).join('');
         
         const texts = pts.map(p => `<text x="${p.x}" y="${p.y - 8}" fill="#fff" font-size="9" text-anchor="middle" font-weight="bold">${p.net % 1 === 0 ? p.net : p.net.toFixed(2)}</text>`).join('');
 
