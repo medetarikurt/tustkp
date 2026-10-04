@@ -115,7 +115,6 @@
         .badge-deneme { background: var(--warning); color: #000; }
         .cal-cell.bugun-cell { border: 2px solid var(--success); }
 
-        /* YENİ: SARMAL KOMUTA MATRİSİ CSS */
         .matris-wrapper { width: 100%; overflow-x: auto; padding-bottom: 8px; }
         .matris-wrapper::-webkit-scrollbar { height: 6px; }
         .matris-wrapper::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
@@ -283,7 +282,6 @@
             </div>
         </div>
 
-        <!-- YENİ: SARMAL KOMUTA MATRİSİ -->
         <div class="hedef-karti" style="border-left-color: var(--success); padding: 16px 12px;">
             <h2 style="font-size: 16px; margin-bottom: 12px; color: #fff; display:flex; justify-content:space-between; align-items:center;">
                 🧩 Sarmal Komuta Matrisi
@@ -343,16 +341,17 @@
         kadindogum: { isim: "Kadın Doğum", kisa: "K.DOĞ", konu: 100, soru: 400, konuK: "Speet", soruK: "Prime" }
     };
 
+    // KOMUTAN MANEVRASI: Anatomi 2,3,4 ve 5. Turlardan Tamamen Silindi
     const t345 = [
         { d: 'fizyoloji', g: 2 }, { d: 'patoloji', g: 3 }, { d: 'biyokimya', g: 1.5 },
         { d: 'pediatri', g: 3 }, { d: 'mikrobiyoloji', g: 2 }, { d: 'farmakoloji', g: 2 },
-        { d: 'dahiliye', g: 3 }, { d: 'anatomi', g: 1 }, { d: 'kucukstajlar', g: 2.5 }, 
+        { d: 'dahiliye', g: 3 }, { d: 'kucukstajlar', g: 2.5 }, 
         { d: 'genelcerrahi', g: 3 }, { d: 'kadindogum', g: 2 }
     ];
     
     const sarmalAkil = [
         { tur: 1, seq: [{d:'dahiliye',g:6}, {d:'fizyoloji',g:4}, {d:'patoloji',g:4}, {d:'biyokimya',g:4}, {d:'pediatri',g:6}, {d:'mikrobiyoloji',g:4}, {d:'farmakoloji',g:4}, {d:'anatomi',g:4}, {d:'kucukstajlar',g:3}, {d:'genelcerrahi',g:3}, {d:'kadindogum',g:3}] },
-        { tur: 2, seq: [{d:'fizyoloji',g:3}, {d:'patoloji',g:3}, {d:'biyokimya',g:3}, {d:'pediatri',g:4}, {d:'mikrobiyoloji',g:3}, {d:'farmakoloji',g:3}, {d:'dahiliye',g:4}, {d:'anatomi',g:3}, {d:'kucukstajlar',g:3}, {d:'genelcerrahi',g:3}, {d:'kadindogum',g:3}] },
+        { tur: 2, seq: [{d:'fizyoloji',g:3}, {d:'patoloji',g:3}, {d:'biyokimya',g:3}, {d:'pediatri',g:4}, {d:'mikrobiyoloji',g:3}, {d:'farmakoloji',g:3}, {d:'dahiliye',g:4}, {d:'kucukstajlar',g:3}, {d:'genelcerrahi',g:3}, {d:'kadindogum',g:3}] },
         { tur: 3, seq: t345 }, { tur: 4, seq: t345 }, { tur: 5, seq: t345 }
     ];
 
@@ -969,7 +968,6 @@
                 yapilanlar[1]["Pediatri"].soru = hedefGunler[1]["Pediatri"];
             }
 
-            // YENİ: SARMAL KOMUTA MATRİSİ HESAPLAMASI
             const dersIlerlemeler = [];
             for(let key in planData) {
                 const dersAd = planData[key].isim;
@@ -993,7 +991,6 @@
                 dersIlerlemeler.push({ dersAd: dersAd, genelYuzde: genelYuzde, key: key });
             }
             
-            // Genel yüzdeye göre yüksekten düşüğe sıralama
             dersIlerlemeler.sort((a,b) => b.genelYuzde - a.genelYuzde);
 
             let matrisHtml = `<tr>
