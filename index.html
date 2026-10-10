@@ -181,6 +181,33 @@
         .scroll-liste::-webkit-scrollbar { width: 6px; }
         .scroll-liste::-webkit-scrollbar-thumb { background: var(--surface-hover); border-radius: 4px; }
         .scroll-liste::-webkit-scrollbar-track { background: var(--bg); }
+        /* ===== GENEL (HAFTALIK) DENEME TAKİBİ ===== */
+        .btn-kaydet:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .gd-baslik { font-size: 13px; font-weight: 700; color: var(--secondary); margin: 4px 0 8px; }
+        .gd-onizleme { background: var(--bg); border: 1px dashed var(--border); border-radius: 8px; padding: 10px; font-size: 13px; margin: 4px 0 12px; text-align: center; color: var(--text-muted); line-height: 1.7; }
+        .gd-onizleme b { color: #fff; }
+        .gd-ozet { display: flex; gap: 8px; margin: 12px 0; }
+        .gd-ozet-kutu { flex: 1; background: var(--surface-nested); border-radius: 8px; padding: 10px 4px; text-align: center; border-bottom: 2px solid var(--primary); }
+        .gd-ozet-baslik { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .gd-ozet-deger { font-size: 20px; font-weight: 700; color: var(--primary); margin: 3px 0; }
+        .gd-delta { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+        .gd-delta.up { color: var(--success); }
+        .gd-delta.down { color: var(--danger); }
+        .gd-liste-baslik { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 0 8px; }
+        .gd-satir { display: flex; align-items: center; gap: 8px; background: var(--surface-nested); border-radius: 8px; padding: 10px; margin-bottom: 8px; }
+        .gd-satir-sol { flex: 1; min-width: 0; }
+        .gd-satir-ust { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 13px; font-weight: 600; color: #fff; }
+        .gd-ad { font-size: 12px; color: var(--text-muted); margin-top: 3px; overflow-wrap: anywhere; }
+        .gd-satir-detay { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: #cfd3df; margin-top: 5px; }
+        .gd-satir-detay small { color: var(--text-muted); }
+        .gd-satir-sag { text-align: right; min-width: 52px; }
+        .gd-net { font-size: 18px; font-weight: 700; color: var(--primary); }
+        .gd-sil { background: transparent; border: none; color: var(--text-muted); font-size: 18px; min-width: 40px; min-height: 40px; cursor: pointer; border-radius: 8px; }
+        .gd-sil:active { background: rgba(var(--danger-rgb), 0.2); }
+        .gd-chip { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+        .gd-chip-genel { background: rgba(var(--primary-rgb), 0.15); color: var(--primary); border: 1px solid var(--primary); }
+        .gd-chip-temel { background: rgba(var(--secondary-rgb), 0.15); color: var(--secondary); border: 1px solid var(--secondary); }
+        .gd-chip-klinik { background: rgba(var(--warning-rgb), 0.15); color: var(--warning); border: 1px solid var(--warning); }
     </style>
 </head>
 <body>
@@ -298,6 +325,61 @@
             </div>
             <button class="btn-kaydet" onclick="bransDenemeKaydet()">Sonucu İşle</button>
         </div>
+
+        <!-- GENEL (HAFTALIK) DENEME SONUCU GİRİŞİ -->
+        <button class="btn-acilir" style="margin-top: 10px;" onclick="genelDenemeModuluGoster()">
+            <span>📝 Genel Deneme Sonucu Gir</span>
+            <span id="gd-ok">▼</span>
+        </button>
+        <div id="gd-icerik" class="brans-modulu-icerik" style="border-left-color: var(--secondary);">
+            <div class="form-group">
+                <label>Deneme Tarihi</label>
+                <input type="date" id="gd-tarih">
+            </div>
+            <div class="form-group">
+                <label>Deneme Türü</label>
+                <select id="gd-tur" onchange="genelDenemeTurDegisti()">
+                    <option value="genel">Genel Deneme (Temel + Klinik, 200 soru)</option>
+                    <option value="temel">Sadece Temel Bilimler (100 soru)</option>
+                    <option value="klinik">Sadece Klinik Bilimler (100 soru)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Deneme Adı / Yayınevi (isteğe bağlı)</label>
+                <input type="text" id="gd-ad" maxlength="60" placeholder="Örn: Medistudy 5. Deneme">
+            </div>
+
+            <div id="gd-temel-alan">
+                <div class="gd-baslik">🔬 Temel Bilimler (100 soru)</div>
+                <div style="display: flex; gap: 10px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Doğru</label>
+                        <input type="number" id="gd-temel-dogru" min="0" max="100" inputmode="numeric" placeholder="Örn: 62" oninput="genelDenemeOnizle()">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Yanlış</label>
+                        <input type="number" id="gd-temel-yanlis" min="0" max="100" inputmode="numeric" placeholder="Örn: 20" oninput="genelDenemeOnizle()">
+                    </div>
+                </div>
+            </div>
+
+            <div id="gd-klinik-alan">
+                <div class="gd-baslik">🩺 Klinik Bilimler (100 soru)</div>
+                <div style="display: flex; gap: 10px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Doğru</label>
+                        <input type="number" id="gd-klinik-dogru" min="0" max="100" inputmode="numeric" placeholder="Örn: 58" oninput="genelDenemeOnizle()">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Yanlış</label>
+                        <input type="number" id="gd-klinik-yanlis" min="0" max="100" inputmode="numeric" placeholder="Örn: 24" oninput="genelDenemeOnizle()">
+                    </div>
+                </div>
+            </div>
+
+            <div id="gd-onizleme" class="gd-onizleme">Doğru/yanlış girince net burada görünür</div>
+            <button class="btn-kaydet" id="gd-kaydet-btn" onclick="genelDenemeKaydet()">Sonucu İşle</button>
+        </div>
     </div>
 
     <!-- SEKME 2: İSTATİSTİKLER & TAKVİM -->
@@ -349,6 +431,18 @@
                 <table class="matris-tablo" id="sarmal-matris-tablosu">
                     <!-- Javascript ile Doldurulacak -->
                 </table>
+            </div>
+        </div>
+
+        <div class="hedef-karti" style="border-left-color: var(--primary);">
+            <h2 style="font-size: 16px; margin-bottom: 10px; color: #fff;">📅 Genel Deneme Takibi</h2>
+            <div id="gd-bos-mesaj" style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 10px 0; line-height: 1.6;">Yükleniyor...</div>
+            <div id="gd-dolu-alan" style="display: none;">
+                <select id="gd-seri-secim" class="trend-select" onchange="gdSeriCiz()"></select>
+                <div id="gd-ozet" class="gd-ozet"></div>
+                <div id="gd-grafik-alani"></div>
+                <h3 class="gd-liste-baslik">Geçmiş Sonuçlar</h3>
+                <div id="gd-liste" class="scroll-liste" style="max-height: 340px; overflow-y: auto; padding-right: 4px;"></div>
             </div>
         </div>
 
@@ -433,6 +527,7 @@
     let gosterilenTakvimAyi = new Date(aktifTarih.getFullYear(), aktifTarih.getMonth(), 1);
     let gunBilgisi = {};
     let dersNetGecmisi = {};
+    let genelDenemeler = [];
     
     let notTimer;
     let eksikTimer;
@@ -965,14 +1060,16 @@
             db.ref('tus_gunluk_kayitlar').once('value'),
             db.ref('tus_brans_denemeleri').once('value'),
             db.ref('tus_genel_notlar').once('value'),
-            db.ref('tus_eksik_konular').once('value')
-        ]).then(([gunlukSnap, bransSnap, notlarSnap, eksikSnap]) => {
+            db.ref('tus_eksik_konular').once('value'),
+            db.ref('tus_genel_denemeler').once('value')
+        ]).then(([gunlukSnap, bransSnap, notlarSnap, eksikSnap, genelDenemeSnap]) => {
             const yedek = {
                 olusturma_tarihi: new Date().toISOString(),
                 gunluk_kayitlar: gunlukSnap.val() || {},
                 brans_denemeleri: bransSnap.val() || {},
                 genel_notlar: notlarSnap.val() || {},
-                eksik_konular: eksikSnap.val() || {}
+                eksik_konular: eksikSnap.val() || {},
+                genel_denemeler: genelDenemeSnap.val() || {}
             };
             const blob = new Blob([JSON.stringify(yedek, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -990,46 +1087,65 @@
         });
     }
 
-    function trendGrafigiCiz(ders) {
-        const container = document.getElementById("trend-grafik-alani");
-        const hamVeri = dersNetGecmisi[ders];
-        
-        if (!hamVeri || hamVeri.length === 0) { 
-            container.innerHTML = '<div style="text-align:center;color:#888;font-size:13px;">Veri yok</div>'; 
-            return; 
+    // ---- Ortak yardımcılar ----
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, function(c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
+    // 87.50 -> "87.5", 87 -> "87", -3.25 -> "-3.25"
+    function netFmt(n) {
+        return parseFloat(Number(n).toFixed(2)).toString();
+    }
+
+    // Branş trendi ile genel deneme trendinin ortak kullandığı SVG çizgi grafiği.
+    // hamVeri: tarihe göre sıralı [{ tarih, net }]
+    function cizgiGrafigiHtml(hamVeri, secenekler) {
+        const sifirdanBasla = !(secenekler && secenekler.sifirdanBasla === false);
+
+        if (!hamVeri || hamVeri.length === 0) {
+            return '<div style="text-align:center;color:#888;font-size:13px;">Veri yok</div>';
         }
-        
         if (hamVeri.length === 1) {
-            container.innerHTML = `<div style="text-align:center;color:#888;font-size:13px;padding:10px 0;">Trend için en az 2 deneme gerekli. Şu an: ${hamVeri[0].net.toFixed(2)} net</div>`;
-            return;
+            return `<div style="text-align:center;color:#888;font-size:13px;padding:10px 0;">Trend için en az 2 deneme gerekli. Şu an: ${netFmt(hamVeri[0].net)} net</div>`;
         }
 
         const veri = hamVeri.slice(-10);
 
-        const w = 300, h = 140, padding = 30; 
+        const w = 300, h = 140, padding = 30;
         const nets = veri.map(v => v.net);
-        const minNet = Math.min(...nets, 0);
-        const maxNet = Math.max(...nets, 1);
+        let minNet, maxNet;
+        if (sifirdanBasla) {
+            minNet = Math.min(...nets, 0);
+            maxNet = Math.max(...nets, 1);
+        } else {
+            // Yüksek net aralığında (örn. 200 soruluk toplam) küçük değişimler görünür kalsın
+            const alt = Math.min(...nets), ust = Math.max(...nets);
+            const pay = Math.max(2, (ust - alt) * 0.2);
+            minNet = alt - pay;
+            maxNet = ust + pay;
+        }
         const range = (maxNet - minNet) || 1;
 
         const pts = veri.map((v, i) => {
             const x = padding + (i / (veri.length - 1)) * (w - padding * 2);
             const y = h - padding - ((v.net - minNet) / range) * (h - padding * 2);
-            return { x: x, y: y, net: v.net, tarih: v.tarih };
+            return { x: x, y: y, net: v.net, tarih: String(v.tarih) };
         });
 
         const polyPoints = pts.map(p => `${p.x},${p.y}`).join(' ');
-        
-        const circles = pts.map(p => `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="var(--primary)" stroke="#1a2133" stroke-width="1.5"><title>${p.tarih}: ${p.net.toFixed(2)} net</title></circle>`).join('');
-        
-        const texts = pts.map(p => `<text x="${p.x}" y="${p.y - 8}" fill="#fff" font-size="9" text-anchor="middle" font-weight="bold">${p.net % 1 === 0 ? p.net : p.net.toFixed(2)}</text>`).join('');
+
+        const circles = pts.map(p => `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="var(--primary)" stroke="#1a2133" stroke-width="1.5"><title>${escapeHtml(p.tarih)}: ${netFmt(p.net)} net</title></circle>`).join('');
+
+        const texts = pts.map(p => `<text x="${p.x}" y="${p.y - 8}" fill="#fff" font-size="9" text-anchor="middle" font-weight="bold">${netFmt(p.net)}</text>`).join('');
 
         const svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%; height:auto; overflow:visible;">
             <polyline points="${polyPoints}" fill="none" stroke="var(--secondary)" stroke-width="2"/>
             ${circles}
             ${texts}
-            <text x="${padding}" y="${h-5}" fill="#888" font-size="9" text-anchor="middle">${veri[0].tarih.slice(5)}</text>
-            <text x="${w-padding}" y="${h-5}" fill="#888" font-size="9" text-anchor="middle">${veri[veri.length-1].tarih.slice(5)}</text>
+            <text x="${padding}" y="${h-5}" fill="#888" font-size="9" text-anchor="middle">${escapeHtml(pts[0].tarih.slice(5))}</text>
+            <text x="${w-padding}" y="${h-5}" fill="#888" font-size="9" text-anchor="middle">${escapeHtml(pts[pts.length-1].tarih.slice(5))}</text>
         </svg>`;
 
         let ekstraBilgi = '';
@@ -1037,10 +1153,302 @@
             ekstraBilgi = `<div style="text-align:center; font-size:10px; color:#888; margin-top:5px;">(Veritabanında ${hamVeri.length} denemen var, grafikte en güncel 10 tanesi gösteriliyor)</div>`;
         }
 
-        container.innerHTML = svg + ekstraBilgi;
+        return svg + ekstraBilgi;
+    }
+
+    function trendGrafigiCiz(ders) {
+        document.getElementById("trend-grafik-alani").innerHTML = cizgiGrafigiHtml(dersNetGecmisi[ders]);
+    }
+
+    // =====================================================================
+    //  GENEL (HAFTALIK) DENEME TAKİBİ
+    //  Firebase: tus_genel_denemeler/{pushId} = {
+    //     tarih, tur: 'genel' | 'temel' | 'klinik', ad?, timestamp,
+    //     temel?: { dogru, yanlis, net }, klinik?: { dogru, yanlis, net },
+    //     toplamNet?  (sadece tur === 'genel')
+    //  }
+    // =====================================================================
+    const GD_AY = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
+    const GD_TURLER = ['genel', 'temel', 'klinik'];
+
+    function gdSayi(x) { return Number(x) || 0; }
+
+    function gdBolumEtiket(b) { return b === 'temel' ? 'Temel Bilimler' : 'Klinik Bilimler'; }
+
+    // "2026-10-18" -> "18 Eki 2026"  (ham metin döner; HTML'e basarken escapeHtml kullan)
+    function gdTarihFmt(tarih) {
+        const p = String(tarih).split('-');
+        if (p.length !== 3) return String(tarih);
+        return `${parseInt(p[2], 10)} ${GD_AY[parseInt(p[1], 10) - 1] || ''} ${p[0]}`;
+    }
+
+    function genelDenemeModuluGoster() {
+        const icerik = document.getElementById("gd-icerik");
+        const ok = document.getElementById("gd-ok");
+        if (icerik.style.display === "block") {
+            icerik.style.display = "none"; ok.innerText = "▼";
+            return;
+        }
+        icerik.style.display = "block"; ok.innerText = "▲";
+
+        const tarihInput = document.getElementById("gd-tarih");
+        if (!tarihInput.value) {
+            // Taze açılış: tarihi ve türü o günün bağlamına göre öner
+            tarihInput.value = localToISO(aktifTarih);
+            const turSecim = document.getElementById("gd-tur");
+            if (globalDurum === "son_60_gun" && globalSon60Info) {
+                turSecim.value = globalSon60Info.tur.includes("Temel") ? "temel" : "klinik";
+            } else {
+                turSecim.value = "genel";
+            }
+        }
+        genelDenemeTurDegisti();
+    }
+
+    function genelDenemeTurDegisti() {
+        const tur = document.getElementById("gd-tur").value;
+        document.getElementById("gd-temel-alan").style.display = (tur === 'klinik') ? 'none' : 'block';
+        document.getElementById("gd-klinik-alan").style.display = (tur === 'temel') ? 'none' : 'block';
+        genelDenemeOnizle();
+    }
+
+    function gdBolumOku(bolum) {
+        const dStr = document.getElementById(`gd-${bolum}-dogru`).value.trim();
+        const yStr = document.getElementById(`gd-${bolum}-yanlis`).value.trim();
+        const dogru = parseInt(dStr, 10) || 0;
+        const yanlis = parseInt(yStr, 10) || 0;
+        return {
+            girildi: (dStr !== '' || yStr !== ''),
+            dogru: dogru,
+            yanlis: yanlis,
+            bos: 100 - dogru - yanlis,
+            net: dogru - (yanlis / 4),
+            gecerli: dogru >= 0 && yanlis >= 0 && (dogru + yanlis) <= 100
+        };
+    }
+
+    function genelDenemeOnizle() {
+        const tur = document.getElementById("gd-tur").value;
+        const bolumler = (tur === 'genel') ? ['temel', 'klinik'] : [tur];
+        const parcalar = [];
+        let toplam = 0, hepsiGirildi = true, hata = false;
+
+        bolumler.forEach(b => {
+            const r = gdBolumOku(b);
+            if (!r.girildi) { hepsiGirildi = false; return; }
+            if (!r.gecerli) {
+                hata = true;
+                parcalar.push(`<span style="color:var(--danger)">${gdBolumEtiket(b)}: doğru + yanlış 100'ü geçemez</span>`);
+                return;
+            }
+            toplam += r.net;
+            parcalar.push(`${gdBolumEtiket(b)}: <b>${netFmt(r.net)}</b> <small>(${r.bos} boş)</small>`);
+        });
+
+        if (tur === 'genel' && hepsiGirildi && !hata) {
+            parcalar.push(`Toplam: <b style="color:var(--primary)">${netFmt(toplam)}</b>`);
+        }
+        document.getElementById("gd-onizleme").innerHTML = parcalar.length
+            ? parcalar.join('<br>')
+            : 'Doğru/yanlış girince net burada görünür';
+    }
+
+    function genelDenemeKaydet() {
+        const tarih = document.getElementById("gd-tarih").value || localToISO(aktifTarih);
+        const tur = document.getElementById("gd-tur").value;
+        const ad = document.getElementById("gd-ad").value.trim().slice(0, 60);
+        const bolumler = (tur === 'genel') ? ['temel', 'klinik'] : [tur];
+
+        const kayit = { tarih: tarih, tur: tur, timestamp: firebase.database.ServerValue.TIMESTAMP };
+        if (ad) kayit.ad = ad;
+        let toplamNet = 0;
+
+        for (let i = 0; i < bolumler.length; i++) {
+            const b = bolumler[i];
+            const r = gdBolumOku(b);
+            if (!r.girildi) { alert(`${gdBolumEtiket(b)} için doğru/yanlış sayısı girin!`); return; }
+            if (!r.gecerli) { alert(`${gdBolumEtiket(b)}: doğru + yanlış 100'ü geçemez!`); return; }
+            kayit[b] = { dogru: r.dogru, yanlis: r.yanlis, net: r.net };
+            toplamNet += r.net;
+        }
+        if (tur === 'genel') kayit.toplamNet = toplamNet;
+
+        const btn = document.getElementById("gd-kaydet-btn");
+        btn.disabled = true;  // çift dokunuşla mükerrer kayıt oluşmasın
+
+        db.ref('tus_genel_denemeler').push(kayit).then(() => {
+            btn.disabled = false;
+            toastGoster("📝 Deneme Sonucu İşlendi");
+            ['gd-temel-dogru', 'gd-temel-yanlis', 'gd-klinik-dogru', 'gd-klinik-yanlis', 'gd-ad', 'gd-tarih']
+                .forEach(id => { document.getElementById(id).value = ""; });
+            genelDenemeOnizle();
+            genelDenemeModuluGoster();   // formu kapat (bir sonraki açılışta tarih/tür yeniden önerilir)
+            genelDenemeleriYukle();
+        }).catch(err => {
+            btn.disabled = false;
+            toastGoster("❌ Kayıt başarısız", true);
+            console.error(err);
+        });
+    }
+
+    function genelDenemeleriYukle() {
+        db.ref('tus_genel_denemeler').once('value').then(snap => {
+            const liste = [];
+            // DİKKAT: Firebase forEach callback'i true dönerse döngüyü keser; bu yüzden süslü parantezli.
+            snap.forEach(child => {
+                const v = child.val();
+                if (v && typeof v.tarih === 'string' && GD_TURLER.indexOf(v.tur) !== -1) {
+                    liste.push(Object.assign({ key: child.key }, v));
+                }
+            });
+            liste.sort((a, b) => a.tarih.localeCompare(b.tarih) || (gdSayi(a.timestamp) - gdSayi(b.timestamp)));
+            genelDenemeler = liste;
+            genelDenemeRender();
+        }).catch(err => {
+            toastGoster("❌ Genel denemeler yüklenemedi", true);
+            console.error(err);
+        });
+    }
+
+    // secim: 'toplam' (sadece genel denemeler) | 'temel' | 'klinik' (genel + tekil denemelerdeki ilgili bölüm)
+    function gdSeri(secim) {
+        const seri = [];
+        genelDenemeler.forEach(d => {
+            if (secim === 'toplam') {
+                if (d.tur === 'genel' && typeof d.toplamNet === 'number') seri.push({ tarih: d.tarih, net: d.toplamNet });
+            } else if (d[secim] && typeof d[secim].net === 'number') {
+                seri.push({ tarih: d.tarih, net: d[secim].net });
+            }
+        });
+        return seri;
+    }
+
+    // Satırın ana neti: genel -> toplam, temel/klinik -> kendi bölümü
+    function gdBaslikNet(d) {
+        if (d.tur === 'genel') return typeof d.toplamNet === 'number' ? d.toplamNet : null;
+        return (d[d.tur] && typeof d[d.tur].net === 'number') ? d[d.tur].net : null;
+    }
+
+    function genelDenemeRender() {
+        const bosMesaj = document.getElementById("gd-bos-mesaj");
+        const doluAlan = document.getElementById("gd-dolu-alan");
+
+        if (genelDenemeler.length === 0) {
+            bosMesaj.style.display = "block";
+            bosMesaj.innerHTML = 'Henüz genel deneme sonucu girilmemiş. <b>Çalışma Planı</b> sekmesindeki <b>"Genel Deneme Sonucu Gir"</b> bölümünden ekleyebilirsin.';
+            doluAlan.style.display = "none";
+            return;
+        }
+        bosMesaj.style.display = "none";
+        doluAlan.style.display = "block";
+
+        // Seri seçici (seçimi koru; yoksa verisi olan ilk seriyi seç)
+        const secim = document.getElementById("gd-seri-secim");
+        const onceki = secim.value;
+        const n = { toplam: gdSeri('toplam').length, temel: gdSeri('temel').length, klinik: gdSeri('klinik').length };
+        secim.innerHTML =
+            `<option value="toplam">Toplam Net (200 soru) — ${n.toplam} deneme</option>` +
+            `<option value="temel">Temel Bilimler — ${n.temel} deneme</option>` +
+            `<option value="klinik">Klinik Bilimler — ${n.klinik} deneme</option>`;
+        if (onceki && n[onceki] > 0) secim.value = onceki;
+        else secim.value = n.toplam > 0 ? 'toplam' : (n.temel > 0 ? 'temel' : 'klinik');
+
+        gdSeriCiz();
+
+        // Geçmiş listesi (en yeni üstte). Fark: aynı türdeki bir önceki denemeye göre.
+        const sonBaslik = {};
+        const satirlar = genelDenemeler.map(d => {
+            const baslik = gdBaslikNet(d);
+            let delta = null;
+            if (baslik !== null) {
+                if (sonBaslik[d.tur] !== undefined) delta = baslik - sonBaslik[d.tur];
+                sonBaslik[d.tur] = baslik;
+            }
+            return { d: d, baslik: baslik, delta: delta };
+        }).reverse();
+
+        const turEtiket = { genel: 'Genel', temel: 'Temel', klinik: 'Klinik' };
+
+        document.getElementById("gd-liste").innerHTML = satirlar.map(s => {
+            const d = s.d;
+            let detay = '';
+            if (d.temel) detay += `<span>🔬 ${netFmt(gdSayi(d.temel.net))} <small>(${gdSayi(d.temel.dogru)}D/${gdSayi(d.temel.yanlis)}Y)</small></span>`;
+            if (d.klinik) detay += `<span>🩺 ${netFmt(gdSayi(d.klinik.net))} <small>(${gdSayi(d.klinik.dogru)}D/${gdSayi(d.klinik.yanlis)}Y)</small></span>`;
+
+            let deltaHtml = '';
+            if (s.delta !== null) {
+                if (s.delta > 0) deltaHtml = `<div class="gd-delta up">▲ +${netFmt(s.delta)}</div>`;
+                else if (s.delta < 0) deltaHtml = `<div class="gd-delta down">▼ -${netFmt(Math.abs(s.delta))}</div>`;
+                else deltaHtml = `<div class="gd-delta">=</div>`;
+            }
+
+            return `<div class="gd-satir">
+                <div class="gd-satir-sol">
+                    <div class="gd-satir-ust"><span class="gd-chip gd-chip-${d.tur}">${turEtiket[d.tur]}</span><span>${escapeHtml(gdTarihFmt(d.tarih))}</span></div>
+                    ${d.ad ? `<div class="gd-ad">${escapeHtml(d.ad)}</div>` : ''}
+                    <div class="gd-satir-detay">${detay}</div>
+                </div>
+                <div class="gd-satir-sag">
+                    <div class="gd-net">${s.baslik !== null ? netFmt(s.baslik) : '-'}</div>
+                    ${deltaHtml}
+                </div>
+                <button class="gd-sil" data-key="${escapeHtml(d.key)}" onclick="genelDenemeSil(this.dataset.key)" aria-label="Sil">🗑</button>
+            </div>`;
+        }).join('');
+    }
+
+    function gdSeriCiz() {
+        const secim = document.getElementById("gd-seri-secim").value;
+        const seri = gdSeri(secim);
+        const ozet = document.getElementById("gd-ozet");
+        const grafik = document.getElementById("gd-grafik-alani");
+
+        if (seri.length === 0) {
+            ozet.innerHTML = '';
+            grafik.innerHTML = '<div style="text-align:center;color:#888;font-size:13px;padding:10px 0;">Bu türde henüz sonuç yok</div>';
+            return;
+        }
+
+        const son = seri[seri.length - 1].net;
+        const oncekiNet = seri.length > 1 ? seri[seri.length - 2].net : null;
+        const enIyi = Math.max.apply(null, seri.map(s => s.net));
+        const son4 = seri.slice(-4);
+        const ort = son4.reduce((a, s) => a + s.net, 0) / son4.length;
+
+        let deltaHtml = '<div class="gd-delta">ilk sonuç</div>';
+        if (oncekiNet !== null) {
+            const fark = son - oncekiNet;
+            if (fark > 0) deltaHtml = `<div class="gd-delta up">▲ +${netFmt(fark)}</div>`;
+            else if (fark < 0) deltaHtml = `<div class="gd-delta down">▼ -${netFmt(Math.abs(fark))}</div>`;
+            else deltaHtml = '<div class="gd-delta">= değişmedi</div>';
+        }
+
+        ozet.innerHTML = `
+            <div class="gd-ozet-kutu"><div class="gd-ozet-baslik">Son Net</div><div class="gd-ozet-deger">${netFmt(son)}</div>${deltaHtml}</div>
+            <div class="gd-ozet-kutu"><div class="gd-ozet-baslik">En Yüksek</div><div class="gd-ozet-deger">${netFmt(enIyi)}</div><div class="gd-delta">${seri.length} deneme</div></div>
+            <div class="gd-ozet-kutu"><div class="gd-ozet-baslik">Son 4 Ort.</div><div class="gd-ozet-deger">${netFmt(ort)}</div><div class="gd-delta">&nbsp;</div></div>`;
+
+        grafik.innerHTML = cizgiGrafigiHtml(seri, { sifirdanBasla: false });
+    }
+
+    function genelDenemeSil(key) {
+        if (!key) return;   // boş anahtar tüm düğümü silerdi; asla izin verme
+        const d = genelDenemeler.find(x => x.key === key);
+        const ne = d ? `${gdTarihFmt(d.tarih)} tarihli ${d.ad ? '"' + d.ad + '" ' : ''}kaydı` : 'bu kaydı';
+        if (!confirm(`${ne} silmek istediğine emin misin?`)) return;
+
+        db.ref('tus_genel_denemeler/' + key).remove().then(() => {
+            toastGoster("🗑 Kayıt silindi");
+            genelDenemeleriYukle();
+        }).catch(err => {
+            toastGoster("❌ Silinemedi", true);
+            console.error(err);
+        });
     }
 
     function istatistikleriYukle() {
+        genelDenemeleriYukle();
+
         if(globalGunVerisi) {
             document.getElementById("ist-mevcut-tur").innerText = `${globalGunVerisi.tur}. Tur`;
             document.getElementById("ist-mevcut-gun").innerText = `Çalışılan: ${bugunSayaci} Gün`;
@@ -1079,9 +1487,9 @@
 
             const dersIlerlemeler = [];
             for(let key in planData) {
-                
+
                 // JOKER'i matristen gizleyen satır:
-                if (key === 'joker') continue; 
+                if (key === 'joker') continue;
 
                 const dersAd = planData[key].isim;
                 let toplamHedefKonu = 0, toplamYapilanKonu = 0;
