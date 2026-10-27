@@ -202,9 +202,45 @@
         .gd-chip-genel { background: rgba(var(--primary-rgb), 0.2); color: var(--primary); border: 1px solid var(--primary); }
         .gd-chip-temel { background: rgba(var(--secondary-rgb), 0.2); color: var(--secondary); border: 1px solid var(--secondary); }
         .gd-chip-klinik { background: rgba(var(--warning-rgb), 0.2); color: var(--warning); border: 1px solid var(--warning); }
+
+        /* ===== SEVGİLİ POPUP STİLLERİ ===== */
+        .sevgili-popup-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(26, 9, 20, 0.85); backdrop-filter: blur(5px);
+            display: none; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .sevgili-popup {
+            background: linear-gradient(135deg, #36162d, #572549);
+            border: 2px solid var(--primary);
+            padding: 30px 20px; border-radius: 20px; text-align: center;
+            width: 90%; max-width: 350px; box-shadow: 0 10px 40px rgba(255, 105, 180, 0.4);
+            animation: popupAnim 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes popupAnim {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .sevgili-popup h3 { color: var(--primary); font-size: 22px; margin-bottom: 15px; }
+        .sevgili-popup p { color: #fff0f6; font-size: 16px; line-height: 1.5; margin-bottom: 25px; font-weight: 500; }
+        .sevgili-popup button {
+            background: linear-gradient(135deg, var(--primary-variant), var(--primary));
+            color: #fff; border: none; padding: 12px 28px; border-radius: 12px;
+            font-weight: bold; font-size: 16px; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 105, 180, 0.4); transition: 0.2s;
+        }
+        .sevgili-popup button:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
+
+<!-- GÜNLÜK SEVGİLİ POPUP'I -->
+<div class="sevgili-popup-overlay" id="sevgili-popup-overlay">
+    <div class="sevgili-popup">
+        <h3>Günaydın TUS Barbie'si! 🎀</h3>
+        <p id="sevgili-popup-mesaj"></p>
+        <button onclick="document.getElementById('sevgili-popup-overlay').style.display='none'">Teşekkürler Sevgilim 💖</button>
+    </div>
+</div>
 
 <div class="container">
     <div id="toast">💖 Kaydedildi</div>
@@ -466,6 +502,27 @@
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const db = firebase.database();
 
+    // SEVGİLİ İÇİN GÜNLÜK POPUP MESAJLARI
+    const karsilamaMesajlari = [
+        "Wowowowow! 🤩 Ekrana bakarken gözlerim kamaştı, bugün aşşşırı güzelsin sarışın Barbie'm! 💅✨",
+        "Günaydın sarı bebeğim! O okyanus gözlerinle bugün yine TUS'un halledeceğine eminim. 🌊💛",
+        "TUS kitapları bile senin o mavi gözlerine bakarken eriyordur... Günaydın benim zeki ve fıstık sevgilim! 🎀👑",
+        "Dünyanın en güzel, en zeki, en sarışın doktoru uyanmış! Bugün de denemeleri parçalamaya hazır mıyız? 💖✨",
+        "Mavi gözlüm, bugün o sarı saçlarını savura savura soruları halletmeni bekliyorum! İyi çalışmalar bitaneciğim 🌸"
+    ];
+
+    function gunlukKarsilamaKontrolu() {
+        const bugunTarih = new Date().toLocaleDateString('tr-TR');
+        const sonGosterim = localStorage.getItem('tus_karsilama_tarihi');
+
+        if (sonGosterim !== bugunTarih) {
+            const rastgeleMesaj = karsilamaMesajlari[Math.floor(Math.random() * karsilamaMesajlari.length)];
+            document.getElementById('sevgili-popup-mesaj').innerText = rastgeleMesaj;
+            document.getElementById('sevgili-popup-overlay').style.display = 'flex';
+            localStorage.setItem('tus_karsilama_tarihi', bugunTarih);
+        }
+    }
+
     const planData = {
         mikrobiyoloji: { isim: "Mikrobiyoloji", kisa: "MİK", konu: 250, soru: 400, konuK: "Konu", soruK: "Çıkmış + 1 SB" },
         farmakoloji: { isim: "Farmakoloji", kisa: "FAR", konu: 100, soru: 400, konuK: "Konu", soruK: "Çıkmış + 1 SB" },
@@ -480,10 +537,6 @@
         joker: { isim: "24'lü Deneme & Eksik Kampı", kisa: "24.DEN", konu: 10, soru: 10, konuK: "Eksik Tekrar", soruK: "24'lü Denemeler" }
     };
 
-    // 3 FAZLI TAKVİM KURGUSU (TÜM PAZARLAR GENEL DENEME):
-    // 1. Tur (2 Kasım - 31 Aralık, 52 iş günü + 8 Pazar Genel Deneme = 60 gün): 7 ders x 6 iş günü = 42 iş günü + 10 iş günü 24'lü Deneme & Eksik Kampı = 52 iş günü
-    // 2. Tur (1 Ocak - 28 Şubat, 50 iş günü + 9 Pazar Pretus Deneme = 59 gün): 10 ders x 5 iş günü = 50 iş günü
-    // 3. Tur (1 Mart - 14 Mart, 14 gün): Her derse 1-2 gün + Yanlışlar + Her gün Genel Deneme (Pazar dahil)
     const sarmalAkil = [
         { tur: 1, seq: [
             {d:'mikrobiyoloji',g:6}, {d:'farmakoloji',g:6}, {d:'dahiliye',g:6},
@@ -549,7 +602,6 @@
             let isWorkDay = true;
             let gunHafta = iterDate.getDay();
 
-            // 2 Kasım'dan 1 Mart'a kadar TÜM Pazar günleri: Haftalık Genel Deneme Günü
             if (iterDate >= startDate && iterDate < martBaslangic && gunHafta === 0) {
                 isWorkDay = false;
             }
@@ -567,7 +619,6 @@
             if (gunFarkiBul(iterDate, sinavTarihi) === 0) {
                 info = { durum: 'sinav_gunu', abbr: 'TUS!👑', tip: 'sinav', workDaySayaci: workDaySayaci, son60: null };
             } else if (iterDate >= martBaslangic && iterDate < sinavTarihi) {
-                // Mart ayı (1 - 14 Mart): Her güne 1 ders + Yanlışlar + Her gün Genel Deneme
                 const gunNo = gunFarkiBul(martBaslangic, iterDate) + 1;
                 info = {
                     durum: 'son_60_gun', 
@@ -578,7 +629,6 @@
                     son60: { gunNo: gunNo, tur: "Genel Deneme", siraNo: gunNo }
                 };
             } else if (!isWorkDay) {
-                // Pazar Genel Deneme Günü (Kasım-Aralık: G.DEN, Ocak-Şubat: Pretus G.DEN)
                 info = { durum: 'pazar_deneme_genel', abbr: 'G.DEN', tip: 'deneme', workDaySayaci: workDaySayaci, son60: null };
             } else {
                 info = { durum: (workDaySayaci <= calismaGunleri.length) ? 'normal' : 'kamp', abbr: dersAbbr, tip: 'ders', workDaySayaci: workDaySayaci, son60: null };
@@ -594,9 +644,9 @@
         gunuHesaplaVeArayuzuCiz(); 
         genelNotGetir();
         eksikKonularGetir();
+        gunlukKarsilamaKontrolu();
     };
 
-    // --- GENEL NOT PANOSU ---
     function genelNotGetir() {
         db.ref('tus_genel_notlar/metin').once('value').then(snap => {
             if(snap.exists()) {
@@ -626,7 +676,6 @@
         });
     }
 
-    // --- GENEL EKSİK OLDUĞUM KONULAR PANOSU ---
     function eksikKonularGetir() {
         db.ref('tus_eksik_konular/metin').once('value').then(snap => {
             if(snap.exists()) {
@@ -702,7 +751,7 @@
             const harita = gunBilgisi[dateStr];
             const isBugun = (dateStr === bugunStr) ? "bugun-cell" : "";
 
-            html += `<div class="cal-cell ${isBugun}">
+            html += `<div class="cal-cell ${isBugun}" onclick="takvimGununeGit('${dateStr}')">
                         <div class="cal-date">${d}</div>`;
 
             if (harita) {
@@ -720,6 +769,13 @@
             html += `</div>`;
         }
         document.getElementById("takvim-grid").innerHTML = html;
+    }
+
+    function takvimGununeGit(tarihStr) {
+        sekmeDegistir('plan');
+        aktifTarih = new Date(tarihStr);
+        gunuHesaplaVeArayuzuCiz();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function bransModuluGoster() {
@@ -821,7 +877,7 @@
                 document.getElementById("text-deneme").innerText = "1 Genel Deneme (Pretus) Çözümü & Analizi (200 Soru)";
             } else {
                 document.getElementById("deneme-baslik").innerText = "🎀 Pazar Genel Denemesi";
-                document.getElementById("deneme-aciklama").innerText = "Pazar rutini: Haftalık Genel Deneme (24'lü Deneme) ve detaylı analizi çözülür ✨";
+                document.getElementById("deneme-aciklama").innerText = "Pazar rutini: Haftalık Genel Deneme (24'lü Deneme vb.) ve detaylı analizi çözülür ✨";
                 document.getElementById("text-deneme").innerText = "1 Genel Deneme Çözümü & Analizi (200 Soru)";
             }
             return;
@@ -885,7 +941,6 @@
         db.ref('tus_gunluk_kayitlar/' + seciliGunStr).once('value').then((snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.val();
-                
                 if(document.getElementById("konu-check")) document.getElementById("konu-check").checked = data.konu_bitti || false;
                 if(document.getElementById("soru-check")) document.getElementById("soru-check").checked = data.soru_bitti || false;
                 if(document.getElementById("deneme-check")) {
