@@ -84,9 +84,6 @@
 
         .hedef-karti { background: var(--surface-card); border-left: 4px solid var(--primary); padding: 16px; border-radius: 12px; margin-bottom: 15px; }
         .tatil-karti { border-left-color: var(--warning); display: none; }
-        
-        .nobet-banner { background: rgba(var(--danger-rgb), 0.18); border: 1px solid var(--danger); color: #fff; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; text-align: center; margin-bottom: 12px; display: none; }
-        .nobet-banner span { color: var(--secondary); }
 
         .hedef-baslik { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
         .hedef-baslik h2 { font-size: 18px; color: #fff; }
@@ -149,16 +146,12 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; min-width: 320px; margin-top: 5px; }
         .cal-day-header { text-align: center; font-size: 10px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; padding-bottom: 5px; }
         
-        .cal-cell { background: var(--surface-nested); border: 1px solid var(--border); border-radius: 6px; min-height: 62px; padding: 3px; display: flex; flex-direction: column; cursor: pointer; transition: 0.15s; user-select: none; }
-        .cal-cell:hover { background: var(--surface-hover); border-color: var(--primary); }
-        .cal-cell:active { transform: scale(0.95); }
-        .cal-cell.empty { background: transparent; border: none; cursor: default; }
-        .cal-cell.empty:active { transform: none; }
+        .cal-cell { background: var(--surface-nested); border: 1px solid var(--border); border-radius: 6px; min-height: 62px; padding: 3px; display: flex; flex-direction: column; transition: 0.15s; user-select: none; }
+        .cal-cell.empty { background: transparent; border: none; }
         .cal-date { font-size: 11px; font-weight: bold; color: #f3c4dc; margin-bottom: 3px; text-align: right; }
         
         .cal-badge { font-size: 8px; padding: 2px; border-radius: 3px; font-weight: bold; text-align: center; margin-bottom: 2px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0; }
         
-        .badge-nobet { background: var(--danger); color: #fff; }
         .badge-ders { background: var(--surface-hover); border: 1px solid var(--primary); color: #fff; }
         .badge-mola { background: var(--info); color: #2b051a; }
         .badge-deneme { background: var(--primary); color: #fff; }
@@ -240,10 +233,6 @@
             <div class="hedef-baslik">
                 <h2 id="kart-ders-adi">Yükleniyor</h2>
                 <span id="kart-tur-gun" class="badge">...</span>
-            </div>
-
-            <div id="nobet-banner" class="nobet-banner">
-                🩺 <span>BUGÜN NÖBET GÜZELLİĞİ 🩺</span>
             </div>
 
             <div class="gorev-item" id="konu-modulu">
@@ -417,10 +406,6 @@
                     <!-- Javascript ile Doldurulacak -->
                 </div>
             </div>
-
-            <div style="text-align:center; font-size:11px; color:var(--text-muted); margin-top:12px;">
-                👆 Nöbet eklemek/kaldırmak için takvimdeki günlere tıklayabilirsin.
-            </div>
         </div>
 
         <div class="hedef-karti" style="border-left-color: var(--primary); padding: 16px 12px;">
@@ -492,18 +477,18 @@
         fizyoloji: { isim: "Fizyoloji", kisa: "FİZ", konu: 100, soru: 400, konuK: "Konu", soruK: "Çıkmış + 1 SB" },
         patoloji: { isim: "Patoloji", kisa: "PAT", konu: 100, soru: 450, konuK: "Konu", soruK: "Çıkmış + 1 SB" },
         biyokimya: { isim: "Biyokimya", kisa: "BİYO", konu: 200, soru: 200, konuK: "Konu", soruK: "Çıkmış + 1 SB" },
-        joker: { isim: "24'lü Deneme & Eksik Kampı", kisa: "24.DEN", konu: 11, soru: 11, konuK: "Eksik Tekrar", soruK: "24'lü Denemeler" }
+        joker: { isim: "24'lü Deneme & Eksik Kampı", kisa: "24.DEN", konu: 10, soru: 10, konuK: "Eksik Tekrar", soruK: "24'lü Denemeler" }
     };
 
-    // 3 FAZLI TAKVİM KURGUSU:
-    // 1. Tur (2 Kasım - 31 Aralık, 60 gün): 7 ders x 7 gün = 49 gün + 11 gün 24'lü Deneme & Eksik Kampı = 60 gün
-    // 2. Tur (1 Ocak - 28 Şubat, 50 iş günü + 9 Pazar Pretus): 10 ders x 5 gün = 50 gün
-    // 3. Tur (1 Mart - 14 Mart, 14 gün): Her derse 1-2 gün + Yanlışlar + Her gün Genel Deneme
+    // 3 FAZLI TAKVİM KURGUSU (TÜM PAZARLAR GENEL DENEME):
+    // 1. Tur (2 Kasım - 31 Aralık, 52 iş günü + 8 Pazar Genel Deneme = 60 gün): 7 ders x 6 iş günü = 42 iş günü + 10 iş günü 24'lü Deneme & Eksik Kampı = 52 iş günü
+    // 2. Tur (1 Ocak - 28 Şubat, 50 iş günü + 9 Pazar Pretus Deneme = 59 gün): 10 ders x 5 iş günü = 50 iş günü
+    // 3. Tur (1 Mart - 14 Mart, 14 gün): Her derse 1-2 gün + Yanlışlar + Her gün Genel Deneme (Pazar dahil)
     const sarmalAkil = [
         { tur: 1, seq: [
-            {d:'mikrobiyoloji',g:7}, {d:'farmakoloji',g:7}, {d:'dahiliye',g:7},
-            {d:'pediatri',g:7}, {d:'kucukstajlar',g:7}, {d:'kadindogum',g:7},
-            {d:'genelcerrahi',g:7}, {d:'joker',g:11}
+            {d:'mikrobiyoloji',g:6}, {d:'farmakoloji',g:6}, {d:'dahiliye',g:6},
+            {d:'pediatri',g:6}, {d:'kucukstajlar',g:6}, {d:'kadindogum',g:6},
+            {d:'genelcerrahi',g:6}, {d:'joker',g:10}
         ]},
         { tur: 2, seq: [
             {d:'mikrobiyoloji',g:5}, {d:'farmakoloji',g:5}, {d:'dahiliye',g:5},
@@ -564,8 +549,8 @@
             let isWorkDay = true;
             let gunHafta = iterDate.getDay();
 
-            // Ocak ve Şubat aylarında Pazar günleri: Haftada 1 Pretus Tam Deneme
-            if (iterDate >= faz2Baslangic && iterDate < martBaslangic && gunHafta === 0) {
+            // 2 Kasım'dan 1 Mart'a kadar TÜM Pazar günleri: Haftalık Genel Deneme Günü
+            if (iterDate >= startDate && iterDate < martBaslangic && gunHafta === 0) {
                 isWorkDay = false;
             }
 
@@ -593,8 +578,8 @@
                     son60: { gunNo: gunNo, tur: "Genel Deneme", siraNo: gunNo }
                 };
             } else if (!isWorkDay) {
-                // Ocak - Şubat Pazar Pretus Deneme Günü
-                info = { durum: 'pazar_deneme_genel', abbr: 'P.DEN', tip: 'deneme', workDaySayaci: workDaySayaci, son60: null };
+                // Pazar Genel Deneme Günü (Kasım-Aralık: G.DEN, Ocak-Şubat: Pretus G.DEN)
+                info = { durum: 'pazar_deneme_genel', abbr: 'G.DEN', tip: 'deneme', workDaySayaci: workDaySayaci, son60: null };
             } else {
                 info = { durum: (workDaySayaci <= calismaGunleri.length) ? 'normal' : 'kamp', abbr: dersAbbr, tip: 'ders', workDaySayaci: workDaySayaci, son60: null };
             }
@@ -714,19 +699,11 @@
         for (let d = 1; d <= sonGunTarih.getDate(); d++) {
             const tempDate = new Date(y, m, d);
             const dateStr = localToISO(tempDate);
-            
-            const gunData = firebaseKayitlar[dateStr] || {};
             const harita = gunBilgisi[dateStr];
-            
             const isBugun = (dateStr === bugunStr) ? "bugun-cell" : "";
-            const isNobet = gunData.nobet === true;
 
-            html += `<div class="cal-cell ${isBugun}" onclick="nobetToggle('${dateStr}')">
-                        <div class="cal-date" style="color: ${isNobet ? '#fff' : '#f3c4dc'}">${d}</div>`;
-            
-            if (isNobet) {
-                html += `<div class="cal-badge badge-nobet">Nöbet</div>`;
-            }
+            html += `<div class="cal-cell ${isBugun}">
+                        <div class="cal-date">${d}</div>`;
 
             if (harita) {
                 if (harita.tip === 'son60') {
@@ -743,21 +720,6 @@
             html += `</div>`;
         }
         document.getElementById("takvim-grid").innerHTML = html;
-    }
-
-    function nobetToggle(tarihStr) {
-        const ref = db.ref('tus_gunluk_kayitlar/' + tarihStr + '/nobet');
-        ref.once('value').then(snap => {
-            const suankiDurum = snap.val() || false;
-            return ref.set(!suankiDurum).then(() => {
-                toastGoster(suankiDurum ? "🎀 Nöbet Kaldırıldı" : "🩺 Nöbet Eklendi");
-                istatistikleriYukle();
-                if (tarihStr === localToISO(aktifTarih)) { gunuHesaplaVeArayuzuCiz(); }
-            });
-        }).catch(err => {
-            toastGoster("❌ Nöbet kaydedilemedi", true);
-            console.error(err);
-        });
     }
 
     function bransModuluGoster() {
@@ -820,7 +782,6 @@
         document.getElementById("konu-check").checked = false;
         document.getElementById("soru-check").checked = false;
         document.getElementById("deneme-check").checked = false;
-        document.getElementById("nobet-banner").style.display = "none";
         globalSoruDersiKey = null;
 
         if (durum === "sinav_gunu") {
@@ -848,15 +809,21 @@
 
         if (durum === "pazar_deneme_genel") {
             kartDers.style.display = "block";
-            document.getElementById("kart-ders-adi").innerText = "👑 Pretus Deneme Günü";
+            document.getElementById("kart-ders-adi").innerText = "👑 Pazar Genel Deneme Günü";
             document.getElementById("kart-tur-gun").style.display = "none";
             document.getElementById("konu-modulu").style.display = "none";
             document.getElementById("soru-modulu").style.display = "none";
             
             denemeModulu.style.display = "block";
-            document.getElementById("deneme-baslik").innerText = "🎀 Haftalık Pretus Tam Deneme";
-            document.getElementById("deneme-aciklama").innerText = "Ocak-Şubat Pazar rutini: Haftada 1 Pretus tam deneme ve detaylı analizi çözülür ✨";
-            document.getElementById("text-deneme").innerText = "1 Pretus Tam Deneme Çözümü & Analizi (200 Soru)";
+            if (aktifTarih >= faz2Baslangic) {
+                document.getElementById("deneme-baslik").innerText = "🎀 Haftalık Pretus / Genel Deneme";
+                document.getElementById("deneme-aciklama").innerText = "Pazar rutini: Haftalık tam Genel Deneme (Pretus) ve detaylı analizi çözülür ✨";
+                document.getElementById("text-deneme").innerText = "1 Genel Deneme (Pretus) Çözümü & Analizi (200 Soru)";
+            } else {
+                document.getElementById("deneme-baslik").innerText = "🎀 Pazar Genel Denemesi";
+                document.getElementById("deneme-aciklama").innerText = "Pazar rutini: Haftalık Genel Deneme (24'lü Deneme) ve detaylı analizi çözülür ✨";
+                document.getElementById("text-deneme").innerText = "1 Genel Deneme Çözümü & Analizi (200 Soru)";
+            }
             return;
         }
 
@@ -924,14 +891,6 @@
                 if(document.getElementById("deneme-check")) {
                     document.getElementById("deneme-check").checked = data.deneme_bitti || data.genel_deneme || data.temel_deneme || data.klinik_deneme || false;
                 }
-                
-                if(data.nobet === true && globalDurum !== "mola" && globalDurum !== "pazar_deneme_genel" && globalDurum !== "sinav_gunu") {
-                    document.getElementById("nobet-banner").style.display = "block";
-                } else {
-                    document.getElementById("nobet-banner").style.display = "none";
-                }
-            } else {
-                document.getElementById("nobet-banner").style.display = "none";
             }
         }).catch(err => {
             console.error("Veri okunamadı", err);
@@ -949,7 +908,7 @@
             if (globalDurum === "sinav_gunu") { kayit.durum = "TUS Sınav Günü"; }
             else if (globalDurum === "mola") { kayit.durum = "Mola Günü"; } 
             else if (globalDurum === "pazar_deneme_genel") {
-                kayit.durum = "Pazar Denemesi (Pretus)";
+                kayit.durum = "Pazar Denemesi (Genel)";
                 kayit.deneme_bitti = document.getElementById("deneme-check").checked;
                 kayit.genel_deneme = document.getElementById("deneme-check").checked;
             } 
