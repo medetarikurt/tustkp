@@ -66,7 +66,7 @@
             <span id="kart-tur-gun" class="badge">...</span>
         </div>
 
-        <!-- Ders Seçici (Faz 1 ve Faz 3 için) -->
+        <!-- Ders Seçici (Sadece Faz 1 ve Faz 3 için görünecek, Faz 2 otomatik) -->
         <select id="ders-secici" onchange="firebaseKaydet()">
             <option value="Mikrobiyoloji">Mikrobiyoloji</option>
             <option value="Farmakoloji">Farmakoloji</option>
@@ -81,7 +81,7 @@
         <div id="dinamik-gorevler"></div>
     </div>
 
-    <!-- DİJİTAL YANLIŞ DEFTERİ (Ocak Ayından İtibaren Kalp Görevi Görecek) -->
+    <!-- DİJİTAL YANLIŞ DEFTERİ -->
     <div class="not-panosu" id="yanlis-panosu">
         <h2>📕 Dijital Yanlış Defteri & Spotlar <span class="not-status" id="yanlis-status"></span></h2>
         <textarea id="yanlis-input" class="not-textarea" placeholder="Yanlış yaptığın soruların kritik spotlarını buraya gir. Ocak-Şubat tekrarlarında hayat kurtaracak..." oninput="yanlisYazildi()" onblur="yanlisKaydet()"></textarea>
@@ -90,7 +90,7 @@
 </div>
 
 <script>
-    // YENİ PROJE FIREBASE BİLGİLERİ (Arkadaşın için)
+    // YENİ PROJE FIREBASE BİLGİLERİ (Arkadaşın için - Yeni Config)
     const firebaseConfig = {
         apiKey: "AIzaSyC6CfL-Tjhb9yPsvbszSvx0IpWbAujrukE",
         authDomain: "elom-a6cc3.firebaseapp.com",
@@ -98,8 +98,7 @@
         projectId: "elom-a6cc3",
         storageBucket: "elom-a6cc3.firebasestorage.app",
         messagingSenderId: "934231091011",
-        appId: "1:934231091011:web:e730d901ec32cb1ba931f6",
-        measurementId: "G-0NVK0S0SXN"
+        appId: "1:934231091011:web:e730d901ec32cb1ba931f6"
     };
     
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
@@ -108,6 +107,12 @@
     let aktifTarih = new Date(new Date().setHours(0,0,0,0));
     const sinavTarihi = new Date(2027, 2, 15); // 15 Mart 2027
     let yanlisTimer;
+
+    // FAZ 2 Ders Sıralaması (Klinik ve Temel Harmanlanmış)
+    const faz2Dersler = [
+        "Fizyoloji", "Patoloji", "Biyokimya", "Mikrobiyoloji", "Farmakoloji", 
+        "Dahiliye", "Pediatri", "Genel Cerrahi", "Kadın Doğum", "Küçük Stajlar"
+    ];
 
     function localToISO(dateObj) {
         const offset = dateObj.getTimezoneOffset();
@@ -154,8 +159,30 @@
         else { el.innerText = `✅ TUS geride kaldı`; }
     }
 
+    // FAZ 2 GÜN HESAPLAMA MOTORU (Pazarları atlar, 5 günlük bloklara böler)
+    function faz2DersiniBul(tarih) {
+        const faz2Baslangic = new Date(2027, 0, 1); // 1 Ocak 2027
+        let calisilanGunSayisi = 0;
+        let iter = new Date(faz2Baslangic);
+        
+        while (iter < tarih) {
+            if (iter.getDay() !== 0) { // Pazar (0) değilse sayacı artır
+                calisilanGunSayisi++;
+            }
+            iter.setDate(iter.getDate() + 1);
+        }
+
+        const dersIndex = Math.floor(calisilanGunSayisi / 5);
+        const kacinciGun = (calisilanGunSayisi % 5) + 1;
+
+        return {
+            dersAdi: faz2Dersler[dersIndex] || "Serbest Tekrar", // 50 günü geçerse
+            gunNo: kacinciGun
+        };
+    }
+
     function fazMotorunuCalistir() {
-        const ay = aktifTarih.getMonth(); // 0 = Ocak, 11 = Aralık
+        const ay = aktifTarih.getMonth(); 
         const yil = aktifTarih.getFullYear();
         const gunHafta = aktifTarih.getDay(); // 0 = Pazar
         
@@ -189,24 +216,29 @@
         } 
         // FAZ 2: Ocak ve Şubat (2027)
         else if (yil === 2027 && (ay === 0 || ay === 1)) {
-            fazAdi.innerText = "Faz 2: Tekrar & Yanlışlar";
-            fazBadge.innerText = "Ocak - Şubat Modu";
-            dersSecici.style.display = "none"; // Tüm dersler olacağı için gizliyoruz
+            dersSecici.style.display = "none"; // Dersler otomatik hesaplanıyor
             
-            if (gunHafta === 0) { // Pazar Günleri Pretus
+            if (gunHafta === 0) { // Pazar Günleri
+                fazAdi.innerText = "Faz 2: Pretus Günü";
+                fazBadge.innerText = "Haftalık Deneme";
+                
                 gorevHtml = `
                     <div class="gorev-item" style="border-left: 4px solid var(--warning);">
                         <strong style="color: var(--warning);">📝 Haftalık Pretus</strong>
                         <label class="checkbox-container"><input type="checkbox" id="chk-pretus" onchange="firebaseKaydet()"> Pretus Tam Deneme çözüldü ve analiz edildi</label>
                     </div>
                 `;
-            } else { // Hafta içi tekrarlar
+            } else { // Hafta İçi (5 Günlük Bloklar)
+                const faz2Bilgi = faz2DersiniBul(aktifTarih);
+                fazAdi.innerText = "Faz 2: İkinci Tur";
+                fazBadge.innerText = `${faz2Bilgi.dersAdi} - Gün ${faz2Bilgi.gunNo}/5`;
+                
                 gorevHtml = `
-                    <div class="gorev-item"><strong style="color: var(--primary);">🔄 Tüm Dersler Tekrarı</strong>
-                        <label class="checkbox-container"><input type="checkbox" id="chk-tekrar" onchange="firebaseKaydet()"> Günlük genel tekrar tamamlandı</label>
+                    <div class="gorev-item"><strong style="color: var(--primary);">🔄 ${faz2Bilgi.dersAdi} Tekrarı</strong>
+                        <label class="checkbox-container"><input type="checkbox" id="chk-tekrar" onchange="firebaseKaydet()"> Günlük konu tekrarı tamamlandı</label>
                     </div>
                     <div class="gorev-item"><strong style="color: var(--danger);">📕 Yanlış Soru Analizi</strong>
-                        <label class="checkbox-container"><input type="checkbox" id="chk-yanlis-soru" onchange="firebaseKaydet()"> Havuzdaki yanlış sorular tekrar edildi</label>
+                        <label class="checkbox-container"><input type="checkbox" id="chk-yanlis-soru" onchange="firebaseKaydet()"> İlgili dersin yanlış soruları ve spotları eritildi</label>
                     </div>
                 `;
             }
@@ -219,10 +251,10 @@
             
             gorevHtml = `
                 <div class="gorev-item"><strong style="color: var(--primary);">📖 Günün Dersi Hızlı Tekrar</strong>
-                    <label class="checkbox-container"><input type="checkbox" id="chk-mart-ders" onchange="firebaseKaydet()"> Seçili ders tekrarı bitti</label>
+                    <label class="checkbox-container"><input type="checkbox" id="chk-mart-ders" onchange="firebaseKaydet()"> Seçili ders hızlıca tarandı</label>
                 </div>
                 <div class="gorev-item"><strong style="color: var(--danger);">📕 Yanlış Sorular</strong>
-                    <label class="checkbox-container"><input type="checkbox" id="chk-mart-yanlis" onchange="firebaseKaydet()"> Hızlı yanlış soru taraması yapıldı</label>
+                    <label class="checkbox-container"><input type="checkbox" id="chk-mart-yanlis" onchange="firebaseKaydet()"> Seçili dersin yanlış defteri okundu</label>
                 </div>
                 <div class="gorev-item" style="border-left: 4px solid var(--warning);"><strong style="color: var(--warning);">🔥 Günlük Genel Deneme</strong>
                     <label class="checkbox-container"><input type="checkbox" id="chk-mart-deneme" onchange="firebaseKaydet()"> Her gün 1 deneme kuralı tamamlandı</label>
@@ -240,16 +272,16 @@
         db.ref('arkadas_tus_gunluk/' + seciliGunStr).once('value').then((snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.val();
-                if(document.getElementById("ders-secici") && data.seciliDers) document.getElementById("ders-secici").value = data.seciliDers;
+                if(document.getElementById("ders-secici") && data.seciliDers) {
+                    document.getElementById("ders-secici").value = data.seciliDers;
+                }
                 
-                // Checkboxları doldur
                 const checks = ['chk-konu', 'chk-cikmis', 'chk-sb', 'chk-24deneme', 'chk-pretus', 'chk-tekrar', 'chk-yanlis-soru', 'chk-mart-ders', 'chk-mart-yanlis', 'chk-mart-deneme'];
                 checks.forEach(id => {
                     const el = document.getElementById(id);
                     if(el) el.checked = data[id] || false;
                 });
             } else {
-                // Eğer o güne ait kayıt yoksa checkboxları sıfırla
                 const checks = ['chk-konu', 'chk-cikmis', 'chk-sb', 'chk-24deneme', 'chk-pretus', 'chk-tekrar', 'chk-yanlis-soru', 'chk-mart-ders', 'chk-mart-yanlis', 'chk-mart-deneme'];
                 checks.forEach(id => {
                     const el = document.getElementById(id);
@@ -263,7 +295,7 @@
         const seciliGunStr = localToISO(aktifTarih);
         let kayit = { tarih: seciliGunStr, guncelleme: firebase.database.ServerValue.TIMESTAMP };
         
-        if(document.getElementById("ders-secici").style.display !== "none") {
+        if(document.getElementById("ders-secici") && document.getElementById("ders-secici").style.display !== "none") {
             kayit.seciliDers = document.getElementById("ders-secici").value;
         }
 
@@ -276,7 +308,6 @@
         db.ref('arkadas_tus_gunluk/' + seciliGunStr).update(kayit).then(() => toastGoster("✅ Otomatik Kaydedildi"));
     }
 
-    // YANLIŞ DEFTERİ (Eksik Konular panosu devşirmesi)
     function yanlisDefteriGetir() {
         db.ref('arkadas_tus_yanlislar/metin').once('value').then(snap => {
             if(snap.exists()) document.getElementById('yanlis-input').value = snap.val();
