@@ -3,41 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>TUS Takip & Sarmal Analiz</title>
+    <title>🎀 TUSBarbiesi Çalışma Planı ✨</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
         :root {
-            /* Gece nöbeti sonrası masa lambası ışığı hissi: koyu lacivert zemin + sıcak altın vurgu */
-            --bg: #0a0e17;
-            --surface: #131927;
-            --surface-card: #1a2133;
-            --surface-nested: #212a42;
-            --surface-hover: #2a3550;
-            --border: #2d3650;
+            /* Barbie Dreamhouse Gece Modu: Derin mürdüm-pembe zemin + ışıltılı sıcak pembe vurgu */
+            --bg: #1a0914;
+            --surface: #281021;
+            --surface-card: #36162d;
+            --surface-nested: #451d3a;
+            --surface-hover: #572549;
+            --border: #6b2d5a;
 
-            --primary: #e8b55f;
-            --primary-variant: #b8863a;
-            --primary-rgb: 232, 181, 95;
+            --primary: #ff69b4;
+            --primary-variant: #e0218a;
+            --primary-rgb: 255, 105, 180;
 
-            --secondary: #4fd1c5;
-            --secondary-rgb: 79, 209, 197;
+            --secondary: #ffb6c1;
+            --secondary-rgb: 255, 182, 193;
 
-            --text: #e8eaf0;
-            --text-muted: #8b93a7;
+            --text: #fff0f6;
+            --text-muted: #d49bb8;
 
-            --success: #4ade80;
-            --success-rgb: 74, 222, 128;
+            --success: #70e0a8;
+            --success-rgb: 112, 224, 168;
 
-            --warning: #fb923c;
-            --warning-rgb: 251, 146, 60;
+            --warning: #ff9ebb;
+            --warning-rgb: 255, 158, 187;
 
-            --danger: #f87171;
-            --danger-rgb: 248, 113, 113;
+            --danger: #ff4d79;
+            --danger-rgb: 255, 77, 121;
 
-            --info: #60a5fa;
+            --info: #d88cff;
 
             color-scheme: dark;
         }
@@ -46,6 +46,7 @@
         
         body {
             background-color: var(--bg);
+            background-image: radial-gradient(circle at top, #36122b 0%, #1a0914 70%);
             color: var(--text);
             display: flex;
             justify-content: center;
@@ -57,11 +58,11 @@
             overscroll-behavior-y: contain;
         }
 
-        .container { background-color: var(--surface); padding: 20px; border-radius: 14px; width: 100%; max-width: 480px; box-shadow: 0 4px 24px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
+        .container { background-color: var(--surface); padding: 20px; border-radius: 18px; width: 100%; max-width: 480px; box-shadow: 0 6px 28px rgba(255, 20, 147, 0.25); border: 1px solid var(--border); position: relative; overflow: hidden; }
         
-        h1 { text-align: center; color: var(--primary); margin-bottom: 15px; font-size: 22px; font-weight: 700; letter-spacing: 0.2px; }
+        h1 { text-align: center; color: var(--primary); margin-bottom: 15px; font-size: 22px; font-weight: 800; letter-spacing: 0.3px; text-shadow: 0 2px 10px rgba(255, 105, 180, 0.35); }
 
-        .countdown-banner { text-align: center; background: linear-gradient(135deg, var(--primary-variant), var(--primary)); color: #1a1206; padding: 11px; border-radius: 10px; font-weight: 700; font-size: 14px; margin-bottom: 15px; letter-spacing: 0.3px; }
+        .countdown-banner { text-align: center; background: linear-gradient(135deg, var(--primary-variant), var(--primary), #ff99cc); color: #2b051a; padding: 11px; border-radius: 12px; font-weight: 800; font-size: 14px; margin-bottom: 15px; letter-spacing: 0.3px; box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3); }
         
         .tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
         .tab-btn { flex: 1; background: transparent; color: var(--text-muted); border: none; padding: 12px 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; }
@@ -74,42 +75,42 @@
         .nav-ok:active { opacity: 0.5; transform: scale(0.92); }
         
         .yuvarlaklar { display: flex; gap: 12px; align-items: center; }
-        .yuvarlak { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--surface-nested); font-size: 16px; font-weight: bold; cursor: pointer; color: var(--text-muted); transition: 0.25s; }
+        .yuvarlak { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--surface-nested); font-size: 16px; font-weight: bold; cursor: pointer; color: var(--text-muted); transition: 0.25s; border: 1px solid var(--border); }
         .yuvarlak:hover { background: var(--surface-hover); }
         .yuvarlak:active { transform: scale(0.92); }
-        .yuvarlak.aktif { background: var(--primary); color: #1a1206; transform: scale(1.08); box-shadow: 0 0 12px rgba(var(--primary-rgb), 0.45); }
+        .yuvarlak.aktif { background: linear-gradient(135deg, var(--primary-variant), var(--primary)); color: #fff; transform: scale(1.08); box-shadow: 0 0 14px rgba(var(--primary-rgb), 0.6); border-color: #ffb6c1; }
 
         .tarih-alt-yazi { text-align: center; color: var(--secondary); font-size: 13px; font-weight: 600; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .hedef-karti { background: var(--surface-card); border-left: 4px solid var(--secondary); padding: 16px; border-radius: 10px; margin-bottom: 15px; }
+        .hedef-karti { background: var(--surface-card); border-left: 4px solid var(--primary); padding: 16px; border-radius: 12px; margin-bottom: 15px; }
         .tatil-karti { border-left-color: var(--warning); display: none; }
         
-        .nobet-banner { background: rgba(var(--danger-rgb), 0.15); border: 1px solid var(--danger); color: #fff; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; text-align: center; margin-bottom: 12px; display: none; }
-        .nobet-banner span { color: var(--danger); }
+        .nobet-banner { background: rgba(var(--danger-rgb), 0.18); border: 1px solid var(--danger); color: #fff; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; text-align: center; margin-bottom: 12px; display: none; }
+        .nobet-banner span { color: var(--secondary); }
 
         .hedef-baslik { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
         .hedef-baslik h2 { font-size: 18px; color: #fff; }
-        .badge { background: var(--primary-variant); color: #1a1206; padding: 4px 9px; border-radius: 5px; font-size: 12px; font-weight: 700; }
+        .badge { background: linear-gradient(135deg, var(--primary-variant), var(--primary)); color: #fff; padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; }
         
-        .gorev-item { margin-bottom: 12px; background: var(--surface-nested); padding: 12px; border-radius: 10px; }
+        .gorev-item { margin-bottom: 12px; background: var(--surface-nested); padding: 12px; border-radius: 10px; border: 1px solid rgba(255, 182, 193, 0.12); }
         .gorev-item strong { display: block; margin-bottom: 4px; font-size: 14px; text-transform: uppercase; }
         .sayfa-bilgisi { font-size: 14px; margin-bottom: 8px; color: #fff; }
 
         .progress-bar-container { background: var(--bg); border-radius: 6px; height: 6px; overflow: hidden; margin-bottom: 10px; }
-        .progress-bar-fill { background: var(--primary); height: 100%; border-radius: 6px; transition: width 0.4s ease; width: 0%; }
-        #soru-modulu .progress-bar-fill { background: var(--secondary); }
+        .progress-bar-fill { background: linear-gradient(90deg, var(--primary-variant), var(--primary)); height: 100%; border-radius: 6px; transition: width 0.4s ease; width: 0%; }
+        #soru-modulu .progress-bar-fill { background: linear-gradient(90deg, var(--primary), var(--secondary)); }
         
-        .checkbox-container { display: flex; align-items: center; cursor: pointer; user-select: none; font-size: 14px; color: #ccc; padding: 4px 0; }
-        .checkbox-container input { margin-right: 10px; width: 20px; height: 20px; accent-color: var(--success); cursor: pointer; }
+        .checkbox-container { display: flex; align-items: center; cursor: pointer; user-select: none; font-size: 14px; color: #ffd6e7; padding: 4px 0; }
+        .checkbox-container input { margin-right: 10px; width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer; }
         
-        .not-panosu { background: var(--surface-card); border-left: 4px solid var(--info); padding: 14px; border-radius: 10px; margin-bottom: 15px; }
+        .not-panosu { background: var(--surface-card); border-left: 4px solid var(--info); padding: 14px; border-radius: 12px; margin-bottom: 15px; }
         .not-panosu h2 { font-size: 15px; color: #fff; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
         .eksik-panosu { border-left-color: var(--danger); }
         .not-status { font-size: 11px; color: var(--success); font-weight: normal; }
-        .not-textarea { width: 100%; height: 80px; background: var(--bg); color: #e0e0e0; border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 16px; resize: vertical; outline: none; transition: 0.3s; font-family: inherit; }
-        .not-textarea:focus { border-color: var(--info); }
+        .not-textarea { width: 100%; height: 80px; background: var(--bg); color: #fff0f6; border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 16px; resize: vertical; outline: none; transition: 0.3s; font-family: inherit; }
+        .not-textarea:focus { border-color: var(--primary); }
         .eksik-panosu .not-textarea:focus { border-color: var(--danger); }
-        .not-textarea::placeholder { color: #5f6880; font-size: 13px; }
+        .not-textarea::placeholder { color: #9c6384; font-size: 13px; }
 
         .btn-acilir { width: 100%; background: var(--surface-nested); color: #fff; border: 1px solid var(--border); padding: 13px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
         .btn-acilir:hover { background: var(--surface-hover); }
@@ -120,7 +121,7 @@
         .form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
         .form-group input, .form-group select { width: 100%; padding: 11px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-nested); color: #fff; outline: none; font-size: 16px; font-family: inherit; }
         .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
-        .btn-kaydet { width: 100%; background: var(--primary); color: #1a1206; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; font-size: 15px; transition: 0.2s; }
+        .btn-kaydet { width: 100%; background: linear-gradient(135deg, var(--primary-variant), var(--primary)); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; font-size: 15px; transition: 0.2s; }
         .btn-kaydet:active { transform: scale(0.98); opacity: 0.9; }
 
         .stats-row { display: flex; gap: 10px; margin-bottom: 15px; }
@@ -131,15 +132,15 @@
         
         .analiz-tablo { width: 100%; border-collapse: collapse; margin-top: 10px; }
         .analiz-tablo th { background: var(--surface-nested); color: var(--secondary); padding: 10px; text-align: left; font-size: 13px; }
-        .analiz-tablo td { padding: 10px; border-bottom: 1px solid var(--border); color: #e0e0e0; font-size: 14px; }
+        .analiz-tablo td { padding: 10px; border-bottom: 1px solid var(--border); color: #fff0f6; font-size: 14px; }
 
         .trend-select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-nested); color: #fff; margin-bottom: 10px; font-size: 16px; font-family: inherit; }
-        .btn-export { width: 100%; background: transparent; border: 1px solid var(--secondary); color: var(--secondary); padding: 13px; border-radius: 10px; font-weight: 600; cursor: pointer; margin-top: 10px; transition: 0.2s; }
-        .btn-export:hover { background: var(--secondary); color: #06201d; }
+        .btn-export { width: 100%; background: transparent; border: 1px solid var(--primary); color: var(--secondary); padding: 13px; border-radius: 10px; font-weight: 600; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        .btn-export:hover { background: var(--primary); color: #fff; }
         .btn-export:active { transform: scale(0.98); }
 
-        #toast { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--success); color: #06260f; padding: 9px 18px; border-radius: 20px; font-size: 12px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 10; box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
-        #toast.hata { background: var(--danger); color: #2b0b0b; }
+        #toast { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #fff; padding: 9px 18px; border-radius: 20px; font-size: 12px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 10; box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
+        #toast.hata { background: var(--danger); color: #fff; }
 
         .calendar-wrapper { width: 100%; overflow-x: auto; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
         .calendar-wrapper::-webkit-scrollbar { height: 4px; }
@@ -153,30 +154,30 @@
         .cal-cell:active { transform: scale(0.95); }
         .cal-cell.empty { background: transparent; border: none; cursor: default; }
         .cal-cell.empty:active { transform: none; }
-        .cal-date { font-size: 11px; font-weight: bold; color: #ccc; margin-bottom: 3px; text-align: right; }
+        .cal-date { font-size: 11px; font-weight: bold; color: #f3c4dc; margin-bottom: 3px; text-align: right; }
         
         .cal-badge { font-size: 8px; padding: 2px; border-radius: 3px; font-weight: bold; text-align: center; margin-bottom: 2px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0; }
         
-        .badge-nobet { background: var(--danger); color: #2b0b0b; }
+        .badge-nobet { background: var(--danger); color: #fff; }
         .badge-ders { background: var(--surface-hover); border: 1px solid var(--primary); color: #fff; }
-        .badge-mola { background: var(--info); color: #061a33; }
-        .badge-deneme { background: var(--warning); color: #2b1503; }
-        .cal-cell.bugun-cell { border: 2px solid var(--success); }
+        .badge-mola { background: var(--info); color: #2b051a; }
+        .badge-deneme { background: var(--primary); color: #fff; }
+        .cal-cell.bugun-cell { border: 2px solid var(--secondary); box-shadow: 0 0 8px rgba(255, 182, 193, 0.4); }
 
         .matris-wrapper { width: 100%; overflow-x: auto; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
         .matris-wrapper::-webkit-scrollbar { height: 6px; }
         .matris-wrapper::-webkit-scrollbar-thumb { background: var(--surface-hover); border-radius: 4px; }
         .matris-tablo { width: 100%; border-collapse: collapse; min-width: 420px; text-align: center; }
         .matris-tablo th { background: var(--surface-nested); color: var(--secondary); padding: 8px 4px; font-size: 11px; text-transform: uppercase; border: 1px solid var(--border); font-weight: bold;}
-        .matris-tablo td { padding: 8px 4px; border: 1px solid var(--border); font-size: 12px; color: #e0e0e0; vertical-align: middle; }
+        .matris-tablo td { padding: 8px 4px; border: 1px solid var(--border); font-size: 12px; color: #fff0f6; vertical-align: middle; }
         .matris-ders-isim { text-align: left !important; font-weight: bold; color: #fff; padding-left: 8px !important; }
         .durum-kutu { display: inline-block; padding: 3px 5px; border-radius: 5px; font-size: 10px; font-weight: bold; min-width: 24px;}
-        .durum-bos { background: var(--surface-nested); color: #5a6378; }
-        .durum-k { background: rgba(var(--primary-rgb), 0.15); color: var(--primary); border: 1px solid var(--primary); }
-        .durum-s { background: rgba(var(--secondary-rgb), 0.15); color: var(--secondary); border: 1px solid var(--secondary); }
-        .durum-tam { background: rgba(var(--success-rgb), 0.15); color: var(--success); border: 1px solid var(--success); }
+        .durum-bos { background: var(--surface-nested); color: #a66c8c; }
+        .durum-k { background: rgba(var(--primary-rgb), 0.2); color: var(--primary); border: 1px solid var(--primary); }
+        .durum-s { background: rgba(var(--secondary-rgb), 0.2); color: var(--secondary); border: 1px solid var(--secondary); }
+        .durum-tam { background: rgba(var(--success-rgb), 0.2); color: var(--success); border: 1px solid var(--success); }
         .matris-bar-container { background: var(--bg); border-radius: 4px; height: 5px; width: 100%; overflow: hidden; margin-top: 4px; }
-        .matris-bar-fill { background: linear-gradient(90deg, var(--primary), var(--secondary)); height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+        .matris-bar-fill { background: linear-gradient(90deg, var(--primary-variant), var(--primary), var(--secondary)); height: 100%; border-radius: 4px; transition: width 0.5s ease; }
 
         .scroll-liste::-webkit-scrollbar { width: 6px; }
         .scroll-liste::-webkit-scrollbar-thumb { background: var(--surface-hover); border-radius: 4px; }
@@ -198,28 +199,28 @@
         .gd-satir-sol { flex: 1; min-width: 0; }
         .gd-satir-ust { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 13px; font-weight: 600; color: #fff; }
         .gd-ad { font-size: 12px; color: var(--text-muted); margin-top: 3px; overflow-wrap: anywhere; }
-        .gd-satir-detay { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: #cfd3df; margin-top: 5px; }
+        .gd-satir-detay { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: #ffd6e7; margin-top: 5px; }
         .gd-satir-detay small { color: var(--text-muted); }
         .gd-satir-sag { text-align: right; min-width: 52px; }
         .gd-net { font-size: 18px; font-weight: 700; color: var(--primary); }
         .gd-sil { background: transparent; border: none; color: var(--text-muted); font-size: 18px; min-width: 40px; min-height: 40px; cursor: pointer; border-radius: 8px; }
         .gd-sil:active { background: rgba(var(--danger-rgb), 0.2); }
         .gd-chip { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
-        .gd-chip-genel { background: rgba(var(--primary-rgb), 0.15); color: var(--primary); border: 1px solid var(--primary); }
-        .gd-chip-temel { background: rgba(var(--secondary-rgb), 0.15); color: var(--secondary); border: 1px solid var(--secondary); }
-        .gd-chip-klinik { background: rgba(var(--warning-rgb), 0.15); color: var(--warning); border: 1px solid var(--warning); }
+        .gd-chip-genel { background: rgba(var(--primary-rgb), 0.2); color: var(--primary); border: 1px solid var(--primary); }
+        .gd-chip-temel { background: rgba(var(--secondary-rgb), 0.2); color: var(--secondary); border: 1px solid var(--secondary); }
+        .gd-chip-klinik { background: rgba(var(--warning-rgb), 0.2); color: var(--warning); border: 1px solid var(--warning); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="toast">✅ Kaydedildi</div>
-    <h1>TUS Sarmal Takip</h1>
-    <div class="countdown-banner" id="countdown-banner">📅 Hesaplanıyor...</div>
+    <div id="toast">💖 Kaydedildi</div>
+    <h1>🎀 TUSBarbiesi Çalışma Planı ✨</h1>
+    <div class="countdown-banner" id="countdown-banner">💖 Hesaplanıyor...</div>
     
     <div class="tabs">
-        <button class="tab-btn active" id="tab-plan-btn" onclick="sekmeDegistir('plan')">Çalışma Planı</button>
-        <button class="tab-btn" id="tab-ist-btn" onclick="sekmeDegistir('istatistik')">İstatistik & Analiz</button>
+        <button class="tab-btn active" id="tab-plan-btn" onclick="sekmeDegistir('plan')">🌸 Çalışma Planı</button>
+        <button class="tab-btn" id="tab-ist-btn" onclick="sekmeDegistir('istatistik')">💅 İstatistik & Analiz</button>
     </div>
 
     <!-- SEKME 1: ÇALIŞMA PLANI -->
@@ -242,30 +243,30 @@
             </div>
 
             <div id="nobet-banner" class="nobet-banner">
-                🏥 <span>BUGÜN NÖBET 🏥 </span>
+                🩺 <span>BUGÜN NÖBET GÜZELLİĞİ 🩺</span>
             </div>
 
             <div class="gorev-item" id="konu-modulu">
-                <strong style="color: var(--primary);">📖 <span id="konu-ders-isim">Ders</span> Konusu</strong>
+                <strong style="color: var(--primary);">💖 <span id="konu-ders-isim">Ders</span> Konusu</strong>
                 <div id="konu-sayfa" class="sayfa-bilgisi">...</div>
                 <div class="progress-bar-container"><div class="progress-bar-fill" id="konu-progress"></div></div>
                 <label class="checkbox-container">
-                    <input type="checkbox" id="konu-check" onchange="firebaseKaydet()"> Hedefi Tamamladım
+                    <input type="checkbox" id="konu-check" onchange="firebaseKaydet()"> Hedefi Tamamladım ✨
                 </label>
             </div>
 
             <div class="gorev-item" id="soru-modulu">
-                <strong style="color: var(--secondary);">🎯 <span id="soru-ders-isim">Ders</span> Sorusu</strong>
+                <strong style="color: var(--secondary);">🌸 <span id="soru-ders-isim">Ders</span> Sorusu</strong>
                 <div id="soru-sayfa" class="sayfa-bilgisi">...</div>
                 <div class="progress-bar-container"><div class="progress-bar-fill" id="soru-progress"></div></div>
                 <label class="checkbox-container">
-                    <input type="checkbox" id="soru-check" onchange="firebaseKaydet()"> Hedefi Tamamladım
+                    <input type="checkbox" id="soru-check" onchange="firebaseKaydet()"> Hedefi Tamamladım 💅
                 </label>
             </div>
             
-            <div class="gorev-item" id="deneme-modulu" style="display: none; border-left: 3px solid var(--warning);">
-                <strong id="deneme-baslik" style="color: var(--warning);">🔥 Deneme Modülü</strong>
-                <div id="deneme-aciklama" style="font-size: 13px; color: #bbb; margin-bottom: 8px;"></div>
+            <div class="gorev-item" id="deneme-modulu" style="display: none; border-left: 3px solid var(--primary);">
+                <strong id="deneme-baslik" style="color: var(--primary);">👑 Deneme Modülü</strong>
+                <div id="deneme-aciklama" style="font-size: 13px; color: #f3c4dc; margin-bottom: 8px;"></div>
                 <label class="checkbox-container" id="lbl-deneme">
                     <input type="checkbox" id="deneme-check" onchange="firebaseKaydet()"> <span id="text-deneme">1 Deneme Çözümü</span>
                 </label>
@@ -273,24 +274,24 @@
         </div>
 
         <div id="tatil-karti" class="hedef-karti tatil-karti">
-            <h2 id="tatil-baslik" style="color: var(--warning); text-align: center; margin-bottom: 10px;">🌴 Mola Günü</h2>
-            <p id="tatil-aciklama" style="text-align: center; font-size: 14px; color: var(--text-muted);">Sarmal takvim bugün ilerlemez.</p>
+            <h2 id="tatil-baslik" style="color: var(--primary); text-align: center; margin-bottom: 10px;">💅 Güzellik Uykusu & Mola Günü</h2>
+            <p id="tatil-aciklama" style="text-align: center; font-size: 14px; color: var(--text-muted);">Takvim bugün ilerlemez, enerjini topla prenses! 💖</p>
         </div>
 
         <!-- GENEL NOT PANOSU -->
         <div class="not-panosu">
-            <h2>📝 Genel Not Panosu <span class="not-status" id="not-status"></span></h2>
-            <textarea id="genel-not-input" class="not-textarea" placeholder="Örn: Biyokimya'dan 10 sayfa sarkanı yarınki nöbette erit... Yazdıkların otomatik kaydedilir." oninput="notYazildi()" onblur="notKaydet()"></textarea>
+            <h2>💌 TUSBarbiesi Not Panosu <span class="not-status" id="not-status"></span></h2>
+            <textarea id="genel-not-input" class="not-textarea" placeholder="Örn: Mikrobiyoloji'den kalan kısmı yarın kahveyle bitir... Yazdıkların otomatik kaydedilir ✨" oninput="notYazildi()" onblur="notKaydet()"></textarea>
         </div>
 
         <!-- GENEL EKSİK OLDUĞUM KONULAR -->
         <div class="not-panosu eksik-panosu">
-            <h2>📌 Genel Eksik Olduğum Konular <span class="not-status" id="eksik-status"></span></h2>
-            <textarea id="eksik-konular-input" class="not-textarea" placeholder="Örn: Guillain-Barré ayırıcı tanısı, böbrek tübüler asidoz tipleri... Netleşmemiş konuları buraya düş, tekrar döneminde önceliklendirirsin." oninput="eksikYazildi()" onblur="eksikKaydet()"></textarea>
+            <h2>🎀 Yanlışlar & Eksik Konular Defteri <span class="not-status" id="eksik-status"></span></h2>
+            <textarea id="eksik-konular-input" class="not-textarea" placeholder="Örn: Guillain-Barré ayırıcı tanısı, böbrek tübüler asidoz tipleri... Yanlış soruları ve spotları buraya not al 💅" oninput="eksikYazildi()" onblur="eksikKaydet()"></textarea>
         </div>
 
         <button class="btn-acilir" onclick="bransModuluGoster()">
-            <span>➕ Branş Denemesi Gir</span>
+            <span>🌸 Branş Denemesi Gir</span>
             <span id="brans-ok">▼</span>
         </button>
         <div id="brans-icerik" class="brans-modulu-icerik">
@@ -323,12 +324,12 @@
                     <input type="number" id="brans-yanlis" min="0" placeholder="Örn: 4">
                 </div>
             </div>
-            <button class="btn-kaydet" onclick="bransDenemeKaydet()">Sonucu İşle</button>
+            <button class="btn-kaydet" onclick="bransDenemeKaydet()">Sonucu İşle 💖</button>
         </div>
 
         <!-- GENEL (HAFTALIK) DENEME SONUCU GİRİŞİ -->
         <button class="btn-acilir" style="margin-top: 10px;" onclick="genelDenemeModuluGoster()">
-            <span>📝 Genel Deneme Sonucu Gir</span>
+            <span>👑 Genel Deneme Sonucu Gir</span>
             <span id="gd-ok">▼</span>
         </button>
         <div id="gd-icerik" class="brans-modulu-icerik" style="border-left-color: var(--secondary);">
@@ -377,8 +378,8 @@
                 </div>
             </div>
 
-            <div id="gd-onizleme" class="gd-onizleme">Doğru/yanlış girince net burada görünür</div>
-            <button class="btn-kaydet" id="gd-kaydet-btn" onclick="genelDenemeKaydet()">Sonucu İşle</button>
+            <div id="gd-onizleme" class="gd-onizleme">Doğru/yanlış girince net burada görünür ✨</div>
+            <button class="btn-kaydet" id="gd-kaydet-btn" onclick="genelDenemeKaydet()">Sonucu İşle 💖</button>
         </div>
     </div>
 
@@ -393,7 +394,7 @@
             </div>
             <div class="istatistik-kutu">
                 <div class="istatistik-baslik">Seri</div>
-                <div class="istatistik-deger" id="ist-streak-deger">🔥 -</div>
+                <div class="istatistik-deger" id="ist-streak-deger">💖 -</div>
                 <div style="font-size: 13px; color: #fff;">gün üst üste</div>
             </div>
         </div>
@@ -410,22 +411,22 @@
                     <div class="cal-day-header">Pzt</div><div class="cal-day-header">Sal</div>
                     <div class="cal-day-header">Çar</div><div class="cal-day-header">Per</div>
                     <div class="cal-day-header">Cum</div><div class="cal-day-header">Cmt</div>
-                    <div class="cal-day-header" style="color: var(--danger);">Paz</div>
+                    <div class="cal-day-header" style="color: var(--primary);">Paz</div>
                 </div>
                 <div class="calendar-grid" id="takvim-grid" style="margin-top:0;">
                     <!-- Javascript ile Doldurulacak -->
                 </div>
             </div>
 
-            <div style="text-align:center; font-size:11px; color:#888; margin-top:12px;">
+            <div style="text-align:center; font-size:11px; color:var(--text-muted); margin-top:12px;">
                 👆 Nöbet eklemek/kaldırmak için takvimdeki günlere tıklayabilirsin.
             </div>
         </div>
 
-        <div class="hedef-karti" style="border-left-color: var(--success); padding: 16px 12px;">
+        <div class="hedef-karti" style="border-left-color: var(--primary); padding: 16px 12px;">
             <h2 style="font-size: 16px; margin-bottom: 12px; color: #fff; display:flex; justify-content:space-between; align-items:center;">
-                🧩 Sarmal Komuta Matrisi
-                <span style="font-size:10px; color:#888; font-weight:normal;">K: Konu | S: Soru</span>
+                🎀 TUSBarbiesi Çalışma Planı
+                <span style="font-size:10px; color:var(--text-muted); font-weight:normal;">K: Konu | S: Soru</span>
             </h2>
             <div class="matris-wrapper">
                 <table class="matris-tablo" id="sarmal-matris-tablosu">
@@ -435,7 +436,7 @@
         </div>
 
         <div class="hedef-karti" style="border-left-color: var(--primary);">
-            <h2 style="font-size: 16px; margin-bottom: 10px; color: #fff;">📅 Genel Deneme Takibi</h2>
+            <h2 style="font-size: 16px; margin-bottom: 10px; color: #fff;">👑 Genel Deneme Takibi</h2>
             <div id="gd-bos-mesaj" style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 10px 0; line-height: 1.6;">Yükleniyor...</div>
             <div id="gd-dolu-alan" style="display: none;">
                 <select id="gd-seri-secim" class="trend-select" onchange="gdSeriCiz()"></select>
@@ -447,7 +448,7 @@
         </div>
 
         <div class="hedef-karti" style="border-left-color: var(--secondary);">
-            <h2 style="font-size: 16px; margin-bottom: 10px; color: #fff;">📊 Branş Deneme Karnesi</h2>
+            <h2 style="font-size: 16px; margin-bottom: 10px; color: #fff;">🌸 Branş Deneme Karnesi</h2>
             <div id="analiz-icerik" style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 15px 0;">
                 Yükleniyor...
             </div>
@@ -494,7 +495,7 @@
         joker: { isim: "24'lü Deneme & Eksik Kampı", kisa: "24.DEN", konu: 11, soru: 11, konuK: "Eksik Tekrar", soruK: "24'lü Denemeler" }
     };
 
-    // ARKADAŞININ 3 FAZLI TAKVİM KURGUSU:
+    // 3 FAZLI TAKVİM KURGUSU:
     // 1. Tur (2 Kasım - 31 Aralık, 60 gün): 7 ders x 7 gün = 49 gün + 11 gün 24'lü Deneme & Eksik Kampı = 60 gün
     // 2. Tur (1 Ocak - 28 Şubat, 50 iş günü + 9 Pazar Pretus): 10 ders x 5 gün = 50 gün
     // 3. Tur (1 Mart - 14 Mart, 14 gün): Her derse 1-2 gün + Yanlışlar + Her gün Genel Deneme
@@ -579,7 +580,7 @@
 
             let info;
             if (gunFarkiBul(iterDate, sinavTarihi) === 0) {
-                info = { durum: 'sinav_gunu', abbr: 'TUS!', tip: 'sinav', workDaySayaci: workDaySayaci, son60: null };
+                info = { durum: 'sinav_gunu', abbr: 'TUS!👑', tip: 'sinav', workDaySayaci: workDaySayaci, son60: null };
             } else if (iterDate >= martBaslangic && iterDate < sinavTarihi) {
                 // Mart ayı (1 - 14 Mart): Her güne 1 ders + Yanlışlar + Her gün Genel Deneme
                 const gunNo = gunFarkiBul(martBaslangic, iterDate) + 1;
@@ -632,7 +633,7 @@
         const metin = document.getElementById('genel-not-input').value;
         db.ref('tus_genel_notlar/metin').set(metin).then(() => {
             document.getElementById('not-status').style.color = "var(--success)";
-            document.getElementById('not-status').innerText = "✅ Kaydedildi";
+            document.getElementById('not-status').innerText = "💖 Kaydedildi";
             setTimeout(() => { document.getElementById('not-status').innerText = ""; }, 2500);
         }).catch(err => {
             document.getElementById('not-status').style.color = "var(--danger)";
@@ -662,7 +663,7 @@
         const metin = document.getElementById('eksik-konular-input').value;
         db.ref('tus_eksik_konular/metin').set(metin).then(() => {
             document.getElementById('eksik-status').style.color = "var(--success)";
-            document.getElementById('eksik-status').innerText = "✅ Kaydedildi";
+            document.getElementById('eksik-status').innerText = "💖 Kaydedildi";
             setTimeout(() => { document.getElementById('eksik-status').innerText = ""; }, 2500);
         }).catch(err => {
             document.getElementById('eksik-status').style.color = "var(--danger)";
@@ -682,9 +683,9 @@
         const bugun = new Date(); bugun.setHours(0,0,0,0);
         const kalan = gunFarkiBul(bugun, sinavTarihi);
         const el = document.getElementById("countdown-banner");
-        if (kalan > 0) { el.innerText = `📅 TUS'a ${kalan} gün kaldı`; }
-        else if (kalan === 0) { el.innerText = `🎯 BUGÜN TUS GÜNÜ! Başarılar!`; }
-        else { el.innerText = `✅ TUS geride kaldı (${Math.abs(kalan)} gün önce)`; }
+        if (kalan > 0) { el.innerText = `👑 TUSBarbiesi'nin Sınavına ${kalan} Gün Kaldı ✨`; }
+        else if (kalan === 0) { el.innerText = `💖 BUGÜN TUS GÜNÜ! Parla Prenses! ✨`; }
+        else { el.innerText = `🎀 TUS geride kaldı (${Math.abs(kalan)} gün önce)`; }
     }
 
     function takvimAyDegistir(fark) {
@@ -696,7 +697,7 @@
         const y = gosterilenTakvimAyi.getFullYear();
         const m = gosterilenTakvimAyi.getMonth();
         const aylar = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
-        document.getElementById("takvim-ay-baslik").innerText = `${aylar[m]} ${y}`;
+        document.getElementById("takvim-ay-baslik").innerText = `🌸 ${aylar[m]} ${y} 🌸`;
 
         const ilkGunTarih = new Date(y, m, 1);
         const sonGunTarih = new Date(y, m + 1, 0);
@@ -721,7 +722,7 @@
             const isNobet = gunData.nobet === true;
 
             html += `<div class="cal-cell ${isBugun}" onclick="nobetToggle('${dateStr}')">
-                        <div class="cal-date" style="color: ${isNobet ? '#fff' : '#ccc'}">${d}</div>`;
+                        <div class="cal-date" style="color: ${isNobet ? '#fff' : '#f3c4dc'}">${d}</div>`;
             
             if (isNobet) {
                 html += `<div class="cal-badge badge-nobet">Nöbet</div>`;
@@ -749,7 +750,7 @@
         ref.once('value').then(snap => {
             const suankiDurum = snap.val() || false;
             return ref.set(!suankiDurum).then(() => {
-                toastGoster(suankiDurum ? "⛔ Nöbet Kaldırıldı" : "🏥 Nöbet Eklendi");
+                toastGoster(suankiDurum ? "🎀 Nöbet Kaldırıldı" : "🩺 Nöbet Eklendi");
                 istatistikleriYukle();
                 if (tarihStr === localToISO(aktifTarih)) { gunuHesaplaVeArayuzuCiz(); }
             });
@@ -824,22 +825,22 @@
 
         if (durum === "sinav_gunu") {
             kartDers.style.display = "none"; kartTatil.style.display = "block";
-            document.getElementById("tatil-baslik").innerText = "🎯 BÜYÜK GÜN: TUS SINAVI!";
-            document.getElementById("tatil-aciklama").innerText = "Emeklerinin karşılığını alma vakti. Sakin kal ve başar Komutanım!";
+            document.getElementById("tatil-baslik").innerText = "👑 BÜYÜK GÜN: TUS SINAVI! 💖";
+            document.getElementById("tatil-aciklama").innerText = "Emeklerinin karşılığını alma vakti. Sakin kal ve parla TUSBarbiesi! ✨";
             return;
         }
 
         if (durum === "sinav_sonrasi") {
             kartDers.style.display = "none"; kartTatil.style.display = "block";
-            document.getElementById("tatil-baslik").innerText = "🎉 TUS Geride Kaldı!";
-            document.getElementById("tatil-aciklama").innerText = "Artık sonuçları bekleme zamanı. Emeğine sağlık!";
+            document.getElementById("tatil-baslik").innerText = "🎀 TUS Geride Kaldı! 💅";
+            document.getElementById("tatil-aciklama").innerText = "Artık sonuçları bekleme ve tatil zamanı. Emeğine sağlık prenses!";
             return;
         }
 
         if (durum === "mola") {
             kartDers.style.display = "none"; kartTatil.style.display = "block";
-            document.getElementById("tatil-baslik").innerText = "🌴 Hazırlık / Dinlenme Günü";
-            document.getElementById("tatil-aciklama").innerText = "Program 2 Kasım Pazartesi günü başlıyor. Zihnini dinlendir.";
+            document.getElementById("tatil-baslik").innerText = "🌸 Hazırlık & Bakım Günü 💅";
+            document.getElementById("tatil-aciklama").innerText = "TUSBarbiesi çalışma planı 2 Kasım Pazartesi günü başlıyor. Enerjini topla! 💖";
             return;
         }
 
@@ -847,14 +848,14 @@
 
         if (durum === "pazar_deneme_genel") {
             kartDers.style.display = "block";
-            document.getElementById("kart-ders-adi").innerText = "Pretus Deneme Günü";
+            document.getElementById("kart-ders-adi").innerText = "👑 Pretus Deneme Günü";
             document.getElementById("kart-tur-gun").style.display = "none";
             document.getElementById("konu-modulu").style.display = "none";
             document.getElementById("soru-modulu").style.display = "none";
             
             denemeModulu.style.display = "block";
-            document.getElementById("deneme-baslik").innerText = "📝 Haftalık Pretus Tam Deneme";
-            document.getElementById("deneme-aciklama").innerText = "Ocak-Şubat Pazar rutini: Haftada 1 Pretus tam deneme ve detaylı analizi çözülür.";
+            document.getElementById("deneme-baslik").innerText = "🎀 Haftalık Pretus Tam Deneme";
+            document.getElementById("deneme-aciklama").innerText = "Ocak-Şubat Pazar rutini: Haftada 1 Pretus tam deneme ve detaylı analizi çözülür ✨";
             document.getElementById("text-deneme").innerText = "1 Pretus Tam Deneme Çözümü & Analizi (200 Soru)";
             return;
         }
@@ -865,8 +866,8 @@
         document.getElementById("soru-modulu").style.display = "block";
 
         if (durum === "kamp" || !globalGunVerisi) {
-            document.getElementById("kart-ders-adi").innerText = "🔥 Seri Soru & Eksik Kampı";
-            document.getElementById("kart-tur-gun").innerText = "Son Düzlük";
+            document.getElementById("kart-ders-adi").innerText = "💖 Seri Soru & Eksik Kampı";
+            document.getElementById("kart-tur-gun").innerText = "Son Düzlük ✨";
             document.getElementById("konu-ders-isim").innerText = "Genel";
             document.getElementById("soru-ders-isim").innerText = "Karma";
             document.getElementById("konu-sayfa").innerText = "Eksik Kapatma / Spot Taraması";
@@ -878,23 +879,23 @@
             const konuVeri = planData[aktif.ders];
             globalSoruDersiKey = aktif.ders;
 
-            document.getElementById("kart-ders-adi").innerText = `Çalışma Planı`;
+            document.getElementById("kart-ders-adi").innerText = `🎀 TUSBarbiesi Planı`;
             document.getElementById("kart-tur-gun").innerText = `${aktif.tur}. Tur (${aktif.gun}/${aktif.toplamGun} Gün)`;
             document.getElementById("konu-ders-isim").innerText = konuVeri.isim;
             document.getElementById("soru-ders-isim").innerText = konuVeri.isim;
 
             if (aktif.ders === "joker") {
-                document.getElementById("konu-sayfa").innerText = `Aralık Sonu Eksik Kapatma (${aktif.gun}/${aktif.toplamGun}. Gün)`;
-                document.getElementById("soru-sayfa").innerText = `24'lü Denemeler Serisi & Çıkmış/SB Tamamlama`;
+                document.getElementById("konu-sayfa").innerText = `Aralık Sonu Eksik Kapatma (${aktif.gun}/${aktif.toplamGun}. Gün) ✨`;
+                document.getElementById("soru-sayfa").innerText = `24'lü Denemeler Serisi & Çıkmış/SB Tamamlama 💅`;
             } else if (aktif.tur === 1) {
-                document.getElementById("konu-sayfa").innerText = `Konu Çalışması (${aktif.gun}/${aktif.toplamGun}. Gün)`;
-                document.getElementById("soru-sayfa").innerText = `Çıkmış Sorular + 1 Soru Bankası + 24'lü Deneme`;
+                document.getElementById("konu-sayfa").innerText = `Konu Çalışması (${aktif.gun}/${aktif.toplamGun}. Gün) 🌸`;
+                document.getElementById("soru-sayfa").innerText = `Çıkmış Sorular + 1 Soru Bankası + 24'lü Deneme 💖`;
             } else if (aktif.tur === 2) {
-                document.getElementById("konu-sayfa").innerText = `Tüm Dersler Tekrar (${aktif.gun}/${aktif.toplamGun}. Gün)`;
-                document.getElementById("soru-sayfa").innerText = `${konuVeri.isim} Yanlış Yapılan Soruların Tekrarı`;
+                document.getElementById("konu-sayfa").innerText = `Tüm Dersler Tekrar (${aktif.gun}/${aktif.toplamGun}. Gün) ✨`;
+                document.getElementById("soru-sayfa").innerText = `${konuVeri.isim} Yanlış Yapılan Soruların Tekrarı 🎀`;
             } else {
-                document.getElementById("konu-sayfa").innerText = `Mart Son Düzlük Hızlı Ders Tekrarı (${aktif.gun}/${aktif.toplamGun}. Gün)`;
-                document.getElementById("soru-sayfa").innerText = `${konuVeri.isim} Yanlış Yapılan Soruların Taraması`;
+                document.getElementById("konu-sayfa").innerText = `Mart Son Düzlük Hızlı Ders Tekrarı (${aktif.gun}/${aktif.toplamGun}. Gün) 👑`;
+                document.getElementById("soru-sayfa").innerText = `${konuVeri.isim} Yanlış Yapılan Soruların Taraması 💅`;
             }
 
             const gunYuzde = (aktif.gun / aktif.toplamGun) * 100;
@@ -904,9 +905,9 @@
 
         if (durum === "son_60_gun" && globalSon60Info) {
             denemeModulu.style.display = "block";
-            document.getElementById("deneme-baslik").innerText = `🔥 Mart Kampı Günlük Genel Deneme (${globalSon60Info.gunNo}/14)`;
-            document.getElementById("deneme-aciklama").innerText = `Mart kuralı: Yanlış yapılan sorular + her derse 1 gün + her gün 1 Genel Deneme!`;
-            document.getElementById("text-deneme").innerText = `📝 1 Genel Deneme Çözümü (200 Soru) - [${globalSon60Info.siraNo}/14]`;
+            document.getElementById("deneme-baslik").innerText = `👑 Mart Kampı Günlük Genel Deneme (${globalSon60Info.gunNo}/14)`;
+            document.getElementById("deneme-aciklama").innerText = `Mart kuralı: Yanlış yapılan sorular + her derse 1 gün + her gün 1 Genel Deneme! 💖`;
+            document.getElementById("text-deneme").innerText = `🎀 1 Genel Deneme Çözümü (200 Soru) - [${globalSon60Info.siraNo}/14]`;
         } else {
             denemeModulu.style.display = "none";
         }
@@ -967,7 +968,7 @@
                 }
             }
             return db.ref('tus_gunluk_kayitlar/' + seciliGunStr).update(kayit);
-        }).then(() => toastGoster("✅ Otomatik Kaydedildi"))
+        }).then(() => toastGoster("💖 Otomatik Kaydedildi"))
         .catch(err => {
             toastGoster("❌ Kaydedilemedi", true);
             console.error(err);
@@ -986,7 +987,7 @@
         db.ref('tus_brans_denemeleri').push({
             tarih: tarih, ders: ders, dogru: dogru, yanlis: yanlis, net: net, timestamp: firebase.database.ServerValue.TIMESTAMP
         }).then(() => {
-            toastGoster("🎯 Net Başarıyla İşlendi");
+            toastGoster("🌸 Net Başarıyla İşlendi");
             document.getElementById("brans-dogru").value = ""; document.getElementById("brans-yanlis").value = "";
             bransModuluGoster(); istatistikleriYukle();
         }).catch(err => {
@@ -1051,12 +1052,12 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `tus_takip_yedek_${localToISO(new Date())}.json`;
+            a.download = `tusbarbiesi_yedek_${localToISO(new Date())}.json`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            toastGoster("💾 Yedek indirildi");
+            toastGoster("💾 Yedek indirildi ✨");
         }).catch(err => {
             toastGoster("❌ Yedekleme başarısız", true);
             console.error(err);
@@ -1100,10 +1101,10 @@
         const sifirdanBasla = !(secenekler && secenekler.sifirdanBasla === false);
 
         if (!hamVeri || hamVeri.length === 0) {
-            return '<div style="text-align:center;color:#888;font-size:13px;">Veri yok</div>';
+            return '<div style="text-align:center;color:var(--text-muted);font-size:13px;">Veri yok</div>';
         }
         if (hamVeri.length === 1) {
-            return `<div style="text-align:center;color:#888;font-size:13px;padding:10px 0;">Trend için en az 2 deneme gerekli. Şu an: ${netFmt(hamVeri[0].net)} net</div>`;
+            return `<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:10px 0;">Trend için en az 2 deneme gerekli. Şu an: ${netFmt(hamVeri[0].net)} net ✨</div>`;
         }
 
         const veri = hamVeri.slice(-10);
@@ -1130,21 +1131,21 @@
 
         const polyPoints = pts.map(p => `${p.x},${p.y}`).join(' ');
 
-        const circles = pts.map(p => `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="var(--primary)" stroke="#1a2133" stroke-width="1.5"><title>${escapeHtml(p.tarih)}: ${netFmt(p.net)} net</title></circle>`).join('');
+        const circles = pts.map(p => `<circle cx="${p.x}" cy="${p.y}" r="4" fill="var(--primary)" stroke="#fff" stroke-width="1.5"><title>${escapeHtml(p.tarih)}: ${netFmt(p.net)} net</title></circle>`).join('');
 
         const texts = pts.map(p => `<text x="${p.x}" y="${p.y - 8}" fill="#fff" font-size="9" text-anchor="middle" font-weight="bold">${netFmt(p.net)}</text>`).join('');
 
         const svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%; height:auto; overflow:visible;">
-            <polyline points="${polyPoints}" fill="none" stroke="var(--secondary)" stroke-width="2"/>
+            <polyline points="${polyPoints}" fill="none" stroke="var(--secondary)" stroke-width="2.5"/>
             ${circles}
             ${texts}
-            <text x="${padding}" y="${h-5}" fill="#888" font-size="9" text-anchor="middle">${escapeHtml(pts[0].tarih.slice(5))}</text>
-            <text x="${w-padding}" y="${h-5}" fill="#888" font-size="9" text-anchor="middle">${escapeHtml(pts[pts.length-1].tarih.slice(5))}</text>
+            <text x="${padding}" y="${h-5}" fill="var(--text-muted)" font-size="9" text-anchor="middle">${escapeHtml(pts[0].tarih.slice(5))}</text>
+            <text x="${w-padding}" y="${h-5}" fill="var(--text-muted)" font-size="9" text-anchor="middle">${escapeHtml(pts[pts.length-1].tarih.slice(5))}</text>
         </svg>`;
 
         let ekstraBilgi = '';
         if (hamVeri.length > 10) {
-            ekstraBilgi = `<div style="text-align:center; font-size:10px; color:#888; margin-top:5px;">(Veritabanında ${hamVeri.length} denemen var, grafikte en güncel 10 tanesi gösteriliyor)</div>`;
+            ekstraBilgi = `<div style="text-align:center; font-size:10px; color:var(--text-muted); margin-top:5px;">(Veritabanında ${hamVeri.length} denemen var, grafikte en güncel 10 tanesi gösteriliyor)</div>`;
         }
 
         return svg + ekstraBilgi;
@@ -1224,14 +1225,14 @@
         });
 
         if (tur === 'genel' && hepsiGirildi && !hata) {
-            parcalar.push(`Toplam: <b style="color:var(--primary)">${netFmt(toplam)}</b> Net`);
+            parcalar.push(`Toplam: <b style="color:var(--primary)">${netFmt(toplam)}</b> Net ✨`);
             
             const rT = gdBolumOku('temel');
             const rK = gdBolumOku('klinik');
             const hesap = tusPuanHesapla(rT.net, rK.net);
             
             parcalar.push(`<div style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--border);">
-                <div style="color:var(--warning); font-size:14px; font-weight:bold; margin-bottom:6px;">🏆 2026 Ağustos TUS Tahmini</div>
+                <div style="color:var(--primary); font-size:14px; font-weight:bold; margin-bottom:6px;">👑 2026 Ağustos TUS Tahmini</div>
                 <div style="display:flex; justify-content:space-around; font-size:12px;">
                     <div><b>K Puanı:</b> ${hesap.kPuan} <br><small>Sıra: ~${hesap.kSira}</small></div>
                     <div><b>T Puanı:</b> ${hesap.tPuan} <br><small>Sıra: ~${hesap.tSira}</small></div>
@@ -1241,7 +1242,7 @@
         
         document.getElementById("gd-onizleme").innerHTML = parcalar.length
             ? parcalar.join('<br>')
-            : 'Doğru/yanlış girince net burada görünür';
+            : 'Doğru/yanlış girince net burada görünür ✨';
     }
 
     function genelDenemeKaydet() {
@@ -1269,7 +1270,7 @@
 
         db.ref('tus_genel_denemeler').push(kayit).then(() => {
             btn.disabled = false;
-            toastGoster("📝 Deneme Sonucu İşlendi");
+            toastGoster("👑 Deneme Sonucu İşlendi");
             ['gd-temel-dogru', 'gd-temel-yanlis', 'gd-klinik-dogru', 'gd-klinik-yanlis', 'gd-ad', 'gd-tarih']
                 .forEach(id => { document.getElementById(id).value = ""; });
             genelDenemeOnizle();
@@ -1323,7 +1324,7 @@
 
         if (genelDenemeler.length === 0) {
             bosMesaj.style.display = "block";
-            bosMesaj.innerHTML = 'Henüz genel deneme sonucu girilmemiş. <b>Çalışma Planı</b> sekmesindeki <b>"Genel Deneme Sonucu Gir"</b> bölümünden ekleyebilirsin.';
+            bosMesaj.innerHTML = 'Henüz genel deneme sonucu girilmemiş. <b>🌸 Çalışma Planı</b> sekmesindeki <b>"👑 Genel Deneme Sonucu Gir"</b> bölümünden ekleyebilirsin.';
             doluAlan.style.display = "none";
             return;
         }
@@ -1363,7 +1364,7 @@
 
             if (d.tur === 'genel' && d.temel && d.klinik) {
                 const hesap = tusPuanHesapla(d.temel.net, d.klinik.net);
-                detay += `<span style="width:100%; display:block; color:var(--warning); margin-top:3px; font-weight:600;">🏆 K Puan: ${hesap.kPuan} (Sıra: ~${hesap.kSira})</span>`;
+                detay += `<span style="width:100%; display:block; color:var(--secondary); margin-top:3px; font-weight:600;">👑 K Puan: ${hesap.kPuan} (Sıra: ~${hesap.kSira})</span>`;
             }
 
             let deltaHtml = '';
@@ -1396,7 +1397,7 @@
 
         if (seri.length === 0) {
             ozet.innerHTML = '';
-            grafik.innerHTML = '<div style="text-align:center;color:#888;font-size:13px;padding:10px 0;">Bu türde henüz sonuç yok</div>';
+            grafik.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:10px 0;">Bu türde henüz sonuç yok</div>';
             return;
         }
 
@@ -1445,7 +1446,7 @@
             document.getElementById("ist-mevcut-gun").innerText = `Çalışılan: ${bugunSayaci} Gün`;
         } else {
             document.getElementById("ist-mevcut-tur").innerText = (globalDurum === "son_60_gun") ? "Mart Kampı" : "Kamp";
-            document.getElementById("ist-mevcut-gun").innerText = "Sona Yaklaşıldı";
+            document.getElementById("ist-mevcut-gun").innerText = "Sona Yaklaşıldı ✨";
         }
 
         db.ref('tus_gunluk_kayitlar').once('value').then((snapshot) => {
@@ -1454,7 +1455,7 @@
             aylikTakvimiCiz(dataDump);
 
             const streak = serimiHesapla(dataDump);
-            document.getElementById("ist-streak-deger").innerText = `🔥 ${streak}`;
+            document.getElementById("ist-streak-deger").innerText = `💖 ${streak}`;
 
             const yapilanlar = {};
             for(let t=1; t<=3; t++) {
@@ -1515,7 +1516,7 @@
                         const konuBitti = yapilanlar[t][dersAd].konu >= hedef;
                         const soruBitti = yapilanlar[t][dersAd].soru >= hedef;
 
-                        if (konuBitti && soruBitti) tdHtml += `<td><span class="durum-kutu durum-tam">✅✅</span></td>`;
+                        if (konuBitti && soruBitti) tdHtml += `<td><span class="durum-kutu durum-tam">💖💖</span></td>`;
                         else if (konuBitti) tdHtml += `<td><span class="durum-kutu durum-k">K</span></td>`;
                         else if (soruBitti) tdHtml += `<td><span class="durum-kutu durum-s">S</span></td>`;
                         else tdHtml += `<td><span class="durum-kutu durum-bos">${yapilanlar[t][dersAd].konu}/${hedef}</span></td>`;
@@ -1539,7 +1540,7 @@
 
         db.ref('tus_brans_denemeleri').once('value').then((snapshot) => {
             if (!snapshot.exists()) {
-                document.getElementById("analiz-icerik").innerText = "Henüz girilmiş bir branş denemesi yok.";
+                document.getElementById("analiz-icerik").innerText = "Henüz girilmiş bir branş denemesi yok 🌸";
                 document.getElementById("trend-secim-alani").style.display = "none";
                 return;
             }
@@ -1564,7 +1565,7 @@
                 let ortalama = (stat.toplamNet / stat.count).toFixed(2);
                 html += `<tr>
                             <td>${ders}</td>
-                            <td style="color:var(--success); font-weight:bold;">${ortalama}</td>
+                            <td style="color:var(--primary); font-weight:bold;">${ortalama}</td>
                             <td>${stat.maxNet.toFixed(2)}</td>
                             <td>${stat.count}</td>
                          </tr>`;
