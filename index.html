@@ -500,9 +500,10 @@
         { d: 'genelcerrahi', g: 3 }, { d: 'kadindogum', g: 2 }
     ];
     
+    // 2. Tur Biyokimya'dan itibaren +1 gün artırıldı
     const sarmalAkil = [
         { tur: 1, seq: [{d:'dahiliye',g:6}, {d:'fizyoloji',g:4}, {d:'patoloji',g:4}, {d:'biyokimya',g:4}, {d:'pediatri',g:6}, {d:'mikrobiyoloji',g:4}, {d:'farmakoloji',g:4}, {d:'joker',g:4}, {d:'kucukstajlar',g:3}, {d:'genelcerrahi',g:3}, {d:'kadindogum',g:3}] },
-        { tur: 2, seq: [{d:'fizyoloji',g:3}, {d:'patoloji',g:3}, {d:'biyokimya',g:3}, {d:'pediatri',g:4}, {d:'mikrobiyoloji',g:3}, {d:'farmakoloji',g:3}, {d:'dahiliye',g:4}, {d:'kucukstajlar',g:3}, {d:'genelcerrahi',g:3}, {d:'kadindogum',g:3}] },
+        { tur: 2, seq: [{d:'fizyoloji',g:3}, {d:'patoloji',g:3}, {d:'biyokimya',g:4}, {d:'pediatri',g:5}, {d:'mikrobiyoloji',g:4}, {d:'farmakoloji',g:4}, {d:'dahiliye',g:5}, {d:'kucukstajlar',g:4}, {d:'genelcerrahi',g:4}, {d:'kadindogum',g:4}] },
         { tur: 3, seq: t345 }, { tur: 4, seq: t345 }, { tur: 5, seq: t345 }
     ];
 
@@ -516,8 +517,9 @@
     });
 
     const startDate = new Date(2026, 7, 28);
-    const son60GunBaslangic = new Date(2027, 0, 13);
-    const sinavTarihi = new Date(2027, 2, 14);
+    // TUS Sınav Tarihi: 27 Mart 2027 Cumartesi & Son 60 Gün: 26 Ocak 2027
+    const son60GunBaslangic = new Date(2027, 0, 26);
+    const sinavTarihi = new Date(2027, 2, 27);
 
     let globalGunVerisi = null; let globalSoruDersiKey = null; let globalDurum = "";
     let globalSon60Info = null;
@@ -541,6 +543,18 @@
     function localToISO(dateObj) {
         const offset = dateObj.getTimezoneOffset();
         return new Date(dateObj.getTime() - (offset*60*1000)).toISOString().split('T')[0];
+    }
+
+    // 2. Tur Biyokimya'dan itibaren (52. iş günü ve sonrası) "İlk yarı Konu, İkinci yarı Önceki Dersin Sorusu" kontrolü
+    function isBolunmusSarmalGunu(workDaySayaci) {
+        return workDaySayaci >= 52 && workDaySayaci <= calismaGunleri.length;
+    }
+
+    function gunModuBul(workDaySayaci) {
+        if (!isBolunmusSarmalGunu(workDaySayaci)) return 'birlesik';
+        const gVeri = calismaGunleri[workDaySayaci - 1];
+        const konuGunSayisi = Math.ceil(gVeri.toplamGun / 2);
+        return (gVeri.gun <= konuGunSayisi) ? 'sadece_konu' : 'sadece_soru';
     }
 
     function gunBilgisiHaritasiniOlustur() {
@@ -807,6 +821,8 @@
         const kartDers = document.getElementById("aktif-ders-karti");
         const kartTatil = document.getElementById("tatil-karti");
         const denemeModulu = document.getElementById("deneme-modulu");
+        const konuModulu = document.getElementById("konu-modulu");
+        const soruModulu = document.getElementById("soru-modulu");
 
         document.getElementById("konu-check").checked = false;
         document.getElementById("soru-check").checked = false;
@@ -841,8 +857,8 @@
             kartDers.style.display = "block";
             document.getElementById("kart-ders-adi").innerText = "Pazar Deneme Günü";
             document.getElementById("kart-tur-gun").style.display = "none";
-            document.getElementById("konu-modulu").style.display = "none";
-            document.getElementById("soru-modulu").style.display = "none";
+            konuModulu.style.display = "none";
+            soruModulu.style.display = "none";
             
             denemeModulu.style.display = "block";
             document.getElementById("deneme-baslik").innerText = "📝 Pazar Genel Denemesi";
@@ -853,10 +869,10 @@
 
         kartDers.style.display = "block";
         document.getElementById("kart-tur-gun").style.display = "inline-block";
-        document.getElementById("konu-modulu").style.display = "block";
-        document.getElementById("soru-modulu").style.display = "block";
 
         if (durum === "kamp" || !globalGunVerisi) {
+            konuModulu.style.display = "block";
+            soruModulu.style.display = "block";
             document.getElementById("kart-ders-adi").innerText = "🔥 Seri Soru & Eksik Kampı";
             document.getElementById("kart-tur-gun").innerText = "Son Düzlük";
             document.getElementById("konu-ders-isim").innerText = "Genel";
@@ -889,36 +905,79 @@
             if(aktif.tur === 1 && seqIdx === 0) document.getElementById("soru-ders-isim").innerText = konuVeri.isim;
             else document.getElementById("soru-ders-isim").innerText = soruVeri.isim;
 
-            const gKonu = Math.ceil(konuVeri.konu / aktif.toplamGun);
-            const gSoru = soruVeri.soru > 0 ? Math.ceil(soruVeri.soru / aktif.toplamGun) : 0;
+            const mod = gunModuBul(isGunuSayaci);
 
-            let kB = ((aktif.gun - 1) * gKonu) + 1; 
-            let kBi = aktif.gun * gKonu;
-            if (kBi > konuVeri.konu || aktif.gun === aktif.toplamGun) kBi = konuVeri.konu;
+            if (mod === 'sadece_konu' || mod === 'sadece_soru') {
+                // 2. Tur Biyokimya ve sonrası: İlk yarı Konu, İkinci yarı Önceki Dersin Sorusu
+                const konuGunSayisi = Math.ceil(aktif.toplamGun / 2);
+                const soruGunSayisi = Math.max(1, Math.floor(aktif.toplamGun - konuGunSayisi));
 
-            let sB = ((aktif.gun - 1) * gSoru) + 1; 
-            let sBi = aktif.gun * gSoru;
-            if (sBi > soruVeri.soru || aktif.gun === aktif.toplamGun) sBi = soruVeri.soru;
+                if (mod === 'sadece_konu') {
+                    konuModulu.style.display = "block";
+                    soruModulu.style.display = "none";
 
-            if (konuVeri.isim === "Soru Çözüm (Joker)") {
-                document.getElementById("konu-sayfa").innerText = "Serbest Zaman / Eksik Kapatma (Düğün vs.)";
+                    const gKonu = Math.ceil(konuVeri.konu / konuGunSayisi);
+                    let kB = ((aktif.gun - 1) * gKonu) + 1;
+                    let kBi = aktif.gun * gKonu;
+                    if (kBi > konuVeri.konu || aktif.gun >= konuGunSayisi) kBi = konuVeri.konu;
+
+                    if (aktif.tur >= 3) document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} - Hızlı Konu (${aktif.gun}/${konuGunSayisi}. Konu Günü)`;
+                    else document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Sayfa ${kB} - ${kBi}) [${aktif.gun}/${konuGunSayisi}. Konu Günü]`;
+
+                    const konuYuzde = Math.min(100, (aktif.gun / konuGunSayisi) * 100);
+                    document.getElementById("konu-progress").style.width = konuYuzde + "%";
+                } else {
+                    konuModulu.style.display = "none";
+                    soruModulu.style.display = "block";
+
+                    const sGun = aktif.gun - konuGunSayisi;
+                    const gSoru = soruVeri.soru > 0 ? Math.ceil(soruVeri.soru / soruGunSayisi) : 0;
+                    let sB = Math.floor((sGun - 1) * gSoru) + 1;
+                    let sBi = Math.floor(sGun * gSoru);
+                    if (sBi > soruVeri.soru || sGun >= soruGunSayisi) sBi = soruVeri.soru;
+
+                    if (aktif.tur >= 3) document.getElementById("soru-sayfa").innerText = `${soruVeri.soruK} - Elenmiş (Ort. Sf ${sB} - ${sBi}) [${sGun}/${soruGunSayisi}. Soru Günü]`;
+                    else document.getElementById("soru-sayfa").innerText = `${soruVeri.soruK} (Sayfa ${sB} - ${sBi}) [${sGun}/${soruGunSayisi}. Soru Günü]`;
+
+                    const soruYuzde = Math.min(100, (sGun / soruGunSayisi) * 100);
+                    document.getElementById("soru-progress").style.width = soruYuzde + "%";
+                }
             } else {
-                if (aktif.tur >= 3) document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Hızlı spot/açık kapatma)`;
-                else document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Sayfa ${kB} - ${kBi})`;
-            }
+                // 1. Tur ve 2. Turun ilk 2 dersi (Birleşik Konu + Soru)
+                konuModulu.style.display = "block";
+                soruModulu.style.display = "block";
 
-            if (soruVeri.isim === "Soru Çözüm (Joker)") {
-                document.getElementById("soru-sayfa").innerText = "Serbest Soru Çözümü & Karma Tekrar";
-            } else if (aktif.tur === 1 && (soruVeri.isim === "Patoloji" || soruVeri.isim === "Biyokimya")) {
-                document.getElementById("soru-sayfa").innerText = `TTS Çıkmış Sorular (${aktif.gun}/${aktif.toplamGun}. Gün Parçası)`;
-            } else {
-                if (aktif.tur >= 3) document.getElementById("soru-sayfa").innerText = `${soruVeri.soruK} - Elenmiş (Ort. Sf ${sB} - ${sBi})`;
-                else document.getElementById("soru-sayfa").innerText = `${soruVeri.soruK} (Sayfa ${sB} - ${sBi})`;
-            }
+                const gKonu = Math.ceil(konuVeri.konu / aktif.toplamGun);
+                const gSoru = soruVeri.soru > 0 ? Math.ceil(soruVeri.soru / aktif.toplamGun) : 0;
 
-            const gunYuzde = (aktif.gun / aktif.toplamGun) * 100;
-            document.getElementById("konu-progress").style.width = gunYuzde + "%";
-            document.getElementById("soru-progress").style.width = gunYuzde + "%";
+                let kB = ((aktif.gun - 1) * gKonu) + 1; 
+                let kBi = aktif.gun * gKonu;
+                if (kBi > konuVeri.konu || aktif.gun === aktif.toplamGun) kBi = konuVeri.konu;
+
+                let sB = ((aktif.gun - 1) * gSoru) + 1; 
+                let sBi = aktif.gun * gSoru;
+                if (sBi > soruVeri.soru || aktif.gun === aktif.toplamGun) sBi = soruVeri.soru;
+
+                if (konuVeri.isim === "Soru Çözüm (Joker)") {
+                    document.getElementById("konu-sayfa").innerText = "Serbest Zaman / Eksik Kapatma (Düğün vs.)";
+                } else {
+                    if (aktif.tur >= 3) document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Hızlı spot/açık kapatma)`;
+                    else document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Sayfa ${kB} - ${kBi})`;
+                }
+
+                if (soruVeri.isim === "Soru Çözüm (Joker)") {
+                    document.getElementById("soru-sayfa").innerText = "Serbest Soru Çözümü & Karma Tekrar";
+                } else if (aktif.tur === 1 && (soruVeri.isim === "Patoloji" || soruVeri.isim === "Biyokimya")) {
+                    document.getElementById("soru-sayfa").innerText = `TTS Çıkmış Sorular (${aktif.gun}/${aktif.toplamGun}. Gün Parçası)`;
+                } else {
+                    if (aktif.tur >= 3) document.getElementById("soru-sayfa").innerText = `${soruVeri.soruK} - Elenmiş (Ort. Sf ${sB} - ${sBi})`;
+                    else document.getElementById("soru-sayfa").innerText = `${soruVeri.soruK} (Sayfa ${sB} - ${sBi})`;
+                }
+
+                const gunYuzde = (aktif.gun / aktif.toplamGun) * 100;
+                document.getElementById("konu-progress").style.width = gunYuzde + "%";
+                document.getElementById("soru-progress").style.width = gunYuzde + "%";
+            }
         }
 
         if (durum === "son_60_gun" && globalSon60Info) {
@@ -977,8 +1036,20 @@
                 kayit.tur = globalGunVerisi ? globalGunVerisi.tur : "Kamp";
                 kayit.konu_dersi = globalGunVerisi ? planData[globalGunVerisi.ders].isim : "Soru Kampı";
                 kayit.soru_dersi = globalSoruDersiKey ? planData[globalSoruDersiKey].isim : "Karma";
-                kayit.konu_bitti = document.getElementById("konu-check").checked;
-                kayit.soru_bitti = document.getElementById("soru-check").checked;
+
+                const mod = gunModuBul(bugunSayaci);
+                if (mod === 'sadece_konu') {
+                    const checked = document.getElementById("konu-check").checked;
+                    kayit.konu_bitti = checked;
+                    kayit.soru_bitti = checked;
+                } else if (mod === 'sadece_soru') {
+                    const checked = document.getElementById("soru-check").checked;
+                    kayit.soru_bitti = checked;
+                    kayit.konu_bitti = checked;
+                } else {
+                    kayit.konu_bitti = document.getElementById("konu-check").checked;
+                    kayit.soru_bitti = document.getElementById("soru-check").checked;
+                }
 
                 if (globalDurum === "son_60_gun" && globalSon60Info) {
                     kayit.deneme_bitti = document.getElementById("deneme-check").checked;
@@ -1021,7 +1092,15 @@
         function gunTamamMi(dateStr, harita) {
             const kayit = dataDump[dateStr];
             const denemeTamam = !!(kayit && (kayit.deneme_bitti || kayit.genel_deneme || kayit.temel_deneme || kayit.klinik_deneme));
-            const dersTamam = !!(kayit && kayit.konu_bitti && kayit.soru_bitti);
+            const mod = gunModuBul(harita.workDaySayaci);
+            let dersTamam = false;
+            if (mod === 'sadece_konu') {
+                dersTamam = !!(kayit && kayit.konu_bitti);
+            } else if (mod === 'sadece_soru') {
+                dersTamam = !!(kayit && kayit.soru_bitti);
+            } else {
+                dersTamam = !!(kayit && kayit.konu_bitti && kayit.soru_bitti);
+            }
 
             if (harita.tip === 'son60') {
                 return dersTamam && denemeTamam;
@@ -1096,21 +1175,17 @@
 
     // TUS PUAN & SIRALAMA MOTORU (2026 Ağustos Kalibrasyonu)
     function tusPuanHesapla(netT, netK) {
-        // Gerçek katsayılara dayalı doğrusal regresyon
         const kPuan = 39.289 + (0.13 * netT) + (0.36 * netK);
         const tPuan = 37.750 + (0.35 * netT) + (0.214 * netK);
 
-        // Klinik Yığılma Eğrisi (66.664 -> ~3331)
         let kSira = 3331;
         if (kPuan > 66.664) kSira -= (kPuan - 66.664) * 400;
         else kSira += (66.664 - kPuan) * 607;
 
-        // Temel Yığılma Eğrisi (64.250 -> ~4910)
         let tSira = 4910;
         if (tPuan > 64.250) tSira -= (tPuan - 64.250) * 500;
         else tSira += (64.250 - tPuan) * 950;
 
-        // Sınır limitleyiciler (1 ile 24000 arası)
         kSira = Math.max(1, Math.min(24000, Math.round(kSira)));
         tSira = Math.max(1, Math.min(24000, Math.round(tSira)));
 
@@ -1255,7 +1330,6 @@
         if (tur === 'genel' && hepsiGirildi && !hata) {
             parcalar.push(`Toplam: <b style="color:var(--primary)">${netFmt(toplam)}</b> Net`);
             
-            // --- YENİ EKLENEN TUS HESAPLAMA EKRANI ---
             const rT = gdBolumOku('temel');
             const rK = gdBolumOku('klinik');
             const hesap = tusPuanHesapla(rT.net, rK.net);
@@ -1391,7 +1465,6 @@
             if (d.temel) detay += `<span>🔬 ${netFmt(gdSayi(d.temel.net))} <small>(${gdSayi(d.temel.dogru)}D/${gdSayi(d.temel.yanlis)}Y)</small></span>`;
             if (d.klinik) detay += `<span>🩺 ${netFmt(gdSayi(d.klinik.net))} <small>(${gdSayi(d.klinik.dogru)}D/${gdSayi(d.klinik.yanlis)}Y)</small></span>`;
 
-            // YENİ EKLENEN KISIM: Listedeki geçmiş kayıtlara da TUS puanı & sıra bilgisi basılır
             if (d.tur === 'genel' && d.temel && d.klinik) {
                 const hesap = tusPuanHesapla(d.temel.net, d.klinik.net);
                 detay += `<span style="width:100%; display:block; color:var(--warning); margin-top:3px; font-weight:600;">🏆 K Puan: ${hesap.kPuan} (Sıra: ~${hesap.kSira})</span>`;
