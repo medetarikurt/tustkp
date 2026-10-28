@@ -89,7 +89,7 @@
         .hedef-baslik h2 { font-size: 18px; color: #fff; }
         .badge { background: linear-gradient(135deg, var(--primary-variant), var(--primary)); color: #fff; padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; }
         
-        .gorev-item { margin-bottom: 12px; background: var(--surface-nested); padding: 12px; border-radius: 10px; border: 1px solid rgba(255, 182, 193, 0.12); }
+        .gore-item { margin-bottom: 12px; background: var(--surface-nested); padding: 12px; border-radius: 10px; border: 1px solid rgba(255, 182, 193, 0.12); }
         .gorev-item strong { display: block; margin-bottom: 4px; font-size: 14px; text-transform: uppercase; }
         .sayfa-bilgisi { font-size: 14px; margin-bottom: 8px; color: #fff; }
 
@@ -229,6 +229,7 @@
             box-shadow: 0 4px 15px rgba(255, 105, 180, 0.4); transition: 0.2s;
         }
         .sevgili-popup button:active { transform: scale(0.95); }
+        .gorev-item { border: 1px solid rgba(255, 182, 193, 0.12); }
     </style>
 </head>
 <body>
@@ -327,16 +328,16 @@
             <div class="form-group">
                 <label>Ders Seç</label>
                 <select id="brans-ders">
-                    <option value="Dahiliye">Dahiliye</option>
                     <option value="Fizyoloji">Fizyoloji</option>
                     <option value="Patoloji">Patoloji</option>
                     <option value="Biyokimya">Biyokimya</option>
-                    <option value="Pediatri">Pediatri</option>
                     <option value="Mikrobiyoloji">Mikrobiyoloji</option>
                     <option value="Farmakoloji">Farmakoloji</option>
+                    <option value="Dahiliye">Dahiliye</option>
+                    <option value="Pediatri">Pediatri</option>
                     <option value="Küçük Stajlar">Küçük Stajlar</option>
-                    <option value="Genel Cerrahi">Genel Cerrahi</option>
                     <option value="Kadın Doğum">Kadın Doğum</option>
+                    <option value="Genel Cerrahi">Genel Cerrahi</option>
                 </select>
             </div>
             <div style="display: flex; gap: 10px;">
@@ -537,22 +538,22 @@
         joker: { isim: "Eksik Kampı & Kalanlar", kisa: "KAMP", konuK: "Eksik Tekrar", soruK: "24'lü Denemeler" }
     };
 
-    // 1. Tur: Her ders 5 gün. İlk 2 gün Konu, sonra 2 gün Soru, son 1 gün 24'lü Deneme.
+    // 1. Tur: Her ders 5 gün. İlk 2 gün Konu, sonra 2 gün Soru, son 1 gün 24'lü Deneme. Toplam 7 ders (Mikro'dan G.Cer'e) x 5 gün = 35 gün.
     const sarmalAkil = [
         { tur: 1, seq: [
-            {d:'fizyoloji',g:5}, {d:'patoloji',g:5}, {d:'biyokimya',g:5}, {d:'mikrobiyoloji',g:5},
-            {d:'farmakoloji',g:5}, {d:'dahiliye',g:5}, {d:'pediatri',g:5}, {d:'genelcerrahi',g:5},
-            {d:'kucukstajlar',g:5}, {d:'kadindogum',g:5}, {d:'joker',g:2}
+            {d:'mikrobiyoloji',g:5}, {d:'farmakoloji',g:5}, {d:'dahiliye',g:5},
+            {d:'pediatri',g:5}, {d:'kucukstajlar',g:5}, {d:'kadindogum',g:5},
+            {d:'genelcerrahi',g:5}, {d:'joker',g:17} // 35 gün ders + 17 gün kamp = 52 iş günü
         ]},
         { tur: 2, seq: [
             {d:'fizyoloji',g:5}, {d:'patoloji',g:5}, {d:'biyokimya',g:5}, {d:'mikrobiyoloji',g:5},
-            {d:'farmakoloji',g:5}, {d:'dahiliye',g:5}, {d:'pediatri',g:5}, {d:'genelcerrahi',g:5},
-            {d:'kucukstajlar',g:5}, {d:'kadindogum',g:5}
+            {d:'farmakoloji',g:5}, {d:'dahiliye',g:5}, {d:'pediatri',g:5}, {d:'kucukstajlar',g:5}, 
+            {d:'kadindogum',g:5}, {d:'genelcerrahi',g:5}
         ]},
         { tur: 3, seq: [
-            {d:'fizyoloji',g:2}, {d:'patoloji',g:2}, {d:'biyokimya',g:2}, {d:'mikrobiyoloji',g:2},
-            {d:'farmakoloji',g:2}, {d:'dahiliye',g:2}, {d:'pediatri',g:2}, {d:'genelcerrahi',g:2},
-            {d:'kucukstajlar',g:2}, {d:'kadindogum',g:2}, {d:'joker',g:6}
+            {d:'fizyoloji',g:1}, {d:'patoloji',g:2}, {d:'biyokimya',g:1}, {d:'mikrobiyoloji',g:1},
+            {d:'farmakoloji',g:1}, {d:'dahiliye',g:2}, {d:'pediatri',g:2}, {d:'kucukstajlar',g:1}, 
+            {d:'kadindogum',g:1}, {d:'genelcerrahi',g:2}
         ]}
     ];
 
@@ -603,7 +604,6 @@
             let isWorkDay = true;
             let gunHafta = iterDate.getDay();
 
-            // Sınav tarihine kadar Mart haricinde Pazar günleri haftalık deneme günüdür
             if (iterDate >= startDate && iterDate < martBaslangic && gunHafta === 0) {
                 isWorkDay = false;
             }
@@ -933,8 +933,12 @@
                         document.getElementById("deneme-modulu").style.display = "block";
                         
                         let seqIdx = sarmalAkil[0].seq.findIndex(s => s.d === aktif.ders);
-                        let prevName = "İlk Ders Isınma";
-                        if (seqIdx > 0) prevName = planData[sarmalAkil[0].seq[seqIdx-1].d].isim;
+                        let prevName = "Önceki Ders";
+                        if (seqIdx > 0) {
+                            prevName = planData[sarmalAkil[0].seq[seqIdx-1].d].isim;
+                        } else if (aktif.ders === 'mikrobiyoloji') {
+                            prevName = planData['biyokimya'].isim; // Mikro'dan öncesi Biyokimya
+                        }
 
                         document.getElementById("deneme-baslik").innerText = `👑 24'lü Deneme Günü`;
                         document.getElementById("deneme-aciklama").innerText = `${prevName} dersinin 24'lü denemesi çözülecek ✨`;
@@ -957,7 +961,7 @@
         if (durum === "son_60_gun" && globalSon60Info) {
             denemeModulu.style.display = "block";
             document.getElementById("deneme-baslik").innerText = `👑 Mart Kampı Günlük Genel Deneme (${globalSon60Info.gunNo}/26)`;
-            document.getElementById("deneme-aciklama").innerText = `Mart kuralı: Yanlış yapılan sorular + her derse 2 gün + her gün 1 Genel Deneme! 💖`;
+            document.getElementById("deneme-aciklama").innerText = `Mart kuralı: Yanlış yapılan sorular + her derse 1-2 gün + her gün 1 Genel Deneme! 💖`;
             document.getElementById("text-deneme").innerText = `🎀 1 Genel Deneme Çözümü (200 Soru) - [${globalSon60Info.siraNo}/26]`;
         }
     }
@@ -1050,6 +1054,7 @@
             if (harita.tip === 'deneme') return denemeTamam;
             if (harita.tip === 'son60') return kayit.konu_bitti && kayit.soru_bitti && denemeTamam;
             
+            // 1. Tur Matris Hesaplaması Güncellemesi
             if (kayit.tur === 1 && harita.abbr !== 'KAMP') {
                 if (kayit.gun <= 2) return kayit.konu_bitti;
                 if (kayit.gun <= 4) return kayit.soru_bitti;
