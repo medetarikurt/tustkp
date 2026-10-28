@@ -505,10 +505,10 @@
     // SEVGİLİ İÇİN GÜNLÜK POPUP MESAJLARI
     const karsilamaMesajlari = [
         "Wowowowow! 🤩 Ekrana bakarken gözlerim kamaştı, bugün aşşşırı güzelsin sarışın Barbie'm! 💅✨",
-        "Günaydın sarı bebeğim! O okyanus gözlerinle bugün yine TUS'un halledeceğine eminim. 🌊💛",
+        "Günaydın sarı fırtınam! O okyanus gözlerinle bugün yine TUS'un içinden geçeceğine eminim. 🌊💛",
         "TUS kitapları bile senin o mavi gözlerine bakarken eriyordur... Günaydın benim zeki ve fıstık sevgilim! 🎀👑",
         "Dünyanın en güzel, en zeki, en sarışın doktoru uyanmış! Bugün de denemeleri parçalamaya hazır mıyız? 💖✨",
-        "Mavi gözlüm, bugün o sarı saçlarını savura savura soruları halletmeni bekliyorum! İyi çalışmalar bitaneciğim 🌸"
+        "Mavi gözlüm, bugün o sarı saçlarını savura savura soruları halletmeni bekliyorum! İyi çalışmalar biriciğim 🌸"
     ];
 
     function gunlukKarsilamaKontrolu() {
@@ -524,34 +524,35 @@
     }
 
     const planData = {
-        mikrobiyoloji: { isim: "Mikrobiyoloji", kisa: "MİK", konu: 250, soru: 400, konuK: "Konu", soruK: "Çıkmış + 1 SB" },
-        farmakoloji: { isim: "Farmakoloji", kisa: "FAR", konu: 100, soru: 400, konuK: "Konu", soruK: "Çıkmış + 1 SB" },
-        dahiliye: { isim: "Dahiliye", kisa: "DAH", konu: 450, soru: 750, konuK: "Konu", soruK: "Çıkmış + 1 SB" },
-        pediatri: { isim: "Pediatri", kisa: "PED", konu: 200, soru: 450, konuK: "Konu", soruK: "Çıkmış + 1 SB" },
-        kucukstajlar: { isim: "Küçük Stajlar", kisa: "K.STJ", konu: 170, soru: 400, konuK: "Konu", soruK: "Çıkmış + 1 SB" },
-        kadindogum: { isim: "Kadın Doğum", kisa: "K.DOĞ", konu: 100, soru: 400, konuK: "Konu", soruK: "Çıkmış + 1 SB" },
-        genelcerrahi: { isim: "Genel Cerrahi", kisa: "G.CER", konu: 400, soru: 450, konuK: "Konu", soruK: "Çıkmış + 1 SB" },
-        fizyoloji: { isim: "Fizyoloji", kisa: "FİZ", konu: 100, soru: 400, konuK: "Konu", soruK: "Çıkmış + 1 SB" },
-        patoloji: { isim: "Patoloji", kisa: "PAT", konu: 100, soru: 450, konuK: "Konu", soruK: "Çıkmış + 1 SB" },
-        biyokimya: { isim: "Biyokimya", kisa: "BİYO", konu: 200, soru: 200, konuK: "Konu", soruK: "Çıkmış + 1 SB" },
-        joker: { isim: "24'lü Deneme & Eksik Kampı", kisa: "24.DEN", konu: 10, soru: 10, konuK: "Eksik Tekrar", soruK: "24'lü Denemeler" }
+        fizyoloji: { isim: "Fizyoloji", kisa: "FİZ", konuK: "Speet", soruK: "Vaka" },
+        patoloji: { isim: "Patoloji", kisa: "PAT", konuK: "Sadece Emrullah SST", soruK: "Emrullah SST" },
+        biyokimya: { isim: "Biyokimya", kisa: "BİYO", konuK: "Yavuz Şahin", soruK: "Meditus" },
+        mikrobiyoloji: { isim: "Mikrobiyoloji", kisa: "MİK", konuK: "Feyyaz Akay", soruK: "Soru Vaka Kitabı" },
+        farmakoloji: { isim: "Farmakoloji", kisa: "FAR", konuK: "Şampiyonların Notu", soruK: "Prime" },
+        dahiliye: { isim: "Dahiliye", kisa: "DAH", konuK: "Şampiyonların Notu", soruK: "Vaka" },
+        pediatri: { isim: "Pediatri", kisa: "PED", konuK: "Şampiyonların Notu", soruK: "Ahmet Erkek İmparator" },
+        genelcerrahi: { isim: "Genel Cerrahi", kisa: "G.CER", konuK: "Ahmet Erkek", soruK: "Ahmet Erkek İmparator" },
+        kucukstajlar: { isim: "Küçük Stajlar", kisa: "K.STJ", konuK: "Speetus", soruK: "Prime" },
+        kadindogum: { isim: "Kadın Doğum", kisa: "K.DOĞ", konuK: "Speetus", soruK: "Vaka" },
+        joker: { isim: "Eksik Kampı & Kalanlar", kisa: "KAMP", konuK: "Eksik Tekrar", soruK: "24'lü Denemeler" }
     };
 
+    // 1. Tur: Her ders 5 gün. İlk 2 gün Konu, sonra 2 gün Soru, son 1 gün 24'lü Deneme.
     const sarmalAkil = [
         { tur: 1, seq: [
-            {d:'mikrobiyoloji',g:6}, {d:'farmakoloji',g:6}, {d:'dahiliye',g:6},
-            {d:'pediatri',g:6}, {d:'kucukstajlar',g:6}, {d:'kadindogum',g:6},
-            {d:'genelcerrahi',g:6}, {d:'joker',g:10}
+            {d:'fizyoloji',g:5}, {d:'patoloji',g:5}, {d:'biyokimya',g:5}, {d:'mikrobiyoloji',g:5},
+            {d:'farmakoloji',g:5}, {d:'dahiliye',g:5}, {d:'pediatri',g:5}, {d:'genelcerrahi',g:5},
+            {d:'kucukstajlar',g:5}, {d:'kadindogum',g:5}, {d:'joker',g:2}
         ]},
         { tur: 2, seq: [
-            {d:'mikrobiyoloji',g:5}, {d:'farmakoloji',g:5}, {d:'dahiliye',g:5},
-            {d:'pediatri',g:5}, {d:'kucukstajlar',g:5}, {d:'kadindogum',g:5},
-            {d:'genelcerrahi',g:5}, {d:'fizyoloji',g:5}, {d:'patoloji',g:5}, {d:'biyokimya',g:5}
+            {d:'fizyoloji',g:5}, {d:'patoloji',g:5}, {d:'biyokimya',g:5}, {d:'mikrobiyoloji',g:5},
+            {d:'farmakoloji',g:5}, {d:'dahiliye',g:5}, {d:'pediatri',g:5}, {d:'genelcerrahi',g:5},
+            {d:'kucukstajlar',g:5}, {d:'kadindogum',g:5}
         ]},
         { tur: 3, seq: [
-            {d:'mikrobiyoloji',g:1}, {d:'farmakoloji',g:1}, {d:'dahiliye',g:2},
-            {d:'pediatri',g:2}, {d:'kucukstajlar',g:1}, {d:'kadindogum',g:1},
-            {d:'genelcerrahi',g:2}, {d:'fizyoloji',g:1}, {d:'patoloji',g:2}, {d:'biyokimya',g:1}
+            {d:'fizyoloji',g:2}, {d:'patoloji',g:2}, {d:'biyokimya',g:2}, {d:'mikrobiyoloji',g:2},
+            {d:'farmakoloji',g:2}, {d:'dahiliye',g:2}, {d:'pediatri',g:2}, {d:'genelcerrahi',g:2},
+            {d:'kucukstajlar',g:2}, {d:'kadindogum',g:2}, {d:'joker',g:6}
         ]}
     ];
 
@@ -567,7 +568,7 @@
     const startDate = new Date(2026, 10, 2); // 2 Kasım 2026 Pazartesi
     const faz2Baslangic = new Date(2027, 0, 1); // 1 Ocak 2027
     const martBaslangic = new Date(2027, 2, 1); // 1 Mart 2027
-    const sinavTarihi = new Date(2027, 2, 15); // 15 Mart 2027
+    const sinavTarihi = new Date(2027, 2, 27); // 27 Mart 2027
 
     let globalGunVerisi = null; let globalSoruDersiKey = null; let globalDurum = "";
     let globalSon60Info = null;
@@ -602,6 +603,7 @@
             let isWorkDay = true;
             let gunHafta = iterDate.getDay();
 
+            // Sınav tarihine kadar Mart haricinde Pazar günleri haftalık deneme günüdür
             if (iterDate >= startDate && iterDate < martBaslangic && gunHafta === 0) {
                 isWorkDay = false;
             }
@@ -835,6 +837,10 @@
         const kartTatil = document.getElementById("tatil-karti");
         const denemeModulu = document.getElementById("deneme-modulu");
 
+        // Tüm modülleri temizle
+        document.getElementById("konu-modulu").style.display = "none";
+        document.getElementById("soru-modulu").style.display = "none";
+        document.getElementById("deneme-modulu").style.display = "none";
         document.getElementById("konu-check").checked = false;
         document.getElementById("soru-check").checked = false;
         document.getElementById("deneme-check").checked = false;
@@ -867,8 +873,6 @@
             kartDers.style.display = "block";
             document.getElementById("kart-ders-adi").innerText = "👑 Pazar Genel Deneme Günü";
             document.getElementById("kart-tur-gun").style.display = "none";
-            document.getElementById("konu-modulu").style.display = "none";
-            document.getElementById("soru-modulu").style.display = "none";
             
             denemeModulu.style.display = "block";
             if (aktifTarih >= faz2Baslangic) {
@@ -885,12 +889,13 @@
 
         kartDers.style.display = "block";
         document.getElementById("kart-tur-gun").style.display = "inline-block";
-        document.getElementById("konu-modulu").style.display = "block";
-        document.getElementById("soru-modulu").style.display = "block";
 
         if (durum === "kamp" || !globalGunVerisi) {
             document.getElementById("kart-ders-adi").innerText = "💖 Seri Soru & Eksik Kampı";
             document.getElementById("kart-tur-gun").innerText = "Son Düzlük ✨";
+            
+            document.getElementById("konu-modulu").style.display = "block";
+            document.getElementById("soru-modulu").style.display = "block";
             document.getElementById("konu-ders-isim").innerText = "Genel";
             document.getElementById("soru-ders-isim").innerText = "Karma";
             document.getElementById("konu-sayfa").innerText = "Eksik Kapatma / Spot Taraması";
@@ -907,32 +912,53 @@
             document.getElementById("konu-ders-isim").innerText = konuVeri.isim;
             document.getElementById("soru-ders-isim").innerText = konuVeri.isim;
 
-            if (aktif.ders === "joker") {
-                document.getElementById("konu-sayfa").innerText = `Aralık Sonu Eksik Kapatma (${aktif.gun}/${aktif.toplamGun}. Gün) ✨`;
-                document.getElementById("soru-sayfa").innerText = `24'lü Denemeler Serisi & Çıkmış/SB Tamamlama 💅`;
-            } else if (aktif.tur === 1) {
-                document.getElementById("konu-sayfa").innerText = `Konu Çalışması (${aktif.gun}/${aktif.toplamGun}. Gün) 🌸`;
-                document.getElementById("soru-sayfa").innerText = `Çıkmış Sorular + 1 Soru Bankası + 24'lü Deneme 💖`;
-            } else if (aktif.tur === 2) {
-                document.getElementById("konu-sayfa").innerText = `Tüm Dersler Tekrar (${aktif.gun}/${aktif.toplamGun}. Gün) ✨`;
-                document.getElementById("soru-sayfa").innerText = `${konuVeri.isim} Yanlış Yapılan Soruların Tekrarı 🎀`;
-            } else {
-                document.getElementById("konu-sayfa").innerText = `Mart Son Düzlük Hızlı Ders Tekrarı (${aktif.gun}/${aktif.toplamGun}. Gün) 👑`;
-                document.getElementById("soru-sayfa").innerText = `${konuVeri.isim} Yanlış Yapılan Soruların Taraması 💅`;
-            }
-
             const gunYuzde = (aktif.gun / aktif.toplamGun) * 100;
             document.getElementById("konu-progress").style.width = gunYuzde + "%";
             document.getElementById("soru-progress").style.width = gunYuzde + "%";
+
+            if (aktif.tur === 1) {
+                if (aktif.ders === "joker") {
+                    document.getElementById("konu-modulu").style.display = "block";
+                    document.getElementById("soru-modulu").style.display = "block";
+                    document.getElementById("konu-sayfa").innerText = `Aralık Sonu Eksik Kapatma (${aktif.gun}/${aktif.toplamGun}. Gün) ✨`;
+                    document.getElementById("soru-sayfa").innerText = `24'lü Denemeler Serisi & Çıkmış/SB Tamamlama 💅`;
+                } else {
+                    if (aktif.gun <= 2) {
+                        document.getElementById("konu-modulu").style.display = "block";
+                        document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Konu Çalışması Gün ${aktif.gun}/2) 🌸`;
+                    } else if (aktif.gun <= 4) {
+                        document.getElementById("soru-modulu").style.display = "block";
+                        document.getElementById("soru-sayfa").innerText = `${konuVeri.soruK} (Soru Çözümü Gün ${aktif.gun - 2}/2) 💖`;
+                    } else if (aktif.gun === 5) {
+                        document.getElementById("deneme-modulu").style.display = "block";
+                        
+                        let seqIdx = sarmalAkil[0].seq.findIndex(s => s.d === aktif.ders);
+                        let prevName = "İlk Ders Isınma";
+                        if (seqIdx > 0) prevName = planData[sarmalAkil[0].seq[seqIdx-1].d].isim;
+
+                        document.getElementById("deneme-baslik").innerText = `👑 24'lü Deneme Günü`;
+                        document.getElementById("deneme-aciklama").innerText = `${prevName} dersinin 24'lü denemesi çözülecek ✨`;
+                        document.getElementById("text-deneme").innerText = `1 Adet ${prevName} 24'lü Denemesi`;
+                    }
+                }
+            } else if (aktif.tur === 2) {
+                document.getElementById("konu-modulu").style.display = "block";
+                document.getElementById("soru-modulu").style.display = "block";
+                document.getElementById("konu-sayfa").innerText = `Tüm Dersler Tekrar (${aktif.gun}/${aktif.toplamGun}. Gün) ✨`;
+                document.getElementById("soru-sayfa").innerText = `${konuVeri.isim} Yanlış Yapılan Soruların Tekrarı 🎀`;
+            } else {
+                document.getElementById("konu-modulu").style.display = "block";
+                document.getElementById("soru-modulu").style.display = "block";
+                document.getElementById("konu-sayfa").innerText = `Mart Son Düzlük Hızlı Ders Tekrarı (${aktif.gun}/${aktif.toplamGun}. Gün) 👑`;
+                document.getElementById("soru-sayfa").innerText = `${konuVeri.isim} Yanlış Yapılan Soruların Taraması 💅`;
+            }
         }
 
         if (durum === "son_60_gun" && globalSon60Info) {
             denemeModulu.style.display = "block";
-            document.getElementById("deneme-baslik").innerText = `👑 Mart Kampı Günlük Genel Deneme (${globalSon60Info.gunNo}/14)`;
-            document.getElementById("deneme-aciklama").innerText = `Mart kuralı: Yanlış yapılan sorular + her derse 1 gün + her gün 1 Genel Deneme! 💖`;
-            document.getElementById("text-deneme").innerText = `🎀 1 Genel Deneme Çözümü (200 Soru) - [${globalSon60Info.siraNo}/14]`;
-        } else {
-            denemeModulu.style.display = "none";
+            document.getElementById("deneme-baslik").innerText = `👑 Mart Kampı Günlük Genel Deneme (${globalSon60Info.gunNo}/26)`;
+            document.getElementById("deneme-aciklama").innerText = `Mart kuralı: Yanlış yapılan sorular + her derse 2 gün + her gün 1 Genel Deneme! 💖`;
+            document.getElementById("text-deneme").innerText = `🎀 1 Genel Deneme Çözümü (200 Soru) - [${globalSon60Info.siraNo}/26]`;
         }
     }
 
@@ -941,6 +967,7 @@
         db.ref('tus_gunluk_kayitlar/' + seciliGunStr).once('value').then((snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.val();
+                
                 if(document.getElementById("konu-check")) document.getElementById("konu-check").checked = data.konu_bitti || false;
                 if(document.getElementById("soru-check")) document.getElementById("soru-check").checked = data.soru_bitti || false;
                 if(document.getElementById("deneme-check")) {
@@ -959,6 +986,7 @@
             let kayit = snap.val() || {};
             kayit.tarih = seciliGunStr;
             kayit.kayit_zamani = firebase.database.ServerValue.TIMESTAMP;
+            kayit.gun = globalGunVerisi ? globalGunVerisi.gun : 0;
 
             if (globalDurum === "sinav_gunu") { kayit.durum = "TUS Sınav Günü"; }
             else if (globalDurum === "mola") { kayit.durum = "Mola Günü"; } 
@@ -972,11 +1000,12 @@
                 kayit.tur = globalGunVerisi ? globalGunVerisi.tur : "Kamp";
                 kayit.konu_dersi = globalGunVerisi ? planData[globalGunVerisi.ders].isim : "Soru Kampı";
                 kayit.soru_dersi = globalSoruDersiKey ? planData[globalSoruDersiKey].isim : "Karma";
+                
                 kayit.konu_bitti = document.getElementById("konu-check").checked;
                 kayit.soru_bitti = document.getElementById("soru-check").checked;
+                kayit.deneme_bitti = document.getElementById("deneme-check").checked;
 
                 if (globalDurum === "son_60_gun" && globalSon60Info) {
-                    kayit.deneme_bitti = document.getElementById("deneme-check").checked;
                     kayit.deneme_turu = globalSon60Info.tur;
                     kayit.deneme_sirasi = globalSon60Info.siraNo;
                 }
@@ -1015,16 +1044,18 @@
 
         function gunTamamMi(dateStr, harita) {
             const kayit = dataDump[dateStr];
-            const denemeTamam = !!(kayit && (kayit.deneme_bitti || kayit.genel_deneme || kayit.temel_deneme || kayit.klinik_deneme));
-            const dersTamam = !!(kayit && kayit.konu_bitti && kayit.soru_bitti);
-
-            if (harita.tip === 'son60') {
-                return dersTamam && denemeTamam;
+            if (!kayit) return false;
+            const denemeTamam = !!(kayit.deneme_bitti || kayit.genel_deneme || kayit.temel_deneme || kayit.klinik_deneme);
+            
+            if (harita.tip === 'deneme') return denemeTamam;
+            if (harita.tip === 'son60') return kayit.konu_bitti && kayit.soru_bitti && denemeTamam;
+            
+            if (kayit.tur === 1 && harita.abbr !== 'KAMP') {
+                if (kayit.gun <= 2) return kayit.konu_bitti;
+                if (kayit.gun <= 4) return kayit.soru_bitti;
+                if (kayit.gun === 5) return denemeTamam;
             }
-            if (harita.tip === 'deneme') {
-                return denemeTamam;
-            }
-            return dersTamam;
+            return kayit.konu_bitti && kayit.soru_bitti;
         }
 
         const todayStr = localToISO(d);
@@ -1498,10 +1529,15 @@
                 for(let t=1; t<=3; t++) {
                     const hedef = hedefGunler[t][dersAd];
                     if(!hedef) continue;
-                    toplamHedefKonu += hedef;
-                    toplamYapilanKonu += Math.min(yapilanlar[t][dersAd].konu, hedef);
-                    toplamHedefSoru += hedef;
-                    toplamYapilanSoru += Math.min(yapilanlar[t][dersAd].soru, hedef);
+
+                    let reqKonu = (t === 1) ? 2 : hedef;
+                    let reqSoru = (t === 1) ? 2 : hedef;
+
+                    toplamHedefKonu += reqKonu;
+                    toplamYapilanKonu += Math.min(yapilanlar[t][dersAd].konu, reqKonu);
+                    
+                    toplamHedefSoru += reqSoru;
+                    toplamYapilanSoru += Math.min(yapilanlar[t][dersAd].soru, reqSoru);
                 }
                 const konuYuzde = toplamHedefKonu > 0 ? (toplamYapilanKonu / toplamHedefKonu * 100) : 0;
                 const soruYuzde = toplamHedefSoru > 0 ? (toplamYapilanSoru / toplamHedefSoru * 100) : null;
@@ -1527,13 +1563,16 @@
                     if(!hedef) {
                         tdHtml += `<td><span class="durum-kutu durum-bos">-</span></td>`;
                     } else {
-                        const konuBitti = yapilanlar[t][dersAd].konu >= hedef;
-                        const soruBitti = yapilanlar[t][dersAd].soru >= hedef;
+                        let reqKonu = (t === 1) ? 2 : hedef;
+                        let reqSoru = (t === 1) ? 2 : hedef;
+                        
+                        const konuBitti = yapilanlar[t][dersAd].konu >= reqKonu;
+                        const soruBitti = yapilanlar[t][dersAd].soru >= reqSoru;
 
                         if (konuBitti && soruBitti) tdHtml += `<td><span class="durum-kutu durum-tam">💖💖</span></td>`;
                         else if (konuBitti) tdHtml += `<td><span class="durum-kutu durum-k">K</span></td>`;
                         else if (soruBitti) tdHtml += `<td><span class="durum-kutu durum-s">S</span></td>`;
-                        else tdHtml += `<td><span class="durum-kutu durum-bos">${yapilanlar[t][dersAd].konu}/${hedef}</span></td>`;
+                        else tdHtml += `<td><span class="durum-kutu durum-bos">${yapilanlar[t][dersAd].konu}/${reqKonu}</span></td>`;
                     }
                 }
                 
