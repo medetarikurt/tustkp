@@ -493,26 +493,56 @@
         kadindogum: { isim: "Kadın Doğum", kisa: "K.DOĞ", konu: 100, soru: 400, konuK: "Speet", soruK: "Prime" }
     };
 
+    // 3., 4. ve 5. Turlar:
+    // Temel bilimler (Patoloji hariç) + Dahiliye & Pediatri -> Konu + Soru
+    // Patoloji, Küçük Stajlar, Genel Cerrahi, Kadın Doğum -> Sadece Soru (günleri eksiltilmiş)
     const t345 = [
-        { d: 'fizyoloji', g: 2 }, { d: 'patoloji', g: 3 }, { d: 'biyokimya', g: 1.5 },
-        { d: 'pediatri', g: 3 }, { d: 'mikrobiyoloji', g: 2 }, { d: 'farmakoloji', g: 2 },
-        { d: 'dahiliye', g: 3 }, { d: 'kucukstajlar', g: 2.5 }, 
-        { d: 'genelcerrahi', g: 3 }, { d: 'kadindogum', g: 2 }
+        { d: 'fizyoloji', g: 2, sadeceSoru: false },
+        { d: 'patoloji', g: 2, sadeceSoru: true },
+        { d: 'biyokimya', g: 2, sadeceSoru: false },
+        { d: 'pediatri', g: 3, sadeceSoru: false },
+        { d: 'mikrobiyoloji', g: 2, sadeceSoru: false },
+        { d: 'farmakoloji', g: 2, sadeceSoru: false },
+        { d: 'dahiliye', g: 3, sadeceSoru: false },
+        { d: 'kucukstajlar', g: 2, sadeceSoru: true },
+        { d: 'genelcerrahi', g: 2, sadeceSoru: true },
+        { d: 'kadindogum', g: 1, sadeceSoru: true }
     ];
     
-    // 2. Tur Biyokimya'dan itibaren +1 gün artırıldı
+    // 2. Turda Biyokimya'dan itibaren +1 gün artırıldı, Küçük Stajlar sadece soru olduğu için 2 güne indirildi
     const sarmalAkil = [
-        { tur: 1, seq: [{d:'dahiliye',g:6}, {d:'fizyoloji',g:4}, {d:'patoloji',g:4}, {d:'biyokimya',g:4}, {d:'pediatri',g:6}, {d:'mikrobiyoloji',g:4}, {d:'farmakoloji',g:4}, {d:'joker',g:4}, {d:'kucukstajlar',g:3}, {d:'genelcerrahi',g:3}, {d:'kadindogum',g:3}] },
-        { tur: 2, seq: [{d:'fizyoloji',g:3}, {d:'patoloji',g:3}, {d:'biyokimya',g:4}, {d:'pediatri',g:5}, {d:'mikrobiyoloji',g:4}, {d:'farmakoloji',g:4}, {d:'dahiliye',g:5}, {d:'kucukstajlar',g:4}, {d:'genelcerrahi',g:4}, {d:'kadindogum',g:4}] },
+        { tur: 1, seq: [
+            {d:'dahiliye',g:6}, {d:'fizyoloji',g:4}, {d:'patoloji',g:4}, {d:'biyokimya',g:4},
+            {d:'pediatri',g:6}, {d:'mikrobiyoloji',g:4}, {d:'farmakoloji',g:4}, {d:'joker',g:4},
+            {d:'kucukstajlar',g:3}, {d:'genelcerrahi',g:3}, {d:'kadindogum',g:3}
+        ]},
+        { tur: 2, seq: [
+            {d:'fizyoloji',g:3, sadeceSoru:false},
+            {d:'patoloji',g:3, sadeceSoru:false},
+            {d:'biyokimya',g:4, sadeceSoru:false},
+            {d:'pediatri',g:5, sadeceSoru:false},
+            {d:'mikrobiyoloji',g:4, sadeceSoru:false},
+            {d:'farmakoloji',g:4, sadeceSoru:false},
+            {d:'dahiliye',g:5, sadeceSoru:false},
+            {d:'kucukstajlar',g:2, sadeceSoru:true},
+            {d:'genelcerrahi',g:4, sadeceSoru:false},
+            {d:'kadindogum',g:4, sadeceSoru:false}
+        ]},
         { tur: 3, seq: t345 }, { tur: 4, seq: t345 }, { tur: 5, seq: t345 }
     ];
 
     let calismaGunleri = [];
     let hedefGunler = { 1:{}, 2:{}, 3:{}, 4:{}, 5:{} };
+    let sadeceSoruMap = { 1:{}, 2:{}, 3:{}, 4:{}, 5:{} };
+
     sarmalAkil.forEach(t => { 
         t.seq.forEach(s => { 
-            hedefGunler[t.tur][planData[s.d].isim] = s.g;
-            for(let i=1; i<=s.g; i++) { calismaGunleri.push({ tur: t.tur, ders: s.d, gun: i, toplamGun: s.g }); } 
+            const dersIsim = planData[s.d].isim;
+            hedefGunler[t.tur][dersIsim] = s.g;
+            sadeceSoruMap[t.tur][dersIsim] = !!s.sadeceSoru;
+            for(let i=1; i<=s.g; i++) {
+                calismaGunleri.push({ tur: t.tur, ders: s.d, gun: i, toplamGun: s.g, sadeceSoru: !!s.sadeceSoru });
+            } 
         }); 
     });
 
@@ -545,7 +575,7 @@
         return new Date(dateObj.getTime() - (offset*60*1000)).toISOString().split('T')[0];
     }
 
-    // 2. Tur Biyokimya'dan itibaren (52. iş günü ve sonrası) "İlk yarı Konu, İkinci yarı Önceki Dersin Sorusu" kontrolü
+    // 2. Tur Biyokimya'dan itibaren (52. iş günü ve sonrası) yeni çalışma modeli
     function isBolunmusSarmalGunu(workDaySayaci) {
         return workDaySayaci >= 52 && workDaySayaci <= calismaGunleri.length;
     }
@@ -553,8 +583,37 @@
     function gunModuBul(workDaySayaci) {
         if (!isBolunmusSarmalGunu(workDaySayaci)) return 'birlesik';
         const gVeri = calismaGunleri[workDaySayaci - 1];
+        if (gVeri.sadeceSoru) return 'kendi_sorusu';
         const konuGunSayisi = Math.ceil(gVeri.toplamGun / 2);
-        return (gVeri.gun <= konuGunSayisi) ? 'sadece_konu' : 'sadece_soru';
+        return (gVeri.gun <= konuGunSayisi) ? 'sadece_konu' : 'onceki_soru';
+    }
+
+    // Konu+Soru dersleri için kendinden önceki en son Konu+Soru dersini bulur
+    // (Aradaki Sadece-Soru dersleri kendi gününde kendi sorusunu çözdüğü için sarmalda atlanır)
+    function oncekiSarmalSoruDersiniBul(tur, dersKey) {
+        let sarmalTur = sarmalAkil.find(t => t.tur === tur);
+        let seqIdx = sarmalTur.seq.findIndex(s => s.d === dersKey);
+
+        if (tur === 1 || (tur === 2 && seqIdx <= 2)) {
+            if (seqIdx > 0) return sarmalTur.seq[seqIdx - 1].d;
+            if (tur > 1) {
+                let oncekiTur = sarmalAkil.find(t => t.tur === tur - 1);
+                return oncekiTur.seq[oncekiTur.seq.length - 1].d;
+            }
+            return dersKey;
+        }
+
+        // 2. Tur Biyokimya sonrası ve 3-5. turlarda geriye doğru ilk Konu+Soru dersini bul
+        for (let i = seqIdx - 1; i >= 0; i--) {
+            if (!sarmalTur.seq[i].sadeceSoru) return sarmalTur.seq[i].d;
+        }
+        if (tur > 1) {
+            let oncekiTur = sarmalAkil.find(t => t.tur === tur - 1);
+            for (let i = oncekiTur.seq.length - 1; i >= 0; i--) {
+                if (!oncekiTur.seq[i].sadeceSoru) return oncekiTur.seq[i].d;
+            }
+        }
+        return dersKey;
     }
 
     function gunBilgisiHaritasiniOlustur() {
@@ -884,31 +943,43 @@
         } else {
             const aktif = globalGunVerisi;
             const konuVeri = planData[aktif.ders];
-
-            let oncekiDersKey = aktif.ders;
-            let sarmalTur = sarmalAkil.find(t => t.tur === aktif.tur);
-            let seqIdx = sarmalTur.seq.findIndex(s => s.d === aktif.ders);
-
-            if (seqIdx > 0) { oncekiDersKey = sarmalTur.seq[seqIdx - 1].d; } 
-            else if (aktif.tur > 1) {
-                let oncekiTur = sarmalAkil.find(t => t.tur === aktif.tur - 1);
-                oncekiDersKey = oncekiTur.seq[oncekiTur.seq.length - 1].d;
-            }
-            
-            globalSoruDersiKey = oncekiDersKey;
-            const soruVeri = planData[oncekiDersKey];
+            const mod = gunModuBul(isGunuSayaci);
 
             document.getElementById("kart-ders-adi").innerText = `Çalışma Planı`;
             document.getElementById("kart-tur-gun").innerText = `${aktif.tur}. Tur (${aktif.gun}/${aktif.toplamGun} Gün)`;
-            document.getElementById("konu-ders-isim").innerText = konuVeri.isim;
-            
-            if(aktif.tur === 1 && seqIdx === 0) document.getElementById("soru-ders-isim").innerText = konuVeri.isim;
-            else document.getElementById("soru-ders-isim").innerText = soruVeri.isim;
 
-            const mod = gunModuBul(isGunuSayaci);
+            if (mod === 'kendi_sorusu') {
+                // SADECE SORU DERSLERİ (Patoloji, Küçük Stajlar ve 3-5. Turda Genel Cerrahi & Kadın Doğum)
+                globalSoruDersiKey = aktif.ders;
+                const soruVeri = planData[aktif.ders];
 
-            if (mod === 'sadece_konu' || mod === 'sadece_soru') {
-                // 2. Tur Biyokimya ve sonrası: İlk yarı Konu, İkinci yarı Önceki Dersin Sorusu
+                konuModulu.style.display = "none";
+                soruModulu.style.display = "block";
+                document.getElementById("soru-ders-isim").innerText = soruVeri.isim;
+
+                const gSoru = soruVeri.soru > 0 ? Math.ceil(soruVeri.soru / aktif.toplamGun) : 0;
+                let sB = ((aktif.gun - 1) * gSoru) + 1;
+                let sBi = aktif.gun * gSoru;
+                if (sBi > soruVeri.soru || aktif.gun === aktif.toplamGun) sBi = soruVeri.soru;
+
+                if (aktif.tur >= 3) {
+                    document.getElementById("soru-sayfa").innerText = `${soruVeri.soruK} - Sadece Soru Modu (Sf ${sB} - ${sBi}) [${aktif.gun}/${aktif.toplamGun}. Gün]`;
+                } else {
+                    document.getElementById("soru-sayfa").innerText = `${soruVeri.soruK} - Sadece Soru Modu (Sayfa ${sB} - ${sBi}) [${aktif.gun}/${aktif.toplamGun}. Gün]`;
+                }
+
+                const soruYuzde = Math.min(100, (aktif.gun / aktif.toplamGun) * 100);
+                document.getElementById("soru-progress").style.width = soruYuzde + "%";
+
+            } else if (mod === 'sadece_konu' || mod === 'onceki_soru') {
+                // KONU + SORU DERSLERİ (İlk yarı kendi konusu, ikinci yarı önceki Konu+Soru dersinin sorusu)
+                const oncekiDersKey = oncekiSarmalSoruDersiniBul(aktif.tur, aktif.ders);
+                globalSoruDersiKey = oncekiDersKey;
+                const soruVeri = planData[oncekiDersKey];
+
+                document.getElementById("konu-ders-isim").innerText = konuVeri.isim;
+                document.getElementById("soru-ders-isim").innerText = soruVeri.isim;
+
                 const konuGunSayisi = Math.ceil(aktif.toplamGun / 2);
                 const soruGunSayisi = Math.max(1, Math.floor(aktif.toplamGun - konuGunSayisi));
 
@@ -921,7 +992,7 @@
                     let kBi = aktif.gun * gKonu;
                     if (kBi > konuVeri.konu || aktif.gun >= konuGunSayisi) kBi = konuVeri.konu;
 
-                    if (aktif.tur >= 3) document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} - Hızlı Konu (${aktif.gun}/${konuGunSayisi}. Konu Günü)`;
+                    if (aktif.tur >= 3) document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} - Hızlı Tekrar (Sf ${kB} - ${kBi}) [${aktif.gun}/${konuGunSayisi}. Konu Günü]`;
                     else document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Sayfa ${kB} - ${kBi}) [${aktif.gun}/${konuGunSayisi}. Konu Günü]`;
 
                     const konuYuzde = Math.min(100, (aktif.gun / konuGunSayisi) * 100);
@@ -944,8 +1015,15 @@
                 }
             } else {
                 // 1. Tur ve 2. Turun ilk 2 dersi (Birleşik Konu + Soru)
+                const oncekiDersKey = oncekiSarmalSoruDersiniBul(aktif.tur, aktif.ders);
+                globalSoruDersiKey = oncekiDersKey;
+                const soruVeri = planData[oncekiDersKey];
+
                 konuModulu.style.display = "block";
                 soruModulu.style.display = "block";
+
+                document.getElementById("konu-ders-isim").innerText = konuVeri.isim;
+                document.getElementById("soru-ders-isim").innerText = soruVeri.isim;
 
                 const gKonu = Math.ceil(konuVeri.konu / aktif.toplamGun);
                 const gSoru = soruVeri.soru > 0 ? Math.ceil(soruVeri.soru / aktif.toplamGun) : 0;
@@ -961,8 +1039,7 @@
                 if (konuVeri.isim === "Soru Çözüm (Joker)") {
                     document.getElementById("konu-sayfa").innerText = "Serbest Zaman / Eksik Kapatma (Düğün vs.)";
                 } else {
-                    if (aktif.tur >= 3) document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Hızlı spot/açık kapatma)`;
-                    else document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Sayfa ${kB} - ${kBi})`;
+                    document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Sayfa ${kB} - ${kBi})`;
                 }
 
                 if (soruVeri.isim === "Soru Çözüm (Joker)") {
@@ -970,8 +1047,7 @@
                 } else if (aktif.tur === 1 && (soruVeri.isim === "Patoloji" || soruVeri.isim === "Biyokimya")) {
                     document.getElementById("soru-sayfa").innerText = `TTS Çıkmış Sorular (${aktif.gun}/${aktif.toplamGun}. Gün Parçası)`;
                 } else {
-                    if (aktif.tur >= 3) document.getElementById("soru-sayfa").innerText = `${soruVeri.soruK} - Elenmiş (Ort. Sf ${sB} - ${sBi})`;
-                    else document.getElementById("soru-sayfa").innerText = `${soruVeri.soruK} (Sayfa ${sB} - ${sBi})`;
+                    document.getElementById("soru-sayfa").innerText = `${soruVeri.soruK} (Sayfa ${sB} - ${sBi})`;
                 }
 
                 const gunYuzde = (aktif.gun / aktif.toplamGun) * 100;
@@ -1042,7 +1118,7 @@
                     const checked = document.getElementById("konu-check").checked;
                     kayit.konu_bitti = checked;
                     kayit.soru_bitti = checked;
-                } else if (mod === 'sadece_soru') {
+                } else if (mod === 'onceki_soru' || mod === 'kendi_sorusu') {
                     const checked = document.getElementById("soru-check").checked;
                     kayit.soru_bitti = checked;
                     kayit.konu_bitti = checked;
@@ -1096,7 +1172,7 @@
             let dersTamam = false;
             if (mod === 'sadece_konu') {
                 dersTamam = !!(kayit && kayit.konu_bitti);
-            } else if (mod === 'sadece_soru') {
+            } else if (mod === 'onceki_soru' || mod === 'kendi_sorusu') {
                 dersTamam = !!(kayit && kayit.soru_bitti);
             } else {
                 dersTamam = !!(kayit && kayit.konu_bitti && kayit.soru_bitti);
@@ -1592,12 +1668,15 @@
                 for(let t=1; t<=5; t++) {
                     const hedef = hedefGunler[t][dersAd];
                     if(!hedef) continue;
-                    toplamHedefKonu += hedef;
-                    toplamYapilanKonu += Math.min(yapilanlar[t][dersAd].konu, hedef);
+                    const sadeceSoruMu = sadeceSoruMap[t][dersAd];
+                    if (!sadeceSoruMu) {
+                        toplamHedefKonu += hedef;
+                        toplamYapilanKonu += Math.min(yapilanlar[t][dersAd].konu, hedef);
+                    }
                     toplamHedefSoru += hedef;
                     toplamYapilanSoru += Math.min(yapilanlar[t][dersAd].soru, hedef);
                 }
-                const konuYuzde = toplamHedefKonu > 0 ? (toplamYapilanKonu / toplamHedefKonu * 100) : 0;
+                const konuYuzde = toplamHedefKonu > 0 ? (toplamYapilanKonu / toplamHedefKonu * 100) : 100;
                 const soruYuzde = toplamHedefSoru > 0 ? (toplamYapilanSoru / toplamHedefSoru * 100) : null;
                 const genelYuzde = soruYuzde !== null ? ((konuYuzde + soruYuzde) / 2) : konuYuzde;
                 
@@ -1621,11 +1700,12 @@
                     if(!hedef) {
                         tdHtml += `<td><span class="durum-kutu durum-bos">-</span></td>`;
                     } else {
-                        const konuBitti = yapilanlar[t][dersAd].konu >= hedef;
+                        const sadeceSoruMu = sadeceSoruMap[t][dersAd];
+                        const konuBitti = sadeceSoruMu ? true : (yapilanlar[t][dersAd].konu >= hedef);
                         const soruBitti = yapilanlar[t][dersAd].soru >= hedef;
 
                         if (konuBitti && soruBitti) tdHtml += `<td><span class="durum-kutu durum-tam">✅✅</span></td>`;
-                        else if (konuBitti) tdHtml += `<td><span class="durum-kutu durum-k">K</span></td>`;
+                        else if (!sadeceSoruMu && konuBitti) tdHtml += `<td><span class="durum-kutu durum-k">K</span></td>`;
                         else if (soruBitti) tdHtml += `<td><span class="durum-kutu durum-s">S</span></td>`;
                         else tdHtml += `<td><span class="durum-kutu durum-bos">...</span></td>`;
                     }
