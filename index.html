@@ -1,5 +1,3 @@
-
-%100
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -706,7 +704,7 @@
             let gunHafta = iterDate.getDay();
 
             if (y === 2026 && m === 8 && (d === 18 || d === 19 || d === 20)) { isWorkDay = false; }
-            elif (iterDate >= new Date(2026, 9, 4) && iterDate < son60GunBaslangic && gunHafta === 0) { isWorkDay = false; }
+            else if (iterDate >= new Date(2026, 9, 4) && iterDate < son60GunBaslangic && gunHafta === 0) { isWorkDay = false; }
 
             if (isWorkDay) workDaySayaci++;
 
