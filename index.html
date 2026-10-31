@@ -103,6 +103,15 @@
         .checkbox-container { display: flex; align-items: center; cursor: pointer; user-select: none; font-size: 14px; color: #ccc; padding: 4px 0; }
         .checkbox-container input { margin-right: 10px; width: 20px; height: 20px; accent-color: var(--success); cursor: pointer; }
         
+        /* Saat ve Telafi Modülü CSS */
+        .saat-modulu { background: linear-gradient(145deg, #1b2438, #161d2e); border: 1px solid var(--border); border-left: 4px solid var(--primary); padding: 12px; border-radius: 10px; margin-top: 10px; }
+        .saat-ust-satir { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .saat-kontrol-grup { display: flex; align-items: center; gap: 4px; }
+        .btn-saat-ayar { background: var(--surface-hover); color: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.15s; }
+        .btn-saat-ayar:active { transform: scale(0.92); background: var(--primary); color: #000; }
+        .saat-alt-bilgi { font-size: 11px; color: var(--text-muted); margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--border); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px; }
+        .saat-alt-bilgi b { color: var(--secondary); }
+
         .not-panosu { background: var(--surface-card); border-left: 4px solid var(--info); padding: 14px; border-radius: 10px; margin-bottom: 15px; }
         .not-panosu h2 { font-size: 15px; color: #fff; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
         .eksik-panosu { border-left-color: var(--danger); }
@@ -212,14 +221,17 @@
         
         /* Envanter Tablosu CSS */
         .envanter-icerik { display: none; background: var(--surface-card); padding: 15px 5px; border-radius: 10px; margin-top: 8px; border-left: 3px solid var(--info); overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .env-tablo { width: 100%; border-collapse: collapse; min-width: 600px; text-align: left; }
-        .env-tablo th { background: var(--surface-nested); color: var(--info); padding: 10px 8px; font-size: 12px; text-transform: uppercase; border: 1px solid var(--border); font-weight: bold; position: sticky; top: 0; }
-        .env-tablo td { padding: 8px; border: 1px solid var(--border); font-size: 13px; color: #e0e0e0; vertical-align: top; }
-        .env-ders-isim { font-weight: bold; color: #fff; background: var(--surface-nested); }
-        .env-hucre { cursor: pointer; transition: 0.15s; background: rgba(0,0,0,0.1); border-radius: 4px; padding: 4px; display: block; min-height: 24px; }
+        .env-tablo { width: 100%; border-collapse: collapse; min-width: 680px; text-align: left; }
+        .env-tablo th { background: var(--surface-nested); color: var(--info); padding: 10px 8px; font-size: 11px; text-transform: uppercase; border: 1px solid var(--border); font-weight: bold; position: sticky; top: 0; }
+        .env-tablo td { padding: 8px; border: 1px solid var(--border); font-size: 12px; color: #e0e0e0; vertical-align: middle; }
+        .env-ders-isim { font-weight: bold; color: #fff; background: var(--surface-nested); white-space: nowrap; }
+        .env-hucre { cursor: pointer; transition: 0.15s; background: rgba(255,255,255,0.03); border-radius: 5px; padding: 5px 6px; display: block; min-height: 26px; line-height: 1.35; }
         .env-hucre:hover { background: var(--surface-hover); }
         .env-hucre:active { transform: scale(0.98); }
-        .env-total { font-weight: 700; color: var(--primary); }
+        .env-hucre-tam { border-left: 3px solid var(--success); background: rgba(74, 222, 128, 0.08); }
+        .env-hucre-aktif { border-left: 3px solid var(--warning); background: rgba(251, 146, 60, 0.08); }
+        .env-hucre-plan { color: #6e778c; font-size: 11px; }
+        .env-total { font-weight: 700; color: var(--primary); background: rgba(232, 181, 95, 0.08); white-space: nowrap; font-size: 11px !important; }
         
         /* Envanter Modal */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 100; padding: 15px; }
@@ -229,8 +241,9 @@
         .modal-textarea:focus { border-color: var(--primary); }
         .modal-butonlar { display: flex; gap: 10px; }
         .btn-kapat { flex: 1; background: var(--surface-nested); color: var(--text); border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
-        .btn-kaydet-modal { flex: 2; background: var(--primary); color: #1a1206; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
-        .btn-kapat:active, .btn-kaydet-modal:active { transform: scale(0.98); }
+        .btn-sifirla-modal { flex: 1; background: rgba(248, 113, 113, 0.15); color: var(--danger); border: 1px solid var(--danger); padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; }
+        .btn-kaydet-modal { flex: 1.5; background: var(--primary); color: #1a1206; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .btn-kapat:active, .btn-kaydet-modal:active, .btn-sifirla-modal:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
@@ -293,9 +306,27 @@
                     <input type="checkbox" id="deneme-check" onchange="firebaseKaydet()"> <span id="text-deneme">1 Deneme Çözümü</span>
                 </label>
             </div>
+
+            <!-- CANLI SAAT & TELAFİ MODÜLÜ -->
+            <div id="saat-modulu" class="saat-modulu" style="display: none;">
+                <div class="saat-ust-satir">
+                    <label class="checkbox-container" style="font-weight: 700; color: #fff; flex: 1;">
+                        <input type="checkbox" id="saat-check" onchange="saatCheckDegisti()">
+                        <span id="saat-buton-metin">⏱️ Bugün 9s 15dk Çalıştım</span>
+                    </label>
+                    <div class="saat-kontrol-grup">
+                        <button type="button" class="btn-saat-ayar" onclick="saatManuelAyar(-15)" title="15 dk azalt">-15dk</button>
+                        <button type="button" class="btn-saat-ayar" onclick="saatManuelAyar(15)" title="15 dk artır">+15dk</button>
+                    </div>
+                </div>
+                <div class="saat-alt-bilgi" id="saat-alt-bilgi">
+                    <span>📊 Aylık Hedef: <b>8.5s/gün</b></span>
+                    <span>Yapılan: <b>0s / 255s</b></span>
+                </div>
+            </div>
             
             <div id="tur-gecmisi-kisa" style="margin-top: 10px; font-size: 12px; color: #8b93a7; border-top: 1px solid var(--border); padding-top: 8px; display: none;">
-                💡 <b>1. Tur:</b> <span id="tur-gecmisi-kisa-metin">...</span>
+                💡 <b>Önceki Turlar:</b> <span id="tur-gecmisi-kisa-metin">...</span>
             </div>
         </div>
 
@@ -405,13 +436,15 @@
             <button class="btn-kaydet" id="gd-kaydet-btn" onclick="genelDenemeKaydet()">Sonucu İşle</button>
         </div>
         
-        <!-- TEKRAR VE KAYNAK ENVANTERİ TABLOSU -->
+        <!-- OTOMATİK TEKRAR VE KAYNAK ENVANTERİ TABLOSU -->
         <button class="btn-acilir" style="margin-top: 10px; background: rgba(96, 165, 250, 0.1); border-color: var(--info);" onclick="envanterModuluGoster()">
-            <span style="color: var(--info);">📜 Tekrar & Kaynak Envanteri</span>
+            <span style="color: var(--info);">📜 Tekrar & Kaynak Envanteri (Otomatik)</span>
             <span id="env-ok" style="color: var(--info);">▼</span>
         </button>
         <div id="env-icerik" class="envanter-icerik">
-            <div style="font-size: 11px; color: #888; margin-bottom: 10px;">💡 Hücrelere tıklayarak o turda ne yaptığını düzenleyebilirsin.</div>
+            <div style="font-size: 11px; color: #8b93a7; margin-bottom: 10px;">
+                🤖 <b>Tam Otomatik:</b> Sen günlük tik attıkça bu tablo ve toplam bilanço kendi kendine güncellenir. (Özel not eklemek istersen hücreye tıklayabilirsin).
+            </div>
             <table class="env-tablo">
                 <thead>
                     <tr>
@@ -421,10 +454,11 @@
                         <th>3. Tur</th>
                         <th>4. Tur</th>
                         <th>5. Tur</th>
+                        <th>📊 Toplam Bilanço</th>
                     </tr>
                 </thead>
                 <tbody id="env-tablo-body">
-                    <!-- JS Dolduracak -->
+                    <!-- JS Otomatik Dolduracak -->
                 </tbody>
             </table>
         </div>
@@ -508,10 +542,11 @@
 <!-- Modal for editing inventory -->
 <div id="env-modal" class="modal-overlay">
     <div class="modal-content">
-        <div class="modal-baslik" id="env-modal-baslik">Ders - X. Tur Düzenle</div>
-        <textarea id="env-modal-text" class="modal-textarea" placeholder="Örn: 1x Konu + 1x SB"></textarea>
+        <div class="modal-baslik" id="env-modal-baslik">Ders - X. Tur Özel Not</div>
+        <textarea id="env-modal-text" class="modal-textarea" placeholder="Boş bırakıp sıfırlarsan sistem otomatik hesaplamaya döner..."></textarea>
         <div class="modal-butonlar">
             <button class="btn-kapat" onclick="envModalKapat()">İptal</button>
+            <button class="btn-sifirla-modal" onclick="envModalOtomatigeDon()">Otomatiğe Dön</button>
             <button class="btn-kaydet-modal" onclick="envModalKaydet()">Kaydet</button>
         </div>
     </div>
@@ -546,20 +581,23 @@
         kadindogum: { isim: "Kadın Doğum", kisa: "K.DOĞ", konu: 100, soru: 400, konuK: "Speet", soruK: "Prime" }
     };
 
-    const varsayilanEnvanter = {
-        dahiliye: { 1: "📖 Konu + 🎯 Prime SB + 3 BD", 2: "", 3: "", 4: "", 5: "" },
-        pediatri: { 1: "📖 Konu + 🎯 A.Erkek SB", 2: "", 3: "", 4: "", 5: "" },
-        fizyoloji: { 1: "📖 Konu + 🎯 Biraz SB + 2 BD", 2: "", 3: "", 4: "", 5: "" },
-        patoloji: { 1: "📖 Konu + 🎯 Biraz TTS + 2 BD", 2: "", 3: "", 4: "", 5: "" },
-        biyokimya: { 1: "📖 Konu + 🎯 Biraz TTS + 5 BD", 2: "", 3: "", 4: "", 5: "" },
-        mikrobiyoloji: { 1: "📖 Konu + 🎯 Prime SB + 3 BD", 2: "", 3: "", 4: "", 5: "" },
-        farmakoloji: { 1: "📖 Konu + 🎯 Prime SB + 6 BD", 2: "", 3: "", 4: "", 5: "" },
-        kucukstajlar: { 1: "📖 Konu + 🎯 Prime SB", 2: "", 3: "", 4: "", 5: "" },
-        genelcerrahi: { 1: "📖 Konu + 🎯 A.Erkek SB + 1 BD", 2: "", 3: "", 4: "", 5: "" },
-        kadindogum: { 1: "📖 Konu (SB Çözülmedi)", 2: "", 3: "", 4: "", 5: "" }
+    // 1. Tur özel geçmiş verileri (JSON'dan çıkarılan gerçek 1. tur durumu)
+    const tur1OzelDurum = {
+        dahiliye: { metin: "✅ BBB Konu + 🎯 Prime SB", konuTam: 1, sbTam: 1, ttsTam: 0 },
+        pediatri: { metin: "✅ Speet + 🎯 A.Erkek SB", konuTam: 1, sbTam: 1, ttsTam: 0 },
+        fizyoloji: { metin: "✅ Speet + 🎯 Biraz SB", konuTam: 1, sbTam: 0.5, ttsTam: 0 },
+        patoloji: { metin: "✅ Speet + 🎯 TTS (SB Yok)", konuTam: 1, sbTam: 0, ttsTam: 1 },
+        biyokimya: { metin: "✅ Tıp Ak. + 🎯 Biraz TTS", konuTam: 1, sbTam: 0, ttsTam: 1 },
+        mikrobiyoloji: { metin: "✅ Tıp Ak. + 🎯 Prime SB", konuTam: 1, sbTam: 1, ttsTam: 0 },
+        farmakoloji: { metin: "✅ Speet + 🎯 Prime SB", konuTam: 1, sbTam: 1, ttsTam: 0 },
+        kucukstajlar: { metin: "✅ Speet + 🎯 Prime SB", konuTam: 1, sbTam: 1, ttsTam: 0 },
+        genelcerrahi: { metin: "✅ A.Erkek Konu + 🎯 SB", konuTam: 1, sbTam: 1, ttsTam: 0 },
+        kadindogum: { metin: "✅ Speet (SB Çözülmedi)", konuTam: 1, sbTam: 0, ttsTam: 0 }
     };
 
     let userEnvanter = {};
+    let globalGunlukKayitlar = {};
+    let globalBransSayilari = {};
 
     // 3. Tur: Biyo/Farma (Tam Konu+Soru), Mikro/Fizyo (Selektif Konu+Soru), Dahiliye/Pediatri (Tam Konu+Soru), Diğerleri Full Soru
     const t3 = [
@@ -635,6 +673,7 @@
     let globalSon60Info = null;
     let aktifTarih = new Date(new Date().setHours(0,0,0,0));
     let bugunSayaci = 0; 
+    let aktifGunHedefDakika = 540; // Varsayılan 9 saat
     
     let gosterilenTakvimAyi = new Date(aktifTarih.getFullYear(), aktifTarih.getMonth(), 1);
     let gunBilgisi = {};
@@ -642,7 +681,6 @@
     let genelDenemeler = [];
     
     let notTimer; let eksikTimer;
-
     let envDuzenleDers = null; let envDuzenleTur = null;
 
     function gunFarkiBul(d1, d2) {
@@ -657,7 +695,7 @@
     }
 
     function isBolunmusSarmalGunu(workDaySayaci) {
-        return workDaySayaci >= 52 && workDaySayaci <= calismaGunleri.length; // 2. Tur Biyokimya'dan itibaren
+        return workDaySayaci >= 52 && workDaySayaci <= calismaGunleri.length;
     }
 
     function gunModuBul(workDaySayaci) {
@@ -747,23 +785,164 @@
 
     window.onload = () => { 
         gunBilgisiHaritasiniOlustur();
+        canliVerileriDinle();
         gunuHesaplaVeArayuzuCiz(); 
         genelNotGetir();
         eksikKonularGetir();
-        envanterGetir();
     };
 
-    function envanterGetir() {
-        db.ref('tus_kaynak_envanteri').once('value').then(snap => {
-            if(snap.exists()) {
-                userEnvanter = snap.val();
-            } else {
-                userEnvanter = JSON.parse(JSON.stringify(varsayilanEnvanter));
+    // --- CANLI VERİ DİNLEYİCİLERİ (OTOMATİK ENVANTER VE SAAT MOTORU İÇİN) ---
+    function canliVerileriDinle() {
+        db.ref('tus_gunluk_kayitlar').on('value', snap => {
+            globalGunlukKayitlar = snap.val() || {};
+            envanterTablosunuCiz();
+            saatMotorunuHesaplaVeCiz();
+        });
+
+        db.ref('tus_brans_denemeleri').on('value', snap => {
+            globalBransSayilari = {};
+            if (snap.exists()) {
+                snap.forEach(c => {
+                    const v = c.val();
+                    if (v && v.ders) {
+                        globalBransSayilari[v.ders] = (globalBransSayilari[v.ders] || 0) + 1;
+                    }
+                });
             }
             envanterTablosunuCiz();
-        }).catch(err => console.error(err));
+        });
+
+        db.ref('tus_kaynak_envanteri').on('value', snap => {
+            userEnvanter = snap.val() || {};
+            envanterTablosunuCiz();
+        });
     }
 
+    // --- SAAT FORMATLAMA VE CANLI TELAFİ MOTORU (1 KASIM 2026 BAŞLANGIÇLI) ---
+    function dkFormatla(toplamDk) {
+        const yuvarlanmis = Math.round(toplamDk / 5) * 5;
+        const saat = Math.floor(yuvarlanmis / 60);
+        const dk = yuvarlanmis % 60;
+        if (dk === 0) return `${saat}s`;
+        return `${saat}s ${dk}dk`;
+    }
+
+    function aylikHedefOrtBul(yil, ay) {
+        // ay: 0=Ocak, 1=Şubat, 2=Mart, 10=Kasım, 11=Aralık
+        if (yil === 2026 && (ay === 10 || ay === 11)) return 8.5; // Kasım & Aralık
+        if (yil === 2027 && (ay === 0 || ay === 1)) return 9.0;   // Ocak & Şubat
+        if (yil === 2027 && ay === 2) return 10.0;                // Mart
+        return null;
+    }
+
+    function saatMotorunuHesaplaVeCiz() {
+        const saatModulu = document.getElementById("saat-modulu");
+        if (!saatModulu) return;
+
+        const y = aktifTarih.getFullYear();
+        const m = aktifTarih.getMonth();
+        const hedefOrtSaat = aylikHedefOrtBul(y, m);
+
+        // Sadece Kasım 2026 - Mart 2027 arası aktif (ve sınav gününden önce)
+        if (!hedefOrtSaat || aktifTarih >= sinavTarihi || aktifTarih < new Date(2026, 10, 1)) {
+            saatModulu.style.display = "none";
+            return;
+        }
+
+        saatModulu.style.display = "block";
+        const seciliDateStr = localToISO(aktifTarih);
+        const seciliGunKayit = globalGunlukKayitlar[seciliDateStr] || {};
+
+        // Ayın toplam gün sayısını bul (Mart 2027 için 26 gün: 1-26 Mart)
+        const ayinSonGunu = (y === 2027 && m === 2) ? 26 : new Date(y, m + 1, 0).getDate();
+        const aylikToplamHedefDk = Math.round(ayinSonGunu * hedefOrtSaat * 60);
+
+        let gecmisYapilanDk = 0;
+        let buAyToplamYapilanDk = 0;
+        let kalanNobetGunuSayisi = 0;
+        let kalanNormalGunSayisi = 0;
+
+        const seciliGunNo = aktifTarih.getDate();
+
+        for (let d = 1; d <= ayinSonGunu; d++) {
+            const tempStr = localToISO(new Date(y, m, d));
+            const k = globalGunlukKayitlar[tempStr] || {};
+            const nobetMi = k.nobet === true;
+
+            if (k.saat_bitti && typeof k.calisilan_dakika === 'number') {
+                buAyToplamYapilanDk += k.calisilan_dakika;
+            }
+
+            if (d < seciliGunNo) {
+                if (k.saat_bitti && typeof k.calisilan_dakika === 'number') {
+                    gecmisYapilanDk += k.calisilan_dakika;
+                } else if (k.konu_bitti || k.soru_bitti || k.deneme_bitti) {
+                    // Geçmiş günde ders tiklenmiş ama saat tiklenmemişse varsayılan hedefi say
+                    gecmisYapilanDk += nobetMi ? 360 : Math.round(hedefOrtSaat * 60);
+                    buAyToplamYapilanDk += nobetMi ? 360 : Math.round(hedefOrtSaat * 60);
+                }
+            } else {
+                // Seçili gün ve sonrası
+                if (nobetMi) kalanNobetGunuSayisi++;
+                else kalanNormalGunSayisi++;
+            }
+        }
+
+        // Seçili günün hedef dakikasını hesapla
+        let hesaplananBugunDk = 0;
+        if (seciliGunKayit.nobet === true) {
+            hesaplananBugunDk = 360; // Nöbet günü sabit 6 saat (360 dk)
+        } else {
+            const kalanHedefDk = Math.max(0, aylikToplamHedefDk - gecmisYapilanDk - (kalanNobetGunuSayisi * 360));
+            const bolunecekGun = Math.max(1, kalanNormalGunSayisi);
+            hesaplananBugunDk = Math.round((kalanHedefDk / bolunecekGun) / 15) * 15; // En yakın 15 dakikaya yuvarla
+            hesaplananBugunDk = Math.max(120, Math.min(900, hesaplananBugunDk)); // Min 2s, Max 15s sınırı
+        }
+
+        // Eğer kullanıcı o gün için manuel ayar yaptıysa veya kaydettiyse onu göster
+        if (typeof seciliGunKayit.calisilan_dakika === 'number') {
+            aktifGunHedefDakika = seciliGunKayit.calisilan_dakika;
+        } else {
+            aktifGunHedefDakika = hesaplananBugunDk;
+        }
+
+        const saatCheck = document.getElementById("saat-check");
+        saatCheck.checked = !!seciliGunKayit.saat_bitti;
+
+        const nobetEtiket = seciliGunKayit.nobet === true ? " (Nöbet)" : "";
+        document.getElementById("saat-buton-metin").innerText = `⏱️ Bugün ${dkFormatla(aktifGunHedefDakika)} Çalıştım${nobetEtiket}`;
+
+        const aylar = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+        document.getElementById("saat-alt-bilgi").innerHTML = `
+            <span>🎯 ${aylar[m]} Hedef: <b>${hedefOrtSaat}s/gün</b></span>
+            <span>Toplam: <b>${dkFormatla(buAyToplamYapilanDk)} / ${dkFormatla(aylikToplamHedefDk)}</b></span>
+        `;
+    }
+
+    function saatManuelAyar(degisimDk) {
+        aktifGunHedefDakika = Math.max(60, Math.min(960, aktifGunHedefDakika + degisimDk));
+        const seciliDateStr = localToISO(aktifTarih);
+        const k = globalGunlukKayitlar[seciliDateStr] || {};
+        const nobetEtiket = k.nobet === true ? " (Nöbet)" : "";
+        document.getElementById("saat-buton-metin").innerText = `⏱️ Bugün ${dkFormatla(aktifGunHedefDakika)} Çalıştım${nobetEtiket}`;
+        
+        // Otomatik tikle ve kaydet
+        document.getElementById("saat-check").checked = true;
+        saatCheckDegisti();
+    }
+
+    function saatCheckDegisti() {
+        const seciliGunStr = localToISO(aktifTarih);
+        const checked = document.getElementById("saat-check").checked;
+        db.ref('tus_gunluk_kayitlar/' + seciliGunStr).update({
+            tarih: seciliGunStr,
+            saat_bitti: checked,
+            calisilan_dakika: aktifGunHedefDakika,
+            kayit_zamani: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => toastGoster(checked ? `⏱️ ${dkFormatla(aktifGunHedefDakika)} Kaydedildi` : "⏱️ Saat Onayı Kaldırıldı"));
+    }
+
+    // --- OTOMATİK ENVANTER TABLOSU HESAPLAMA MOTORU ---
     function envanterModuluGoster() {
         const icerik = document.getElementById("env-icerik");
         const ok = document.getElementById("env-ok");
@@ -773,32 +952,126 @@
 
     function envanterTablosunuCiz() {
         const body = document.getElementById("env-tablo-body");
-        let html = "";
-        
-        const siraliDersler = ['dahiliye', 'pediatri', 'fizyoloji', 'patoloji', 'biyokimya', 'mikrobiyoloji', 'farmakoloji', 'kucukstajlar', 'genelcerrahi', 'kadindogum'];
-        
-        siraliDersler.forEach(dersKey => {
-            const rowData = userEnvanter[dersKey] || varsayilanEnvanter[dersKey];
-            const d = planData[dersKey];
-            
-            let satirHtml = `<tr><td class="env-ders-isim">${d.kisa}</td>`;
-            for(let t=1; t<=5; t++) {
-                const metin = rowData[t] || "";
-                satirHtml += `<td><span class="env-hucre" onclick="envModalAc('${dersKey}', ${t}, \`${escapeHtml(metin)}\`)">${escapeHtml(metin) || "<i style='color:#555;'>Ekle</i>"}</span></td>`;
+        if (!body) return;
+
+        // Günlük kayıtlardan her tur ve ders için yapılan konu/soru gün sayılarını çıkar
+        const yapilan = {};
+        for (let t = 1; t <= 5; t++) {
+            yapilan[t] = {};
+            for (let k in planData) {
+                yapilan[t][planData[k].isim] = { konu: 0, soru: 0 };
             }
-            satirHtml += `</tr>`;
+        }
+
+        Object.values(globalGunlukKayitlar).forEach(data => {
+            if (data && data.durum && data.durum.includes("Sarmal") && data.tur >= 1 && data.tur <= 5) {
+                const t = data.tur;
+                if (data.konu_bitti && data.konu_dersi && yapilan[t][data.konu_dersi]) {
+                    yapilan[t][data.konu_dersi].konu++;
+                }
+                if (data.soru_bitti && data.soru_dersi && yapilan[t][data.soru_dersi]) {
+                    yapilan[t][data.soru_dersi].soru++;
+                }
+            }
+        });
+
+        const siraliDersler = ['dahiliye', 'pediatri', 'fizyoloji', 'patoloji', 'biyokimya', 'mikrobiyoloji', 'farmakoloji', 'kucukstajlar', 'genelcerrahi', 'kadindogum'];
+        let html = "";
+
+        siraliDersler.forEach(dersKey => {
+            const d = planData[dersKey];
+            const dersAd = d.isim;
+            const ozelT1 = tur1OzelDurum[dersKey];
+
+            let toplamKonuSayisi = ozelT1.konuTam;
+            let toplamSbSayisi = ozelT1.sbTam;
+            let toplamTtsSayisi = ozelT1.ttsTam;
+            const bransDenemeAdet = globalBransSayilari[dersAd] || 0;
+
+            let satirHtml = `<tr><td class="env-ders-isim">${d.kisa}</td>`;
+
+            for (let t = 1; t <= 5; t++) {
+                const manuelNot = (userEnvanter[dersKey] && userEnvanter[dersKey][t]) ? userEnvanter[dersKey][t].trim() : "";
+                const hedef = hedefGunler[t][dersAd] || 0;
+                const sadeceSoruMu = sadeceSoruMap[t][dersAd];
+                const selektifMi = selektifMap[t][dersAd];
+
+                let otoMetin = "";
+                let hucreSinif = "env-hucre";
+
+                if (t === 1) {
+                    otoMetin = ozelT1.metin;
+                    hucreSinif += " env-hucre-tam";
+                } else {
+                    const yKonu = yapilan[t][dersAd].konu;
+                    const ySoru = yapilan[t][dersAd].soru;
+
+                    const konuTamam = sadeceSoruMu ? true : (yKonu >= hedef);
+                    const soruTamam = ySoru >= hedef;
+
+                    // 2. tur ve sonrasında tamamlananları toplam bilançoya ekle
+                    if (!sadeceSoruMu && konuTamam) {
+                        toplamKonuSayisi += selektifMi ? 0.5 : 1;
+                    }
+                    if (soruTamam) {
+                        toplamSbSayisi += 1;
+                    }
+
+                    if (konuTamam && soruTamam) {
+                        hucreSinif += " env-hucre-tam";
+                        if (sadeceSoruMu) {
+                            otoMetin = `✅ Full Soru (${d.soruK})`;
+                        } else if (selektifMi) {
+                            otoMetin = `✅ ⚡Yarı Konu + 🎯 ${d.soruK}`;
+                        } else {
+                            otoMetin = `✅ ${d.konuK} + 🎯 ${d.soruK}`;
+                        }
+                    } else if (yKonu > 0 || ySoru > 0) {
+                        hucreSinif += " env-hucre-aktif";
+                        if (sadeceSoruMu) {
+                            otoMetin = `⏳ Soru (${ySoru}/${hedef}g)`;
+                        } else {
+                            const kDurum = konuTamam ? `✅Konu` : `📖K(${yKonu}/${hedef})`;
+                            const sDurum = soruTamam ? `✅Soru` : `🎯S(${ySoru}/${hedef})`;
+                            otoMetin = `⏳ ${kDurum} • ${sDurum}`;
+                        }
+                    } else {
+                        hucreSinif += " env-hucre-plan";
+                        if (sadeceSoruMu) {
+                            otoMetin = `🎯 Full Soru (${hedef}g)`;
+                        } else if (selektifMi) {
+                            otoMetin = `⚡Selektif K+S (${hedef}g)`;
+                        } else {
+                            otoMetin = `📖 Konu + 🎯 Soru (${hedef}g)`;
+                        }
+                    }
+                }
+
+                const gosterilecek = manuelNot ? `✍️ ${manuelNot}` : otoMetin;
+                satirHtml += `<td><span class="${hucreSinif}" onclick="envModalAc('${dersKey}', ${t}, \`${escapeHtml(manuelNot)}\`)">${escapeHtml(gosterilecek)}</span></td>`;
+            }
+
+            // Sağdaki Toplam Bilanço Sütunu
+            let bilancoParcalar = [];
+            bilancoParcalar.push(`${toplamKonuSayisi}x Konu`);
+            bilancoParcalar.push(`${toplamSbSayisi}x SB`);
+            if (toplamTtsSayisi > 0) bilancoParcalar.push(`${toplamTtsSayisi}x TTS`);
+            if (bransDenemeAdet > 0) bilancoParcalar.push(`${bransDenemeAdet} BD`);
+
+            satirHtml += `<td class="env-total">${bilancoParcalar.join(" • ")}</td></tr>`;
             html += satirHtml;
         });
-        
+
         body.innerHTML = html;
-        
+
+        // Günlük kartın altındaki kısa geçmiş özeti
         const dateStr = localToISO(aktifTarih);
         if (gunBilgisi[dateStr] && gunBilgisi[dateStr].durum === 'normal') {
             const gv = calismaGunleri[gunBilgisi[dateStr].workDaySayaci - 1];
-            if (gv) {
-                const v = userEnvanter[gv.ders] || varsayilanEnvanter[gv.ders];
-                const kisa = (v && v[1]) ? v[1] : "Henüz not yok";
-                document.getElementById("tur-gecmisi-kisa-metin").innerText = kisa;
+            if (gv && tur1OzelDurum[gv.ders]) {
+                const bdSayi = globalBransSayilari[planData[gv.ders].isim] || 0;
+                const bdMetin = bdSayi > 0 ? ` • Toplam ${bdSayi} Branş Denemesi çözüldü` : "";
+                document.getElementById("tur-gecmisi-kisa-metin").innerText = `${tur1OzelDurum[gv.ders].metin}${bdMetin}`;
                 document.getElementById("tur-gecmisi-kisa").style.display = "block";
             } else {
                 document.getElementById("tur-gecmisi-kisa").style.display = "none";
@@ -808,12 +1081,12 @@
         }
     }
 
-    function envModalAc(dersKey, tur, mevcutMetin) {
+    function envModalAc(dersKey, tur, mevcutManuelMetin) {
         envDuzenleDers = dersKey;
         envDuzenleTur = tur;
         const d = planData[dersKey].isim;
-        document.getElementById("env-modal-baslik").innerText = `${d} - ${tur}. Tur`;
-        document.getElementById("env-modal-text").value = mevcutMetin === "<i style='color:#555;'>Ekle</i>" ? "" : (mevcutMetin || "");
+        document.getElementById("env-modal-baslik").innerText = `${d} - ${tur}. Tur Özel Not`;
+        document.getElementById("env-modal-text").value = mevcutManuelMetin || "";
         document.getElementById("env-modal").style.display = "flex";
         setTimeout(() => document.getElementById("env-modal-text").focus(), 100);
     }
@@ -822,15 +1095,16 @@
         document.getElementById("env-modal").style.display = "none";
     }
 
+    function envModalOtomatigeDon() {
+        document.getElementById("env-modal-text").value = "";
+        envModalKaydet();
+    }
+
     function envModalKaydet() {
-        const yeniMetin = document.getElementById("env-modal-text").value;
-        if(!userEnvanter[envDuzenleDers]) userEnvanter[envDuzenleDers] = JSON.parse(JSON.stringify(varsayilanEnvanter[envDuzenleDers]));
-        userEnvanter[envDuzenleDers][envDuzenleTur] = yeniMetin;
-        
-        db.ref(`tus_kaynak_envanteri/${envDuzenleDers}/${envDuzenleTur}`).set(yeniMetin).then(() => {
+        const yeniMetin = document.getElementById("env-modal-text").value.trim();
+        db.ref(`tus_kaynak_envanteri/${envDuzenleDers}/${envDuzenleTur}`).set(yeniMetin || null).then(() => {
             envModalKapat();
-            envanterTablosunuCiz();
-            toastGoster("✅ Kayıt Güncellendi");
+            toastGoster(yeniMetin ? "✅ Özel Not Kaydedildi" : "🤖 Otomatik Hesaplamaya Dönüldü");
         }).catch(err => {
             console.error(err);
             toastGoster("❌ Hata", true);
@@ -1006,6 +1280,7 @@
         updateCountdown();
         firebaseDurumGetir(); 
         envanterTablosunuCiz();
+        saatMotorunuHesaplaVeCiz();
     }
 
     function arayuzuUygula(isGunuSayaci, durum) {
@@ -1124,7 +1399,7 @@
                     let prefix = "Hızlı Tekrar";
                     if (aktif.selektifKonu) {
                         prefix = "Yarı/Selektif Okuma";
-                        kBi = Math.ceil(kBi / 2); // Show reduced page count for visual info
+                        kBi = Math.ceil(kBi / 2);
                     }
 
                     document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} - ${prefix} (Sf ${kB} - ${kBi}) [${aktif.gun}/${konuGunSayisi}. Konu Günü]`;
@@ -1211,7 +1486,7 @@
                     document.getElementById("deneme-check").checked = data.deneme_bitti || data.genel_deneme || data.temel_deneme || data.klinik_deneme || false;
                 }
                 
-                if(data.nobet === true && globalDurum !== "mola" && globalDurum !== "pazar_deneme_genel" && globalDurum !== "sinav_gunu") {
+                if(data.nobet === true && globalDurum !== "mola" && globalDurum !== "sinav_gunu") {
                     document.getElementById("nobet-banner").style.display = "block";
                 } else {
                     document.getElementById("nobet-banner").style.display = "none";
@@ -1386,7 +1661,7 @@
 
     function trendGrafigiCiz(ders) { document.getElementById("trend-grafik-alani").innerHTML = cizgiGrafigiHtml(dersNetGecmisi[ders]); }
 
-    const GD_AY = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
+    const GD_AY = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Ekim", "Kas", "Ara"];
     const GD_TURLER = ['genel', 'temel', 'klinik'];
 
     function gdSayi(x) { return Number(x) || 0; }
