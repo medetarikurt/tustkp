@@ -502,6 +502,14 @@
             <select id="trend-ders-secim" class="trend-select" onchange="trendGrafigiCiz(this.value)"></select>
             <div id="trend-grafik-alani"></div>
         </div>
+        
+        <!-- YENİ EKLENEN AYLIK PERFORMANS MODÜLÜ -->
+        <div class="hedef-karti" style="border-left-color: var(--info);">
+            <h2 style="font-size: 16px; margin-bottom: 10px; color: #fff;">⏱️ Aylık Ortalama Çalışma Süresi</h2>
+            <div id="aylik-sure-analiz-icerik" style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 15px 0;">
+                Yükleniyor...
+            </div>
+        </div>
 
         <button class="btn-export" onclick="verileriYedekle()">💾 Tüm Verileri Yedekle (JSON)</button>
     </div>
@@ -1505,6 +1513,58 @@
 
             const streak = serimiHesapla(dataDump);
             document.getElementById("ist-streak-deger").innerText = `💖 ${streak}`;
+
+            // --- AYLIK SÜRE HESAPLAMASI BAŞLANGICI ---
+            const ayToplamlari = {}; // {"2026-11": {toplamDk: 1440, kayitSayisi: 3}}
+            
+            for (const [tarihStr, kayit] of Object.entries(dataDump)) {
+                if (kayit.calisilan_dakika > 0) {
+                    const ayKey = tarihStr.substring(0, 7); // YYYY-MM
+                    if (!ayToplamlari[ayKey]) {
+                        ayToplamlari[ayKey] = { toplamDk: 0, kayitSayisi: 0 };
+                    }
+                    ayToplamlari[ayKey].toplamDk += kayit.calisilan_dakika;
+                    ayToplamlari[ayKey].kayitSayisi += 1;
+                }
+            }
+
+            const ayIsimleri = {
+                "2026-11": "Kasım 2026",
+                "2026-12": "Aralık 2026",
+                "2027-01": "Ocak 2027",
+                "2027-02": "Şubat 2027",
+                "2027-03": "Mart 2027"
+            };
+
+            let aylikHtml = `<table class="analiz-tablo"><tr><th>Ay</th><th>Kayıtlı Gün</th><th>Aylık Toplam</th><th>Günlük Ort.</th></tr>`;
+            
+            const siraliAylar = Object.keys(ayToplamlari).sort();
+            
+            if (siraliAylar.length === 0) {
+                aylikHtml = `<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:10px 0;">Henüz süre kaydı bulunmuyor 🌸</div>`;
+            } else {
+                siraliAylar.forEach(ay => {
+                    const veriler = ayToplamlari[ay];
+                    const ortalamaDk = Math.round(veriler.toplamDk / veriler.kayitSayisi);
+                    
+                    const ortSaat = Math.floor(ortalamaDk / 60);
+                    const ortDakika = ortalamaDk % 60;
+                    const ortMetin = `${ortSaat}s ${ortDakika}dk`;
+
+                    const topSaat = Math.floor(veriler.toplamDk / 60);
+                    
+                    aylikHtml += `<tr>
+                        <td style="color:var(--primary); font-weight:bold;">${ayIsimleri[ay] || ay}</td>
+                        <td>${veriler.kayitSayisi} gün</td>
+                        <td>${topSaat} saat</td>
+                        <td style="color:var(--success); font-weight:bold;">${ortMetin}</td>
+                    </tr>`;
+                });
+                aylikHtml += `</table>`;
+            }
+            
+            document.getElementById("aylik-sure-analiz-icerik").innerHTML = aylikHtml;
+            // --- AYLIK SÜRE HESAPLAMASI BİTİŞİ ---
 
             const yapilanlar = {};
             for(let t=1; t<=4; t++) {
