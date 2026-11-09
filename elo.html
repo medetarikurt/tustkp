@@ -594,12 +594,12 @@
 
     const sarmalAkil = [
         { tur: 1, seq: [
-            {d:'mikrobiyoloji',g:5}, {d:'farmakoloji',g:5}, {d:'dahiliye',g:5},
-            {d:'pediatri',g:5}, {d:'kucukstajlar',g:5}, {d:'kadindogum',g:5},
+            {d:'mikrobiyoloji',g:4}, {d:'farmakoloji',g:5}, {d:'dahiliye',g:5},
+            {d:'pediatri',g:5}, {d:'kucukstajlar',g:4}, {d:'kadindogum',g:4},
             {d:'genelcerrahi',g:5}
         ]},
         { tur: 2, seq: [
-            {d:'fizyoloji',g:4}, {d:'patoloji',g:4}, {d:'biyokimya',g:4}, {d:'mikrobiyoloji',g:4},
+            {d:'fizyoloji',g:3}, {d:'patoloji',g:4}, {d:'biyokimya',g:4}, {d:'mikrobiyoloji',g:4},
             {d:'farmakoloji',g:4}, {d:'dahiliye',g:4}, {d:'pediatri',g:4}, {d:'kucukstajlar',g:4}, 
             {d:'kadindogum',g:4}, {d:'genelcerrahi',g:4}
         ]},
@@ -624,8 +624,8 @@
         }); 
     });
 
-    const startDate = new Date(2026, 10, 2); 
-    const sinavTarihi = new Date(2027, 2, 27); 
+    const startDate = new Date(2026, 10, 7); // 7 Kasım 2026
+    const sinavTarihi = new Date(2027, 2, 27); // 27 Mart 2027
 
     let globalGunVerisi = null; let globalSoruDersiKey = null; let globalDurum = "";
     let aktifTarih = new Date(new Date().setHours(0,0,0,0));
@@ -900,7 +900,7 @@
         if (durum === "mola") {
             kartDers.style.display = "none"; kartTatil.style.display = "block";
             document.getElementById("tatil-baslik").innerText = "🌸 Hazırlık & Bakım Günü 💅";
-            document.getElementById("tatil-aciklama").innerText = "TUSBarbiesi çalışma planı 2 Kasım Pazartesi günü başlıyor. Enerjini topla! 💖";
+            document.getElementById("tatil-aciklama").innerText = "TUSBarbiesi çalışma planı 7 Kasım'da başlıyor. Enerjini topla! 💖";
             return;
         }
 
@@ -938,13 +938,18 @@
         document.getElementById("soru-progress").style.width = gunYuzde + "%";
 
         if (aktif.tur === 1) {
-            if (aktif.gun <= 2) {
+            let is4Day = ["Mikrobiyoloji", "Küçük Stajlar", "Kadın Doğum"].includes(konuVeri.isim);
+            let konuBitis = 2;
+            let soruBitis = is4Day ? 3 : 4;
+            let lastDay = is4Day ? 4 : 5;
+
+            if (aktif.gun <= konuBitis) {
                 document.getElementById("konu-modulu").style.display = "block";
-                document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Konu Çalışması Gün ${aktif.gun}/2) 🌸`;
-            } else if (aktif.gun <= 4) {
+                document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} (Konu Çalışması Gün ${aktif.gun}/${konuBitis}) 🌸`;
+            } else if (aktif.gun <= soruBitis) {
                 document.getElementById("soru-modulu").style.display = "block";
-                document.getElementById("soru-sayfa").innerText = `${konuVeri.soruK} (Soru Çözümü Gün ${aktif.gun - 2}/2) 💖`;
-            } else if (aktif.gun === 5) {
+                document.getElementById("soru-sayfa").innerText = `${konuVeri.soruK} (Soru Çözümü Gün ${aktif.gun - konuBitis}/${soruBitis - konuBitis}) 💖`;
+            } else if (aktif.gun === lastDay) {
                 document.getElementById("deneme-modulu").style.display = "block";
                 
                 let prevName = planData['biyokimya'].isim; // Mikro'dan öncesi Biyokimya
@@ -1065,9 +1070,13 @@
             if (harita.tip === 'deneme') return denemeTamam && sureTamam;
             
             if (kayit.tur === 1) {
+                let is4Day = ["Mikrobiyoloji", "Küçük Stajlar", "Kadın Doğum"].includes(kayit.konu_dersi);
+                let sBit = is4Day ? 3 : 4;
+                let lastDay = is4Day ? 4 : 5;
+
                 if (kayit.gun <= 2) return kayit.konu_bitti && sureTamam;
-                if (kayit.gun <= 4) return kayit.soru_bitti && sureTamam;
-                if (kayit.gun === 5) return denemeTamam && sureTamam;
+                if (kayit.gun <= sBit) return kayit.soru_bitti && sureTamam;
+                if (kayit.gun === lastDay) return denemeTamam && sureTamam;
             }
             return kayit.konu_bitti && kayit.soru_bitti && sureTamam;
         }
@@ -1515,11 +1524,11 @@
             document.getElementById("ist-streak-deger").innerText = `💖 ${streak}`;
 
             // --- AYLIK SÜRE HESAPLAMASI BAŞLANGICI ---
-            const ayToplamlari = {}; // {"2026-11": {toplamDk: 1440, kayitSayisi: 3}}
+            const ayToplamlari = {}; 
             
             for (const [tarihStr, kayit] of Object.entries(dataDump)) {
                 if (kayit.calisilan_dakika > 0) {
-                    const ayKey = tarihStr.substring(0, 7); // YYYY-MM
+                    const ayKey = tarihStr.substring(0, 7); 
                     if (!ayToplamlari[ayKey]) {
                         ayToplamlari[ayKey] = { toplamDk: 0, kayitSayisi: 0 };
                     }
@@ -1595,7 +1604,7 @@
                     if(!hedef) continue;
 
                     let reqKonu = (t === 1) ? 2 : hedef;
-                    let reqSoru = (t === 1) ? 2 : hedef;
+                    let reqSoru = (t === 1) ? (hedef === 4 ? 1 : 2) : hedef;
 
                     toplamHedefKonu += reqKonu;
                     toplamYapilanKonu += Math.min(yapilanlar[t][dersAd].konu, reqKonu);
@@ -1628,7 +1637,7 @@
                         tdHtml += `<td><span class="durum-kutu durum-bos">-</span></td>`;
                     } else {
                         let reqKonu = (t === 1) ? 2 : hedef;
-                        let reqSoru = (t === 1) ? 2 : hedef;
+                        let reqSoru = (t === 1) ? (hedef === 4 ? 1 : 2) : hedef;
                         
                         const konuBitti = yapilanlar[t][dersAd].konu >= reqKonu;
                         const soruBitti = yapilanlar[t][dersAd].soru >= reqSoru;
