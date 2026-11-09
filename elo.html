@@ -100,6 +100,11 @@
         .checkbox-container { display: flex; align-items: center; cursor: pointer; user-select: none; font-size: 14px; color: #ffd6e7; padding: 4px 0; }
         .checkbox-container input { margin-right: 10px; width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer; }
         
+        /* SURE BUTONLARI */
+        .sure-btn { background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .sure-btn:hover { color: #fff; border-color: var(--primary); }
+        .sure-btn:active { transform: scale(0.95); }
+
         .not-panosu { background: var(--surface-card); border-left: 4px solid var(--info); padding: 14px; border-radius: 12px; margin-bottom: 15px; }
         .not-panosu h2 { font-size: 15px; color: #fff; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
         .eksik-panosu { border-left-color: var(--danger); }
@@ -175,7 +180,7 @@
         .scroll-liste::-webkit-scrollbar { width: 6px; }
         .scroll-liste::-webkit-scrollbar-thumb { background: var(--surface-hover); border-radius: 4px; }
         .scroll-liste::-webkit-scrollbar-track { background: var(--bg); }
-        /* ===== GENEL (HAFTALIK) DENEME TAKİBİ ===== */
+        
         .btn-kaydet:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .gd-baslik { font-size: 13px; font-weight: 700; color: var(--secondary); margin: 4px 0 8px; }
         .gd-onizleme { background: var(--bg); border: 1px dashed var(--border); border-radius: 8px; padding: 10px; font-size: 13px; margin: 4px 0 12px; text-align: center; color: var(--text-muted); line-height: 1.7; }
@@ -296,6 +301,23 @@
                     <input type="checkbox" id="deneme-check" onchange="firebaseKaydet()"> <span id="text-deneme">1 Deneme Çözümü</span>
                 </label>
             </div>
+
+            <!-- GÜNLÜK SÜRE TAKİBİ -->
+            <div class="gorev-item" id="sure-takip-modulu" style="border-left: 3px solid var(--info); background: rgba(0,0,0,0.15);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <label class="checkbox-container" style="margin: 0; padding: 0;">
+                        <input type="checkbox" id="sure-check" onchange="sureKaydet()"> 
+                        <strong style="color: #fff; display: inline; margin-left: 5px; font-size: 14px;">
+                            ⏱ Bugün <span id="sure-text" style="color: var(--info);">8s</span> Çalıştım
+                        </strong>
+                    </label>
+                    <div style="display: flex; gap: 6px;">
+                        <button class="sure-btn" onclick="sureDegistir(-15)">-15dk</button>
+                        <button class="sure-btn" onclick="sureDegistir(15)">+15dk</button>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <div id="tatil-karti" class="hedef-karti tatil-karti">
@@ -502,6 +524,32 @@
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const db = firebase.database();
 
+    let gunlukCalismaDakika = 480; // Süre Takibi - 8 saat varsayılan
+
+    function sureDegistir(dk) {
+        gunlukCalismaDakika += dk;
+        if(gunlukCalismaDakika < 0) gunlukCalismaDakika = 0;
+        sureArayuzGuncelle();
+        sureKaydet(); 
+    }
+
+    function sureArayuzGuncelle() {
+        let saat = Math.floor(gunlukCalismaDakika / 60);
+        let dakika = gunlukCalismaDakika % 60;
+        let metin = `${saat}s`;
+        if(dakika > 0) metin += ` ${dakika}dk`;
+        document.getElementById("sure-text").innerText = metin;
+    }
+
+    function sureKaydet() {
+        const seciliGunStr = localToISO(aktifTarih);
+        const bittiMi = document.getElementById("sure-check").checked;
+        db.ref('tus_gunluk_kayitlar/' + seciliGunStr).update({
+            calisilan_dakika: gunlukCalismaDakika,
+            sure_hedefi_bitti: bittiMi
+        });
+    }
+
     // SEVGİLİ İÇİN GÜNLÜK POPUP MESAJLARI
     const karsilamaMesajlari = [
         "Wowowowow! 🤩 Ekrana bakarken gözlerim kamaştı, bugün aşşşırı güzelsin sarışın Barbie'm! 💅✨",
@@ -533,15 +581,9 @@
         pediatri: { isim: "Pediatri", kisa: "PED", konuK: "Şampiyonların Notu", soruK: "Ahmet Erkek İmparator" },
         kucukstajlar: { isim: "Küçük Stajlar", kisa: "K.STJ", konuK: "Speetus", soruK: "Prime" },
         kadindogum: { isim: "Kadın Doğum", kisa: "K.DOĞ", konuK: "Speetus", soruK: "Vaka" },
-        genelcerrahi: { isim: "Genel Cerrahi", kisa: "G.CER", konuK: "Ahmet Erkek", soruK: "Ahmet Erkek İmparator" },
-        joker: { isim: "Eksik Kampı & Kalanlar", kisa: "KAMP", konuK: "Eksik Tekrar", soruK: "24'lü Denemeler" }
+        genelcerrahi: { isim: "Genel Cerrahi", kisa: "G.CER", konuK: "Ahmet Erkek", soruK: "Ahmet Erkek İmparator" }
     };
 
-    // YENİ 4-3-2 KURALI MATEMATİĞİ (Tüm Pazar günleri HARİÇ tam 125 iş günü)
-    // 1. Tur (Mikro'dan başlar, her ders 5 gün): 7 ders * 5 = 35 iş günü
-    // 2. Tur (Fizyo'dan başlar, her ders 4 gün): 10 ders * 4 = 40 iş günü
-    // 3. Tur (Fizyo'dan başlar, her ders 3 gün): 10 ders * 3 = 30 iş günü
-    // 4. Tur (Fizyo'dan başlar, her ders 2 gün): 10 ders * 2 = 20 iş günü
     const sarmalAkil = [
         { tur: 1, seq: [
             {d:'mikrobiyoloji',g:5}, {d:'farmakoloji',g:5}, {d:'dahiliye',g:5},
@@ -574,8 +616,8 @@
         }); 
     });
 
-    const startDate = new Date(2026, 10, 2); // 2 Kasım 2026 Pazartesi
-    const sinavTarihi = new Date(2027, 2, 27); // 27 Mart 2027
+    const startDate = new Date(2026, 10, 2); 
+    const sinavTarihi = new Date(2027, 2, 27); 
 
     let globalGunVerisi = null; let globalSoruDersiKey = null; let globalDurum = "";
     let aktifTarih = new Date(new Date().setHours(0,0,0,0));
@@ -609,7 +651,6 @@
             let isWorkDay = true;
             let gunHafta = iterDate.getDay();
 
-            // Tüm Pazar günleri haftalık deneme günüdür
             if (gunHafta === 0 && iterDate < sinavTarihi) {
                 isWorkDay = false;
             }
@@ -652,8 +693,6 @@
             if(snap.exists()) {
                 document.getElementById('genel-not-input').value = snap.val();
             }
-        }).catch(err => {
-            console.error("Genel not okunamadı:", err);
         });
     }
 
@@ -670,9 +709,6 @@
             document.getElementById('not-status').style.color = "var(--success)";
             document.getElementById('not-status').innerText = "💖 Kaydedildi";
             setTimeout(() => { document.getElementById('not-status').innerText = ""; }, 2500);
-        }).catch(err => {
-            document.getElementById('not-status').style.color = "var(--danger)";
-            document.getElementById('not-status').innerText = "❌ Hata";
         });
     }
 
@@ -681,8 +717,6 @@
             if(snap.exists()) {
                 document.getElementById('eksik-konular-input').value = snap.val();
             }
-        }).catch(err => {
-            console.error("Eksik konular okunamadı:", err);
         });
     }
 
@@ -699,9 +733,6 @@
             document.getElementById('eksik-status').style.color = "var(--success)";
             document.getElementById('eksik-status').innerText = "💖 Kaydedildi";
             setTimeout(() => { document.getElementById('eksik-status').innerText = ""; }, 2500);
-        }).catch(err => {
-            document.getElementById('eksik-status').style.color = "var(--danger)";
-            document.getElementById('eksik-status').innerText = "❌ Hata";
         });
     }
 
@@ -830,14 +861,18 @@
         const kartDers = document.getElementById("aktif-ders-karti");
         const kartTatil = document.getElementById("tatil-karti");
         const denemeModulu = document.getElementById("deneme-modulu");
+        const sureModulu = document.getElementById("sure-takip-modulu");
 
         // Tüm modülleri temizle
         document.getElementById("konu-modulu").style.display = "none";
         document.getElementById("soru-modulu").style.display = "none";
-        document.getElementById("deneme-modulu").style.display = "none";
+        denemeModulu.style.display = "none";
+        sureModulu.style.display = "none";
+        
         document.getElementById("konu-check").checked = false;
         document.getElementById("soru-check").checked = false;
         document.getElementById("deneme-check").checked = false;
+        document.getElementById("sure-check").checked = false;
         globalSoruDersiKey = null;
 
         if (durum === "sinav_gunu") {
@@ -869,6 +904,8 @@
             document.getElementById("kart-tur-gun").style.display = "none";
             
             denemeModulu.style.display = "block";
+            sureModulu.style.display = "block";
+
             document.getElementById("deneme-baslik").innerText = "🎀 Haftalık Tam Deneme Günü";
             document.getElementById("deneme-aciklama").innerText = "Pazar rutini: Haftalık tam Genel Deneme ve detaylı analizi çözülür ✨";
             document.getElementById("text-deneme").innerText = "1 Genel Deneme Çözümü & Analizi (200 Soru)";
@@ -877,6 +914,7 @@
 
         kartDers.style.display = "block";
         document.getElementById("kart-tur-gun").style.display = "inline-block";
+        sureModulu.style.display = "block";
 
         const aktif = globalGunVerisi;
         const konuVeri = planData[aktif.ders];
@@ -901,7 +939,7 @@
             } else if (aktif.gun === 5) {
                 document.getElementById("deneme-modulu").style.display = "block";
                 
-                let prevName = planData['biyokimya'].isim; // Mikro'dan öncesi Biyokimya'dır
+                let prevName = planData['biyokimya'].isim; // Mikro'dan öncesi Biyokimya
                 let seqIdx = sarmalAkil[0].seq.findIndex(s => s.d === aktif.ders);
                 if (seqIdx > 0) prevName = planData[sarmalAkil[0].seq[seqIdx-1].d].isim;
 
@@ -909,17 +947,17 @@
                 document.getElementById("deneme-aciklama").innerText = `${prevName} dersinin 24'lü denemesi çözülecek ✨`;
                 document.getElementById("text-deneme").innerText = `1 Adet ${prevName} 24'lü Denemesi`;
             }
-        } else if (aktif.tur === 2) { // 4 Günlük Tur
+        } else if (aktif.tur === 2) { 
             document.getElementById("konu-modulu").style.display = "block";
             document.getElementById("soru-modulu").style.display = "block";
             document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} Tekrarı (${aktif.gun}/${aktif.toplamGun}. Gün) ✨`;
             document.getElementById("soru-sayfa").innerText = `${konuVeri.soruK} Yanlışlar & Spotlar 🎀`;
-        } else if (aktif.tur === 3) { // 3 Günlük Tur
+        } else if (aktif.tur === 3) { 
             document.getElementById("konu-modulu").style.display = "block";
             document.getElementById("soru-modulu").style.display = "block";
             document.getElementById("konu-sayfa").innerText = `Hızlı Tekrar (${aktif.gun}/${aktif.toplamGun}. Gün) 👑`;
             document.getElementById("soru-sayfa").innerText = `Kritik Yanlışlar & Soru Taraması 💅`;
-        } else if (aktif.tur === 4) { // 2 Günlük Tur
+        } else if (aktif.tur === 4) { 
             document.getElementById("konu-modulu").style.display = "block";
             document.getElementById("soru-modulu").style.display = "block";
             document.getElementById("konu-sayfa").innerText = `Son Düzlük Cila (${aktif.gun}/${aktif.toplamGun}. Gün) 🚀`;
@@ -933,11 +971,19 @@
             if (snapshot.exists()) {
                 const data = snapshot.val();
                 
+                gunlukCalismaDakika = data.calisilan_dakika !== undefined ? data.calisilan_dakika : 480;
+                
+                if(document.getElementById("sure-check")) document.getElementById("sure-check").checked = data.sure_hedefi_bitti || false;
                 if(document.getElementById("konu-check")) document.getElementById("konu-check").checked = data.konu_bitti || false;
                 if(document.getElementById("soru-check")) document.getElementById("soru-check").checked = data.soru_bitti || false;
                 if(document.getElementById("deneme-check")) {
                     document.getElementById("deneme-check").checked = data.deneme_bitti || data.genel_deneme || data.temel_deneme || data.klinik_deneme || false;
                 }
+                sureArayuzGuncelle();
+            } else {
+                gunlukCalismaDakika = 480;
+                if(document.getElementById("sure-check")) document.getElementById("sure-check").checked = false;
+                sureArayuzGuncelle();
             }
         }).catch(err => {
             console.error("Veri okunamadı", err);
@@ -1006,15 +1052,16 @@
             const kayit = dataDump[dateStr];
             if (!kayit) return false;
             const denemeTamam = !!(kayit.deneme_bitti || kayit.genel_deneme || kayit.temel_deneme || kayit.klinik_deneme);
+            const sureTamam = kayit.sure_hedefi_bitti === true;
             
-            if (harita.tip === 'deneme') return denemeTamam;
+            if (harita.tip === 'deneme') return denemeTamam && sureTamam;
             
             if (kayit.tur === 1) {
-                if (kayit.gun <= 2) return kayit.konu_bitti;
-                if (kayit.gun <= 4) return kayit.soru_bitti;
-                if (kayit.gun === 5) return denemeTamam;
+                if (kayit.gun <= 2) return kayit.konu_bitti && sureTamam;
+                if (kayit.gun <= 4) return kayit.soru_bitti && sureTamam;
+                if (kayit.gun === 5) return denemeTamam && sureTamam;
             }
-            return kayit.konu_bitti && kayit.soru_bitti;
+            return kayit.konu_bitti && kayit.soru_bitti && sureTamam;
         }
 
         const todayStr = localToISO(d);
@@ -1068,7 +1115,6 @@
         });
     }
 
-    // ---- Ortak yardımcılar ----
     function escapeHtml(s) {
         return String(s).replace(/[&<>"']/g, function(c) {
             return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -1079,7 +1125,6 @@
         return parseFloat(Number(n).toFixed(2)).toString();
     }
 
-    // TUS PUAN & SIRALAMA MOTORU (2026 Ağustos Kalibrasyonu)
     function tusPuanHesapla(netT, netK) {
         const kPuan = 39.289 + (0.13 * netT) + (0.36 * netK);
         const tPuan = 37.750 + (0.35 * netT) + (0.214 * netK);
