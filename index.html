@@ -119,6 +119,7 @@
         .btn-saat-ayar:active { transform: scale(0.92); background: var(--primary); color: #000; }
         .saat-alt-bilgi { font-size: 11px; color: var(--text-muted); margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--border); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px; }
         .saat-alt-bilgi b { color: var(--secondary); }
+        .saat-uyari { width: 100%; color: var(--warning); }
 
         .not-panosu { background: var(--surface-card); border-left: 4px solid var(--info); padding: 14px; border-radius: 10px; margin-bottom: 15px; }
         .not-panosu h2 { font-size: 15px; color: #fff; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
@@ -245,7 +246,7 @@
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 100; padding: 15px; }
         .modal-content { background: var(--surface-card); width: 100%; max-width: 400px; border-radius: 14px; border: 1px solid var(--border); padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
         .modal-baslik { font-size: 16px; font-weight: bold; color: #fff; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
-        .modal-textarea { width: 100%; height: 100px; background: var(--bg); color: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 14px; font-family: inherit; resize: vertical; margin-bottom: 15px; outline: none; }
+        .modal-textarea { width: 100%; height: 100px; background: var(--bg); color: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 16px; font-family: inherit; resize: vertical; margin-bottom: 15px; outline: none; }
         .modal-textarea:focus { border-color: var(--primary); }
         .modal-butonlar { display: flex; gap: 10px; }
         .btn-kapat { flex: 1; background: var(--surface-nested); color: var(--text); border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
@@ -513,7 +514,7 @@
         <div class="hedef-karti" style="border-left-color: var(--success); padding: 16px 12px;">
             <h2 style="font-size: 16px; margin-bottom: 12px; color: #fff; display:flex; justify-content:space-between; align-items:center;">
                 🧩 Sarmal Komuta Matrisi
-                <span style="font-size:10px; color:#888; font-weight:normal;">K: Konu | S: Soru</span>
+                <span style="font-size:10px; color:#888; font-weight:normal;">K: Konu | S: Soru | ✅: tek görev</span>
             </h2>
             <div class="matris-wrapper">
                 <table class="matris-tablo" id="sarmal-matris-tablosu"></table>
@@ -677,11 +678,19 @@
     const son60GunBaslangic = new Date(2027, 0, 26);
     const sinavTarihi = new Date(2027, 2, 27);
 
+    // 24 Ekim 2026 (52. iş günü) itibarıyla bölünmüş (konu günü / soru günü) çalışma modeli geçerli
+    const BOLUNMUS_BASLANGIC_GUNU = 52;
+    // Saat modülünde telafi hedefinin çıkabileceği en yüksek günlük süre (10s 30dk)
+    const SAAT_TAVAN_DK = 630;
+    // Gerçek durumu planla uyuşmayan hücreler için elle "tamam" işaretleri (tur, ders, görev)
+    const MANUEL_TAMAM = [ { tur: 1, ders: 'pediatri', gorev: 'soru' } ];
+
     let globalGunVerisi = null; let globalSoruDersiKey = null; let globalDurum = "";
     let globalSon60Info = null;
     let aktifTarih = new Date(new Date().setHours(0,0,0,0));
     let bugunSayaci = 0; 
     let aktifGunHedefDakika = 540; // Varsayılan 9 saat
+    let manuelSaatAyari = null;    // { tarih, dk } : henüz tiklenmemiş gün için +/-15dk ayarı
     
     let gosterilenTakvimAyi = new Date(aktifTarih.getFullYear(), aktifTarih.getMonth(), 1);
     let gunBilgisi = {};
@@ -703,7 +712,7 @@
     }
 
     function isBolunmusSarmalGunu(workDaySayaci) {
-        return workDaySayaci >= 52 && workDaySayaci <= calismaGunleri.length;
+        return workDaySayaci >= BOLUNMUS_BASLANGIC_GUNU && workDaySayaci <= calismaGunleri.length;
     }
 
     function gunModuBul(workDaySayaci) {
@@ -714,29 +723,99 @@
         return (gVeri.gun <= konuGunSayisi) ? 'sadece_konu' : 'onceki_soru';
     }
 
-    function oncekiSarmalSoruDersiniBul(tur, dersKey) {
-        let sarmalTur = sarmalAkil.find(t => t.tur === tur);
-        let seqIdx = sarmalTur.seq.findIndex(s => s.d === dersKey);
+    // Bir dersin bloğunda çözülecek sorunun hangi ders ve hangi TUR'a ait olduğunu bulur.
+    // (Turun ilk dersi, önceki turun son Konu+Soru dersinin sorusunu çözer; o soru ÖNCEKİ turun sorusudur.)
+    function soruHedefiBul(tur, dersKey) {
+        const sarmalTur = sarmalAkil.find(t => t.tur === tur);
+        const seqIdx = sarmalTur.seq.findIndex(s => s.d === dersKey);
 
         if (tur === 1 || (tur === 2 && seqIdx <= 2)) {
-            if (seqIdx > 0) return sarmalTur.seq[seqIdx - 1].d;
+            if (seqIdx > 0) return { d: sarmalTur.seq[seqIdx - 1].d, tur: tur };
             if (tur > 1) {
-                let oncekiTur = sarmalAkil.find(t => t.tur === tur - 1);
-                return oncekiTur.seq[oncekiTur.seq.length - 1].d;
+                const oncekiTur = sarmalAkil.find(t => t.tur === tur - 1);
+                return { d: oncekiTur.seq[oncekiTur.seq.length - 1].d, tur: tur - 1 };
             }
-            return dersKey;
+            return { d: dersKey, tur: tur };
         }
 
         for (let i = seqIdx - 1; i >= 0; i--) {
-            if (!sarmalTur.seq[i].sadeceSoru) return sarmalTur.seq[i].d;
+            if (!sarmalTur.seq[i].sadeceSoru) return { d: sarmalTur.seq[i].d, tur: tur };
         }
         if (tur > 1) {
-            let oncekiTur = sarmalAkil.find(t => t.tur === tur - 1);
+            const oncekiTur = sarmalAkil.find(t => t.tur === tur - 1);
             for (let i = oncekiTur.seq.length - 1; i >= 0; i--) {
-                if (!oncekiTur.seq[i].sadeceSoru) return oncekiTur.seq[i].d;
+                if (!oncekiTur.seq[i].sadeceSoru) return { d: oncekiTur.seq[i].d, tur: tur - 1 };
             }
         }
-        return dersKey;
+        return { d: dersKey, tur: tur };
+    }
+
+    function oncekiSarmalSoruDersiniBul(tur, dersKey) {
+        return soruHedefiBul(tur, dersKey).d;
+    }
+
+    // ---- GÖREV MOTORU: her iş gününün konu ve soru görevlerini ayrı ayrı tanımlar ----
+    // planKonu[tur][ders] / planSoru[tur][ders] = o turda o dersin konusunun / sorusunun planlanan GÜN sayısı
+    let gunGorevleri = [];
+    let planKonu = {}; let planSoru = {};
+
+    function gorevPlaniniOlustur() {
+        gunGorevleri = [];
+        planKonu = {}; planSoru = {};
+        for (let t = 1; t <= 5; t++) {
+            planKonu[t] = {}; planSoru[t] = {};
+            for (const k in planData) { planKonu[t][planData[k].isim] = 0; planSoru[t][planData[k].isim] = 0; }
+        }
+        calismaGunleri.forEach((a, i) => {
+            const w = i + 1;
+            const mod = gunModuBul(w);
+            const g = { w: w, tur: a.tur, ders: a.ders, mod: mod, konu: null, soru: null };
+            if (mod === 'birlesik' || mod === 'sadece_konu') g.konu = { tur: a.tur, d: a.ders };
+            if (mod === 'birlesik' || mod === 'onceki_soru') g.soru = soruHedefiBul(a.tur, a.ders);
+            if (mod === 'kendi_sorusu') g.soru = { tur: a.tur, d: a.ders };
+            gunGorevleri.push(g);
+            if (g.konu) planKonu[g.konu.tur][planData[g.konu.d].isim]++;
+            if (g.soru) planSoru[g.soru.tur][planData[g.soru.d].isim]++;
+        });
+    }
+    gorevPlaniniOlustur();
+
+    // Kayıtlardaki tikleri, TARİHİN planındaki göreve göre sayar (bayrak gösteren eski kayıtlarla da uyumlu)
+    function ilerlemeHesapla(kayitlar) {
+        const yap = { konu: {}, soru: {} };
+        for (let t = 1; t <= 5; t++) {
+            yap.konu[t] = {}; yap.soru[t] = {};
+            for (const k in planData) { yap.konu[t][planData[k].isim] = 0; yap.soru[t][planData[k].isim] = 0; }
+        }
+        for (const dateStr in kayitlar) {
+            const k = kayitlar[dateStr];
+            const info = gunBilgisi[dateStr];
+            if (!k || !info) continue;
+            if (info.durum !== 'normal' && info.durum !== 'son_60_gun') continue;
+            const w = info.workDaySayaci;
+            if (w < 1 || w > gunGorevleri.length) continue;
+            const g = gunGorevleri[w - 1];
+            if (g.konu && k.konu_bitti) yap.konu[g.konu.tur][planData[g.konu.d].isim]++;
+            if (g.soru && k.soru_bitti) yap.soru[g.soru.tur][planData[g.soru.d].isim]++;
+        }
+        MANUEL_TAMAM.forEach(m => {
+            const dersIsim = planData[m.ders].isim;
+            const plan = (m.gorev === 'konu') ? planKonu : planSoru;
+            const hedef = (m.gorev === 'konu') ? yap.konu : yap.soru;
+            if (plan[m.tur][dersIsim] > hedef[m.tur][dersIsim]) hedef[m.tur][dersIsim] = plan[m.tur][dersIsim];
+        });
+        return yap;
+    }
+
+    function hucreDurumu(t, dersAd, yap) {
+        const pK = planKonu[t][dersAd] || 0, pS = planSoru[t][dersAd] || 0;
+        const yK = yap.konu[t][dersAd] || 0, yS = yap.soru[t][dersAd] || 0;
+        return {
+            pK: pK, pS: pS, yK: yK, yS: yS,
+            konuGerek: pK > 0, soruGerek: pS > 0,
+            konuTamam: pK === 0 || yK >= pK,
+            soruTamam: pS === 0 || yS >= pS
+        };
     }
 
     function gunBilgisiHaritasiniOlustur() {
@@ -869,6 +948,7 @@
         let buAyToplamYapilanDk = 0;
         let kalanNobetGunuSayisi = 0;
         let kalanNormalGunSayisi = 0;
+        let varsayilanSayilanGun = 0;
 
         const seciliGunNo = aktifTarih.getDate();
 
@@ -886,8 +966,10 @@
                     gecmisYapilanDk += k.calisilan_dakika;
                 } else if (k.konu_bitti || k.soru_bitti || k.deneme_bitti) {
                     // Geçmiş günde ders tiklenmiş ama saat tiklenmemişse varsayılan hedefi say
-                    gecmisYapilanDk += nobetMi ? 360 : Math.round(hedefOrtSaat * 60);
-                    buAyToplamYapilanDk += nobetMi ? 360 : Math.round(hedefOrtSaat * 60);
+                    const varsayilanDk = nobetMi ? 360 : Math.round(hedefOrtSaat * 60);
+                    gecmisYapilanDk += varsayilanDk;
+                    buAyToplamYapilanDk += varsayilanDk;
+                    varsayilanSayilanGun++;
                 }
             } else {
                 // Seçili gün ve sonrası
@@ -898,18 +980,26 @@
 
         // Seçili günün hedef dakikasını hesapla
         let hesaplananBugunDk = 0;
+        let tavanaTakildi = false;
+        let acikDk = 0;
         if (seciliGunKayit.nobet === true) {
             hesaplananBugunDk = 360; // Nöbet günü sabit 6 saat (360 dk)
         } else {
             const kalanHedefDk = Math.max(0, aylikToplamHedefDk - gecmisYapilanDk - (kalanNobetGunuSayisi * 360));
             const bolunecekGun = Math.max(1, kalanNormalGunSayisi);
-            hesaplananBugunDk = Math.round((kalanHedefDk / bolunecekGun) / 15) * 15; // En yakın 15 dakikaya yuvarla
-            hesaplananBugunDk = Math.max(120, Math.min(900, hesaplananBugunDk)); // Min 2s, Max 15s sınırı
+            const hamBugunDk = Math.round((kalanHedefDk / bolunecekGun) / 15) * 15; // En yakın 15 dakikaya yuvarla
+            hesaplananBugunDk = Math.max(120, Math.min(SAAT_TAVAN_DK, hamBugunDk));
+            if (hamBugunDk > SAAT_TAVAN_DK) {
+                tavanaTakildi = true;
+                acikDk = Math.round(kalanHedefDk - (SAAT_TAVAN_DK * bolunecekGun));
+            }
         }
 
-        // Eğer kullanıcı o gün için manuel ayar yaptıysa veya kaydettiyse onu göster
-        if (typeof seciliGunKayit.calisilan_dakika === 'number') {
+        // Tiklenmiş günde kayıtlı süreyi, tiklenmemişte elle ayarı, yoksa hesaplanan hedefi göster
+        if (seciliGunKayit.saat_bitti && typeof seciliGunKayit.calisilan_dakika === 'number') {
             aktifGunHedefDakika = seciliGunKayit.calisilan_dakika;
+        } else if (manuelSaatAyari && manuelSaatAyari.tarih === seciliDateStr) {
+            aktifGunHedefDakika = manuelSaatAyari.dk;
         } else {
             aktifGunHedefDakika = hesaplananBugunDk;
         }
@@ -921,22 +1011,29 @@
         document.getElementById("saat-buton-metin").innerText = `⏱️ Bugün ${dkFormatla(aktifGunHedefDakika)} Çalıştım${nobetEtiket}`;
 
         const aylar = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
-        document.getElementById("saat-alt-bilgi").innerHTML = `
+        let altHtml = `
             <span>🎯 ${aylar[m]} Hedef: <b>${hedefOrtSaat}s/gün</b></span>
-            <span>Toplam: <b>${dkFormatla(buAyToplamYapilanDk)} / ${dkFormatla(aylikToplamHedefDk)}</b></span>
-        `;
+            <span>Toplam: <b>${dkFormatla(buAyToplamYapilanDk)} / ${dkFormatla(aylikToplamHedefDk)}</b></span>`;
+        if (tavanaTakildi) {
+            altHtml += `<span class="saat-uyari">⚠️ Günlük tavan ${dkFormatla(SAAT_TAVAN_DK)}; ay sonu açığı ≈ ${dkFormatla(acikDk)}</span>`;
+        }
+        if (varsayilanSayilanGun > 0) {
+            altHtml += `<span>ℹ️ ${varsayilanSayilanGun} gün saat tiksiz, hedef sayıldı</span>`;
+        }
+        document.getElementById("saat-alt-bilgi").innerHTML = altHtml;
     }
 
     function saatManuelAyar(degisimDk) {
         aktifGunHedefDakika = Math.max(60, Math.min(960, aktifGunHedefDakika + degisimDk));
         const seciliDateStr = localToISO(aktifTarih);
-        const k = globalGunlukKayitlar[seciliDateStr] || {};
-        const nobetEtiket = k.nobet === true ? " (Nöbet)" : "";
-        document.getElementById("saat-buton-metin").innerText = `⏱️ Bugün ${dkFormatla(aktifGunHedefDakika)} Çalıştım${nobetEtiket}`;
-        
-        // Otomatik tikle ve kaydet
-        document.getElementById("saat-check").checked = true;
-        saatCheckDegisti();
+        if (document.getElementById("saat-check").checked) {
+            // Zaten tikliyse yeni süreyi kaydet
+            saatCheckDegisti();
+        } else {
+            // Tiklenmemişse sadece hedefi ayarla, "çalıştım" demiş olma
+            manuelSaatAyari = { tarih: seciliDateStr, dk: aktifGunHedefDakika };
+            saatMotorunuHesaplaVeCiz();
+        }
     }
 
     function saatCheckDegisti() {
@@ -945,9 +1042,16 @@
         db.ref('tus_gunluk_kayitlar/' + seciliGunStr).update({
             tarih: seciliGunStr,
             saat_bitti: checked,
-            calisilan_dakika: aktifGunHedefDakika,
+            // Tik kaldırılınca süre de silinir; gün tekrar canlı hesaplanan hedefe döner
+            calisilan_dakika: checked ? aktifGunHedefDakika : null,
             kayit_zamani: firebase.database.ServerValue.TIMESTAMP
-        }).then(() => toastGoster(checked ? `⏱️ ${dkFormatla(aktifGunHedefDakika)} Kaydedildi` : "⏱️ Saat Onayı Kaldırıldı"));
+        }).then(() => {
+            if (checked) manuelSaatAyari = null;
+            toastGoster(checked ? `⏱️ ${dkFormatla(aktifGunHedefDakika)} Kaydedildi` : "⏱️ Saat Onayı Kaldırıldı");
+        }).catch(err => {
+            console.error(err);
+            toastGoster("❌ Saat kaydedilemedi", true);
+        });
     }
 
     // --- OTOMATİK ENVANTER TABLOSU HESAPLAMA MOTORU ---
@@ -962,26 +1066,7 @@
         const body = document.getElementById("env-tablo-body");
         if (!body) return;
 
-        // Günlük kayıtlardan her tur ve ders için yapılan konu/soru gün sayılarını çıkar
-        const yapilan = {};
-        for (let t = 1; t <= 5; t++) {
-            yapilan[t] = {};
-            for (let k in planData) {
-                yapilan[t][planData[k].isim] = { konu: 0, soru: 0 };
-            }
-        }
-
-        Object.values(globalGunlukKayitlar).forEach(data => {
-            if (data && data.durum && data.durum.includes("Sarmal") && data.tur >= 1 && data.tur <= 5) {
-                const t = data.tur;
-                if (data.konu_bitti && data.konu_dersi && yapilan[t][data.konu_dersi]) {
-                    yapilan[t][data.konu_dersi].konu++;
-                }
-                if (data.soru_bitti && data.soru_dersi && yapilan[t][data.soru_dersi]) {
-                    yapilan[t][data.soru_dersi].soru++;
-                }
-            }
-        });
+        const yap = ilerlemeHesapla(globalGunlukKayitlar);
 
         const siraliDersler = ['dahiliye', 'pediatri', 'fizyoloji', 'patoloji', 'biyokimya', 'mikrobiyoloji', 'farmakoloji', 'kucukstajlar', 'genelcerrahi', 'kadindogum'];
         let html = "";
@@ -999,8 +1084,7 @@
             let satirHtml = `<tr><td class="env-ders-isim">${d.kisa}</td>`;
 
             for (let t = 1; t <= 5; t++) {
-                const manuelNot = (userEnvanter[dersKey] && userEnvanter[dersKey][t]) ? userEnvanter[dersKey][t].trim() : "";
-                const hedef = hedefGunler[t][dersAd] || 0;
+                const manuelNot = (userEnvanter[dersKey] && userEnvanter[dersKey][t]) ? String(userEnvanter[dersKey][t]).trim() : "";
                 const sadeceSoruMu = sadeceSoruMap[t][dersAd];
                 const selektifMi = selektifMap[t][dersAd];
 
@@ -1011,52 +1095,47 @@
                     otoMetin = ozelT1.metin;
                     hucreSinif += " env-hucre-tam";
                 } else {
-                    const yKonu = yapilan[t][dersAd].konu;
-                    const ySoru = yapilan[t][dersAd].soru;
+                    const h = hucreDurumu(t, dersAd, yap);
+                    const hedefGun = hedefGunler[t][dersAd] || 0;
+                    const hepsiTamam = (h.konuGerek || h.soruGerek) && h.konuTamam && h.soruTamam;
 
-                    const konuTamam = sadeceSoruMu ? true : (yKonu >= hedef);
-                    const soruTamam = ySoru >= hedef;
+                    // Tamamlanan turları toplam bilançoya ekle
+                    if (h.konuGerek && h.konuTamam) toplamKonuSayisi += selektifMi ? 0.5 : 1;
+                    if (h.soruGerek && h.soruTamam) toplamSbSayisi += 1;
 
-                    // 2. tur ve sonrasında tamamlananları toplam bilançoya ekle
-                    if (!sadeceSoruMu && konuTamam) {
-                        toplamKonuSayisi += selektifMi ? 0.5 : 1;
-                    }
-                    if (soruTamam) {
-                        toplamSbSayisi += 1;
-                    }
-
-                    if (konuTamam && soruTamam) {
+                    if (hepsiTamam) {
                         hucreSinif += " env-hucre-tam";
                         if (sadeceSoruMu) {
                             otoMetin = `✅ Full Soru (${d.soruK})`;
+                        } else if (!h.soruGerek) {
+                            otoMetin = `✅ ${d.konuK} (soru planlı değil)`;
                         } else if (selektifMi) {
                             otoMetin = `✅ ⚡Yarı Konu + 🎯 ${d.soruK}`;
                         } else {
                             otoMetin = `✅ ${d.konuK} + 🎯 ${d.soruK}`;
                         }
-                    } else if (yKonu > 0 || ySoru > 0) {
+                    } else if (h.yK > 0 || h.yS > 0) {
                         hucreSinif += " env-hucre-aktif";
-                        if (sadeceSoruMu) {
-                            otoMetin = `⏳ Soru (${ySoru}/${hedef}g)`;
-                        } else {
-                            const kDurum = konuTamam ? `✅Konu` : `📖K(${yKonu}/${hedef})`;
-                            const sDurum = soruTamam ? `✅Soru` : `🎯S(${ySoru}/${hedef})`;
-                            otoMetin = `⏳ ${kDurum} • ${sDurum}`;
-                        }
+                        const parcalar = [];
+                        if (h.konuGerek) parcalar.push(h.konuTamam ? `✅Konu` : `📖K(${h.yK}/${h.pK})`);
+                        if (h.soruGerek) parcalar.push(h.soruTamam ? `✅Soru` : `🎯S(${h.yS}/${h.pS})`);
+                        otoMetin = `⏳ ${parcalar.join(' • ')}`;
                     } else {
                         hucreSinif += " env-hucre-plan";
                         if (sadeceSoruMu) {
-                            otoMetin = `🎯 Full Soru (${hedef}g)`;
+                            otoMetin = `🎯 Full Soru (${hedefGun}g)`;
                         } else if (selektifMi) {
-                            otoMetin = `⚡Selektif K+S (${hedef}g)`;
+                            otoMetin = `⚡Selektif K+S (${hedefGun}g)`;
                         } else {
-                            otoMetin = `📖 Konu + 🎯 Soru (${hedef}g)`;
+                            otoMetin = `📖 Konu + 🎯 Soru (${hedefGun}g)`;
                         }
+                        if (h.konuGerek && !h.soruGerek) otoMetin += " ⚠️soru yok";
                     }
                 }
 
                 const gosterilecek = manuelNot ? `✍️ ${manuelNot}` : otoMetin;
-                satirHtml += `<td><span class="${hucreSinif}" onclick="envModalAc('${dersKey}', ${t}, \`${escapeHtml(manuelNot)}\`)">${escapeHtml(gosterilecek)}</span></td>`;
+                // Not içeriği HTML/JS içine gömülmez: data- öznitelikleri üzerinden güvenle okunur
+                satirHtml += `<td><span class="${hucreSinif}" data-ders="${dersKey}" data-tur="${t}" data-not="${escapeHtml(manuelNot)}" onclick="envModalAc(this.dataset.ders, Number(this.dataset.tur), this.dataset.not)">${escapeHtml(gosterilecek)}</span></td>`;
             }
 
             // Sağdaki Toplam Bilanço Sütunu
@@ -1237,7 +1316,7 @@
                 istatistikleriYukle();
                 if (tarihStr === localToISO(aktifTarih)) { gunuHesaplaVeArayuzuCiz(); }
             });
-        }).catch(err => { toastGoster("❌ Nöbet kaydedilemedi", true); });
+        }).catch(err => { console.error(err); toastGoster("❌ Nöbet kaydedilemedi", true); });
     }
 
     function bransModuluGoster() {
@@ -1289,6 +1368,11 @@
         firebaseDurumGetir(); 
         envanterTablosunuCiz();
         saatMotorunuHesaplaVeCiz();
+    }
+
+    // Tek günde çok soru düşen günler için uyarı metni
+    function soruYukUyarisi(adet) {
+        return adet > 300 ? ` ⚠️ Yoğun gün (${adet} soru): elenmiş/işaretli sorulara odaklan` : "";
     }
 
     function arayuzuUygula(isGunuSayaci, durum) {
@@ -1378,13 +1462,14 @@
                 let sBi = aktif.gun * gSoru;
                 if (sBi > soruVeri.soru || aktif.gun === aktif.toplamGun) sBi = soruVeri.soru;
 
-                document.getElementById("soru-sayfa").innerText = `${soruVeri.soruK} - Sadece Soru Modu (Sf ${sB} - ${sBi}) [${aktif.gun}/${aktif.toplamGun}. Gün]`;
+                document.getElementById("soru-sayfa").innerText = `${soruVeri.soruK} - Sadece Soru Modu (Sf ${sB} - ${sBi}) [${aktif.gun}/${aktif.toplamGun}. Gün]` + soruYukUyarisi(sBi - sB + 1);
 
                 const soruYuzde = Math.min(100, (aktif.gun / aktif.toplamGun) * 100);
                 document.getElementById("soru-progress").style.width = soruYuzde + "%";
 
             } else if (mod === 'sadece_konu' || mod === 'onceki_soru') {
-                const oncekiDersKey = oncekiSarmalSoruDersiniBul(aktif.tur, aktif.ders);
+                const soruHedefi = soruHedefiBul(aktif.tur, aktif.ders);
+                const oncekiDersKey = soruHedefi.d;
                 globalSoruDersiKey = oncekiDersKey;
                 const soruVeri = planData[oncekiDersKey];
 
@@ -1407,7 +1492,8 @@
                     let prefix = "Hızlı Tekrar";
                     if (aktif.selektifKonu) {
                         prefix = "Yarı/Selektif Okuma";
-                        kBi = Math.ceil(kBi / 2);
+                        // Günün aralığının yarısı kadar sayfa: başlangıç sabit, bitiş aralığın ortasına çekilir
+                        kBi = kB + Math.ceil((kBi - kB + 1) / 2) - 1;
                     }
 
                     document.getElementById("konu-sayfa").innerText = `${konuVeri.konuK} - ${prefix} (Sf ${kB} - ${kBi}) [${aktif.gun}/${konuGunSayisi}. Konu Günü]`;
@@ -1424,7 +1510,7 @@
                     let sBi = Math.floor(sGun * gSoru);
                     if (sBi > soruVeri.soru || sGun >= soruGunSayisi) sBi = soruVeri.soru;
 
-                    document.getElementById("soru-sayfa").innerText = `${soruVeri.soruK} - Sarmal Soru (Sf ${sB} - ${sBi}) [${sGun}/${soruGunSayisi}. Soru Günü]`;
+                    document.getElementById("soru-sayfa").innerText = `${soruVeri.soruK} - Sarmal Soru (Sf ${sB} - ${sBi}) [${sGun}/${soruGunSayisi}. Soru Günü]` + soruYukUyarisi(sBi - sB + 1);
 
                     const soruYuzde = Math.min(100, (sGun / soruGunSayisi) * 100);
                     document.getElementById("soru-progress").style.width = soruYuzde + "%";
@@ -1526,13 +1612,15 @@
                 kayit.konu_dersi = globalGunVerisi ? planData[globalGunVerisi.ders].isim : "Soru Kampı";
                 kayit.soru_dersi = globalSoruDersiKey ? planData[globalSoruDersiKey].isim : "Karma";
 
+                // Her gün yalnızca KENDİ görevinin bayrağını yazar (konu günü soru sayılmaz, soru günü konu sayılmaz)
                 const mod = gunModuBul(bugunSayaci);
+                kayit.mod = mod;
                 if (mod === 'sadece_konu') {
-                    const checked = document.getElementById("konu-check").checked;
-                    kayit.konu_bitti = checked; kayit.soru_bitti = checked;
+                    kayit.konu_bitti = document.getElementById("konu-check").checked;
+                    kayit.soru_bitti = false;
                 } else if (mod === 'onceki_soru' || mod === 'kendi_sorusu') {
-                    const checked = document.getElementById("soru-check").checked;
-                    kayit.soru_bitti = checked; kayit.konu_bitti = checked;
+                    kayit.soru_bitti = document.getElementById("soru-check").checked;
+                    kayit.konu_bitti = false;
                 } else {
                     kayit.konu_bitti = document.getElementById("konu-check").checked;
                     kayit.soru_bitti = document.getElementById("soru-check").checked;
@@ -1546,7 +1634,7 @@
             }
             return db.ref('tus_gunluk_kayitlar/' + seciliGunStr).update(kayit);
         }).then(() => toastGoster("✅ Otomatik Kaydedildi"))
-        .catch(err => { toastGoster("❌ Kaydedilemedi", true); });
+        .catch(err => { console.error(err); toastGoster("❌ Kaydedilemedi", true); });
     }
 
     function bransDenemeKaydet() {
@@ -1564,7 +1652,7 @@
             toastGoster("🎯 Net Başarıyla İşlendi");
             document.getElementById("brans-dogru").value = ""; document.getElementById("brans-yanlis").value = "";
             bransModuluGoster(); istatistikleriYukle();
-        }).catch(err => { toastGoster("❌ Kayıt başarısız", true); });
+        }).catch(err => { console.error(err); toastGoster("❌ Kayıt başarısız", true); });
     }
 
     function serimiHesapla(dataDump) {
@@ -1627,7 +1715,7 @@
             a.download = `tus_takip_yedek_${localToISO(new Date())}.json`;
             document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
             toastGoster("💾 Yedek indirildi");
-        }).catch(err => { toastGoster("❌ Yedekleme başarısız", true); });
+        }).catch(err => { console.error(err); toastGoster("❌ Yedekleme başarısız", true); });
     }
 
     function escapeHtml(s) { return String(s).replace(/[&<>"']/g, function(c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -1741,7 +1829,7 @@
             btn.disabled = false; toastGoster("📝 Deneme Sonucu İşlendi");
             ['gd-temel-dogru', 'gd-temel-yanlis', 'gd-klinik-dogru', 'gd-klinik-yanlis', 'gd-ad', 'gd-tarih'].forEach(id => document.getElementById(id).value = "");
             genelDenemeOnizle(); genelDenemeModuluGoster(); genelDenemeleriYukle();
-        }).catch(err => { btn.disabled = false; toastGoster("❌ Kayıt başarısız", true); });
+        }).catch(err => { console.error(err); btn.disabled = false; toastGoster("❌ Kayıt başarısız", true); });
     }
 
     function genelDenemeleriYukle() {
@@ -1750,7 +1838,7 @@
             snap.forEach(child => { const v = child.val(); if (v && typeof v.tarih === 'string' && GD_TURLER.indexOf(v.tur) !== -1) liste.push(Object.assign({ key: child.key }, v)); });
             liste.sort((a, b) => a.tarih.localeCompare(b.tarih) || (gdSayi(a.timestamp) - gdSayi(b.timestamp)));
             genelDenemeler = liste; genelDenemeRender();
-        }).catch(err => console.error(err));
+        }).catch(err => { console.error(err); toastGoster("❌ Genel denemeler yüklenemedi", true); });
     }
 
     function gdSeri(secim) {
@@ -1766,7 +1854,11 @@
 
     function genelDenemeRender() {
         const bosMesaj = document.getElementById("gd-bos-mesaj"); const doluAlan = document.getElementById("gd-dolu-alan");
-        if (genelDenemeler.length === 0) { bosMesaj.style.display = "block"; doluAlan.style.display = "none"; return; }
+        if (genelDenemeler.length === 0) {
+            bosMesaj.style.display = "block";
+            bosMesaj.innerHTML = 'Henüz genel deneme sonucu girilmemiş. <b>Çalışma Planı</b> sekmesindeki <b>"Genel Deneme Sonucu Gir"</b> bölümünden ekleyebilirsin.';
+            doluAlan.style.display = "none"; return;
+        }
         bosMesaj.style.display = "none"; doluAlan.style.display = "block";
 
         const secim = document.getElementById("gd-seri-secim"); const onceki = secim.value;
@@ -1821,7 +1913,7 @@
 
     function genelDenemeSil(key) {
         if (!key || !confirm(`Bu kaydı silmek istediğine emin misin?`)) return;
-        db.ref('tus_genel_denemeler/' + key).remove().then(() => { toastGoster("🗑 Kayıt silindi"); genelDenemeleriYukle(); }).catch(err => toastGoster("❌ Silinemedi", true));
+        db.ref('tus_genel_denemeler/' + key).remove().then(() => { toastGoster("🗑 Kayıt silindi"); genelDenemeleriYukle(); }).catch(err => { console.error(err); toastGoster("❌ Silinemedi", true); });
     }
 
     function istatistikleriYukle() {
@@ -1842,40 +1934,20 @@
             const streak = serimiHesapla(dataDump);
             document.getElementById("ist-streak-deger").innerText = `🔥 ${streak}`;
 
-            const yapilanlar = {};
-            for(let t=1; t<=5; t++) {
-                yapilanlar[t] = {};
-                for(let key in planData) { yapilanlar[t][planData[key].isim] = { konu: 0, soru: 0 }; }
-            }
-
-            if (snapshot.exists()) {
-                snapshot.forEach((child) => {
-                    const data = child.val();
-                    if (data.durum && data.durum.includes("Sarmal") && data.tur) {
-                        if(data.konu_bitti && data.konu_dersi && yapilanlar[data.tur] && yapilanlar[data.tur][data.konu_dersi]) yapilanlar[data.tur][data.konu_dersi].konu++;
-                        if(data.soru_bitti && data.soru_dersi && yapilanlar[data.tur] && yapilanlar[data.tur][data.soru_dersi]) yapilanlar[data.tur][data.soru_dersi].soru++;
-                    }
-                });
-            }
-
-            if (yapilanlar[1] && yapilanlar[1]["Pediatri"]) { yapilanlar[1]["Pediatri"].soru = hedefGunler[1]["Pediatri"]; }
+            // Görev bazlı sayım: her günün konu ve soru görevi ayrı ayrı, kendi turuna yazılır
+            const yap = ilerlemeHesapla(dataDump);
 
             const dersIlerlemeler = [];
             for(let key in planData) {
                 if (key === 'joker') continue;
                 const dersAd = planData[key].isim;
-                let toplamHedefKonu = 0, toplamYapilanKonu = 0; let toplamHedefSoru = 0, toplamYapilanSoru = 0;
-                
+                let toplamPlan = 0, toplamYapilan = 0;
                 for(let t=1; t<=5; t++) {
-                    const hedef = hedefGunler[t][dersAd];
-                    if(!hedef) continue;
-                    const sadeceSoruMu = sadeceSoruMap[t][dersAd];
-                    if (!sadeceSoruMu) { toplamHedefKonu += hedef; toplamYapilanKonu += Math.min(yapilanlar[t][dersAd].konu, hedef); }
-                    toplamHedefSoru += hedef; toplamYapilanSoru += Math.min(yapilanlar[t][dersAd].soru, hedef);
+                    const h = hucreDurumu(t, dersAd, yap);
+                    toplamPlan += h.pK + h.pS;
+                    toplamYapilan += Math.min(h.yK, h.pK) + Math.min(h.yS, h.pS);
                 }
-                const konuYuzde = toplamHedefKonu > 0 ? (toplamYapilanKonu / toplamHedefKonu * 100) : 100;
-                const soruYuzde = toplamHedefSoru > 0 ? (toplamYapilanSoru / toplamHedefSoru * 100) : null;
-                const genelYuzde = soruYuzde !== null ? ((konuYuzde + soruYuzde) / 2) : konuYuzde;
+                const genelYuzde = toplamPlan > 0 ? (toplamYapilan / toplamPlan * 100) : 0;
                 dersIlerlemeler.push({ dersAd: dersAd, genelYuzde: genelYuzde, key: key });
             }
             
@@ -1886,24 +1958,20 @@
             dersIlerlemeler.forEach(item => {
                 const dersAd = item.dersAd; let tdHtml = `<td class="matris-ders-isim">${planData[item.key].kisa}</td>`;
                 for(let t=1; t<=5; t++) {
-                    const hedef = hedefGunler[t][dersAd];
-                    if(!hedef) { tdHtml += `<td><span class="durum-kutu durum-bos">-</span></td>`; } 
-                    else {
-                        const sadeceSoruMu = sadeceSoruMap[t][dersAd];
-                        const konuBitti = sadeceSoruMu ? true : (yapilanlar[t][dersAd].konu >= hedef);
-                        const soruBitti = yapilanlar[t][dersAd].soru >= hedef;
-
-                        if (konuBitti && soruBitti) tdHtml += `<td><span class="durum-kutu durum-tam">✅✅</span></td>`;
-                        else if (!sadeceSoruMu && konuBitti) tdHtml += `<td><span class="durum-kutu durum-k">K</span></td>`;
-                        else if (soruBitti) tdHtml += `<td><span class="durum-kutu durum-s">S</span></td>`;
-                        else tdHtml += `<td><span class="durum-kutu durum-bos">...</span></td>`;
+                    const h = hucreDurumu(t, dersAd, yap);
+                    if(!h.konuGerek && !h.soruGerek) { tdHtml += `<td><span class="durum-kutu durum-bos">-</span></td>`; } 
+                    else if (h.konuTamam && h.soruTamam) {
+                        tdHtml += `<td><span class="durum-kutu durum-tam">${(h.konuGerek && h.soruGerek) ? '✅✅' : '✅'}</span></td>`;
                     }
+                    else if (h.konuGerek && h.konuTamam) tdHtml += `<td><span class="durum-kutu durum-k">K</span></td>`;
+                    else if (h.soruGerek && h.soruTamam) tdHtml += `<td><span class="durum-kutu durum-s">S</span></td>`;
+                    else tdHtml += `<td><span class="durum-kutu durum-bos">...</span></td>`;
                 }
                 tdHtml += `<td><div style="font-weight:bold; color:var(--primary); font-size:11px;">%${item.genelYuzde.toFixed(0)}</div><div class="matris-bar-container"><div class="matris-bar-fill" style="width:${item.genelYuzde.toFixed(0)}%"></div></div></td>`;
                 matrisHtml += `<tr>${tdHtml}</tr>`;
             });
             document.getElementById("sarmal-matris-tablosu").innerHTML = matrisHtml;
-        }).catch(err => console.error(err));
+        }).catch(err => { console.error(err); toastGoster("❌ İstatistikler yüklenemedi", true); });
 
         db.ref('tus_brans_denemeleri').once('value').then((snapshot) => {
             if (!snapshot.exists()) {
@@ -1925,16 +1993,16 @@
 
             let html = `<table class="analiz-tablo"><tr><th>Ders</th><th>Ort. Net</th><th>Max</th><th>Adet</th></tr>`;
             for (const [ders, stat] of Object.entries(dersVerileri)) {
-                html += `<tr><td>${ders}</td><td style="color:var(--success); font-weight:bold;">${(stat.toplamNet / stat.count).toFixed(2)}</td><td>${stat.maxNet.toFixed(2)}</td><td>${stat.count}</td></tr>`;
+                html += `<tr><td>${escapeHtml(ders)}</td><td style="color:var(--success); font-weight:bold;">${(stat.toplamNet / stat.count).toFixed(2)}</td><td>${stat.maxNet.toFixed(2)}</td><td>${stat.count}</td></tr>`;
             }
             document.getElementById("analiz-icerik").innerHTML = html + `</table>`;
 
             const secim = document.getElementById("trend-ders-secim"); const oncekiSecim = secim.value;
-            secim.innerHTML = Object.keys(dersNetGecmisi).sort().map(d => `<option value="${d}">${d}</option>`).join('');
+            secim.innerHTML = Object.keys(dersNetGecmisi).sort().map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
             document.getElementById("trend-secim-alani").style.display = "block";
             if(oncekiSecim && dersNetGecmisi[oncekiSecim]) secim.value = oncekiSecim;
             trendGrafigiCiz(secim.value);
-        }).catch(err => console.error(err));
+        }).catch(err => { console.error(err); toastGoster("❌ Deneme verileri yüklenemedi", true); });
     }
 
     function toastGoster(mesaj, hataMi) {
