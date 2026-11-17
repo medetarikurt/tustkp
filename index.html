@@ -1727,14 +1727,62 @@
     function escapeHtml(s) { return String(s).replace(/[&<>"']/g, function(c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
     function netFmt(n) { return parseFloat(Number(n).toFixed(2)).toString(); }
 
+    // Geçmiş TUS sınavları (tuskocu.com puan hesaplayıcısından alınan değerlerle uydurulmuştur).
+    // Her sınav için: puan = c + t*TemelNet + k*KlinikNet (doğrusal, hata < 0.001) ve [puan, sıralama] referans noktaları.
+    // Yeni sınav eklemek için aynı yapıda bir satır ekleyin.
+    const TUS_SINAVLAR = [
+        { ad: "2026 Ağustos", T: {c:40.86,t:0.2668,k:0.2142,anc:[[63.71, 5265], [65.716, 3989], [66.923, 3342], [69.591, 2018], [69.924, 1886], [69.999, 1857], [71.052, 1431], [75.335, 402]]},
+          K: {c:40.2421,t:0.1757,k:0.3173,anc:[[64.766, 4417], [67.188, 3019], [69.526, 1943], [70.702, 1454], [71.283, 1268], [71.502, 1210], [73.535, 663], [77.049, 178]]} },
+        { ad: "2026 Mart", T: {c:41.8344,t:0.294,k:0.1747,anc:[[63.722, 3483], [65.549, 2505], [66.343, 2123], [69.044, 1082], [69.283, 1005], [69.65, 888], [71.429, 493], [74.924, 118]]},
+          K: {c:40.2674,t:0.2068,k:0.2766,anc:[[63.924, 3531], [66.17, 2357], [68.073, 1546], [70.141, 817], [70.306, 777], [70.4, 763], [71.702, 496], [75.838, 75]]} },
+        { ad: "2025 Ağustos", T: {c:40.2702,t:0.2994,k:0.2049,anc:[[66.035, 3026], [67.079, 2534], [70.073, 1428], [70.133, 1412], [70.447, 1307], [72.023, 900], [76.12, 276]]},
+          K: {c:39.6996,t:0.1973,k:0.3038,anc:[[66.806, 2508], [68.971, 1651], [70.752, 1117], [70.944, 1061], [71.191, 987], [72.882, 635], [76.828, 177]]} },
+        { ad: "2025 Mart", T: {c:39.3511,t:0.2667,k:0.2226,anc:[[64.708, 2452], [65.989, 1887], [68.656, 1072], [68.99, 996], [74.494, 175]]},
+          K: {c:37.1966,t:0.1796,k:0.3369,anc:[[65.493, 2054], [67.992, 1186], [69.788, 739], [70.012, 698], [75.823, 81]]} },
+        { ad: "2024 Ağustos", T: {c:38.3182,t:0.2999,k:0.222,anc:[[66.33, 1758], [69.704, 912], [75.576, 229]]},
+          K: {c:36.1203,t:0.2062,k:0.3434,anc:[[68.492, 1190], [70.812, 758], [76.995, 159]]} }
+    ];
+
+    // Sıralama: referans noktaları arasında ln(sıra) doğrusal interpolasyonu (uçlarda son eğimle uzatma)
+    function siraInterp(anc, puan) {
+        let i = 0;
+        while (i < anc.length - 2 && puan > anc[i + 1][0]) i++;
+        const l1 = Math.log(anc[i][1]), l2 = Math.log(anc[i + 1][1]);
+        return Math.exp(l1 + (l2 - l1) * (puan - anc[i][0]) / (anc[i + 1][0] - anc[i][0]));
+    }
+    function siraYuvarla(x) { x = Math.max(1, Math.min(25000, x)); return x < 100 ? Math.round(x) : Math.round(x / 10) * 10; }
+    function ortanca(a) { const s = a.slice().sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; }
+
+    // Aynı netlerin her geçmiş sınavda getireceği puan ve sıralama
+    function sinavTahminleri(netT, netK) {
+        return TUS_SINAVLAR.map(e => {
+            const tP = e.T.c + e.T.t * netT + e.T.k * netK, kP = e.K.c + e.K.t * netT + e.K.k * netK;
+            const ak = e.K.anc, at = e.T.anc;
+            return { ad: e.ad, tP: tP, kP: kP, tS: siraInterp(at, tP), kS: siraInterp(ak, kP),
+                     disinda: (kP < ak[0][0] - 2 || kP > ak[ak.length - 1][0] + 2 || tP < at[0][0] - 2 || tP > at[at.length - 1][0] + 2) };
+        });
+    }
+
     function tusPuanHesapla(netT, netK) {
-        const kPuan = 39.289 + (0.13 * netT) + (0.36 * netK);
-        const tPuan = 37.750 + (0.35 * netT) + (0.214 * netK);
-        let kSira = 3331;
-        if (kPuan > 66.664) kSira -= (kPuan - 66.664) * 400; else kSira += (66.664 - kPuan) * 607;
-        let tSira = 4910;
-        if (tPuan > 64.250) tSira -= (tPuan - 64.250) * 500; else tSira += (64.250 - tPuan) * 950;
-        return { kPuan: kPuan.toFixed(3), kSira: Math.max(1, Math.min(24000, Math.round(kSira))), tPuan: tPuan.toFixed(3), tSira: Math.max(1, Math.min(24000, Math.round(tSira))) };
+        const t = sinavTahminleri(netT, netK);
+        const ozet = (puanlar, siralar, anahtar) => {
+            const sr = siralar.map(siraYuvarla);
+            const detay = t.map(x => `${x.ad}: ${x[anahtar].toFixed(2)} puan, sıra ${siraYuvarla(anahtar === 'kP' ? x.kS : x.tS)}`).join(' • ');
+            const disinda = t.filter(x => x.disinda).length >= 3;
+            return { puan: ortanca(puanlar), sira: siraYuvarla(ortanca(siralar)),
+                     metin: `<span title="${detay}">~${siraYuvarla(ortanca(siralar))} <small>(${Math.min(...sr)}–${Math.max(...sr)})</small></span>` + (disinda ? ' <small title="Netler geçmiş sınav verisinin dışında; tahmin güvenilmez">⚠️</small>' : '') };
+        };
+        const k = ozet(t.map(x => x.kP), t.map(x => x.kS), 'kP'), tm = ozet(t.map(x => x.tP), t.map(x => x.tS), 'tP');
+        return { kPuan: k.puan.toFixed(3), kSira: k.sira, kSiraMetin: k.metin, tPuan: tm.puan.toFixed(3), tSira: tm.sira, tSiraMetin: tm.metin };
+    }
+
+    // Son 3 genel denemenin ortalamasından tahmin (tek denemenin gürültüsünü azaltır)
+    function sonDenemelerTahmini(denemeler, adet) {
+        const g = denemeler.filter(d => d.tur === 'genel' && d.temel && d.klinik).slice(-adet);
+        if (g.length < 2) return null;
+        const ort = f => g.reduce((t, d) => t + gdSayi(f(d)), 0) / g.length;
+        const nT = ort(d => d.temel.net), nK = ort(d => d.klinik.net);
+        return { adet: g.length, nT: nT, nK: nK, hesap: tusPuanHesapla(nT, nK) };
     }
 
     function cizgiGrafigiHtml(hamVeri, secenekler) {
@@ -1811,7 +1859,7 @@
         if (tur === 'genel' && hepsiGirildi && !hata) {
             parcalar.push(`Toplam: <b style="color:var(--primary)">${netFmt(toplam)}</b> Net`);
             const hesap = tusPuanHesapla(gdBolumOku('temel').net, gdBolumOku('klinik').net);
-            parcalar.push(`<div style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--border);"><div style="color:var(--warning); font-size:14px; font-weight:bold; margin-bottom:6px;">🏆 2026 Ağustos TUS Tahmini</div><div style="display:flex; justify-content:space-around; font-size:12px;"><div><b>K Puanı:</b> ${hesap.kPuan} <br><small>Sıra: ~${hesap.kSira}</small></div><div><b>T Puanı:</b> ${hesap.tPuan} <br><small>Sıra: ~${hesap.tSira}</small></div></div></div>`);
+            parcalar.push(`<div style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--border);"><div style="color:var(--warning); font-size:14px; font-weight:bold; margin-bottom:6px;">🏆 TUS Tahmini <small style="font-weight:normal;color:#888;">(geçmiş 5 sınavın ortancası, parantezde en iyi–en kötü)</small></div><div style="display:flex; justify-content:space-around; font-size:12px;"><div><b>K Puanı:</b> ${hesap.kPuan} <br><small>Sıra: </small>${hesap.kSiraMetin}</div><div><b>T Puanı:</b> ${hesap.tPuan} <br><small>Sıra: </small>${hesap.tSiraMetin}</div></div></div>`);
         }
         document.getElementById("gd-onizleme").innerHTML = parcalar.length ? parcalar.join('<br>') : 'Doğru/yanlış girince net burada görünür';
     }
@@ -1881,11 +1929,13 @@
         }).reverse();
 
         const turEtiket = { genel: 'Genel', temel: 'Temel', klinik: 'Klinik' };
-        document.getElementById("gd-liste").innerHTML = satirlar.map(s => {
+        const sonTahmin = sonDenemelerTahmini(genelDenemeler, 3);
+        const sonTahminHtml = sonTahmin ? `<div class="gd-satir" style="border-left:3px solid var(--warning);"><div class="gd-satir-sol"><div class="gd-satir-ust"><span>📈 Son ${sonTahmin.adet} genel deneme ortalaması</span></div><div class="gd-satir-detay"><span>🔬 ${netFmt(sonTahmin.nT)}</span><span>🩺 ${netFmt(sonTahmin.nK)}</span><span style="width:100%; display:block; color:var(--warning); margin-top:3px; font-weight:600;">🏆 K Puan: ${sonTahmin.hesap.kPuan} (Sıra: ${sonTahmin.hesap.kSiraMetin})</span><span style="width:100%; display:block; font-size:11px; color:#888;">Tek deneme yerine ortalama. Sıra: geçmiş 5 TUS dağılımının ortancası, parantezde en iyi–en kötü sınav. Denemeler gerçek sınavdan farklı zorlukta olabilir.</span></div></div></div>` : '';
+        document.getElementById("gd-liste").innerHTML = sonTahminHtml + satirlar.map(s => {
             const d = s.d; let detay = '';
             if (d.temel) detay += `<span>🔬 ${netFmt(gdSayi(d.temel.net))} <small>(${gdSayi(d.temel.dogru)}D/${gdSayi(d.temel.yanlis)}Y)</small></span>`;
             if (d.klinik) detay += `<span>🩺 ${netFmt(gdSayi(d.klinik.net))} <small>(${gdSayi(d.klinik.dogru)}D/${gdSayi(d.klinik.yanlis)}Y)</small></span>`;
-            if (d.tur === 'genel' && d.temel && d.klinik) { const hesap = tusPuanHesapla(d.temel.net, d.klinik.net); detay += `<span style="width:100%; display:block; color:var(--warning); margin-top:3px; font-weight:600;">🏆 K Puan: ${hesap.kPuan} (Sıra: ~${hesap.kSira})</span>`; }
+            if (d.tur === 'genel' && d.temel && d.klinik) { const hesap = tusPuanHesapla(d.temel.net, d.klinik.net); detay += `<span style="width:100%; display:block; color:var(--warning); margin-top:3px; font-weight:600;">🏆 K Puan: ${hesap.kPuan} (Sıra: ${hesap.kSiraMetin})</span>`; }
             
             let deltaHtml = '';
             if (s.delta !== null) {
