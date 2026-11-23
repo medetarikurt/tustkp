@@ -503,7 +503,7 @@
             <div id="trend-grafik-alani"></div>
         </div>
         
-        <!-- YENİ EKLENEN AYLIK PERFORMANS MODÜLÜ -->
+        <!-- AYLIK PERFORMANS MODÜLÜ -->
         <div class="hedef-karti" style="border-left-color: var(--info);">
             <h2 style="font-size: 16px; margin-bottom: 10px; color: #fff;">⏱️ Aylık Ortalama Çalışma Süresi</h2>
             <div id="aylik-sure-analiz-icerik" style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 15px 0;">
@@ -656,6 +656,14 @@
 
         while (iterDate <= sinavTarihi) {
             const dateStr = localToISO(iterDate);
+
+            // 17-21 Kasım arası öteleme (17'sindeki Mikro 24'lü denemesi 23 Kasım'a kaydırıldı)
+            if (dateStr >= '2026-11-17' && dateStr <= '2026-11-21') {
+                gunBilgisi[dateStr] = { durum: 'mola', abbr: 'ARA', tip: 'mola', workDaySayaci: workDaySayaci };
+                iterDate.setDate(iterDate.getDate() + 1);
+                continue;
+            }
+
             let isWorkDay = true;
             let gunHafta = iterDate.getDay();
 
@@ -899,8 +907,10 @@
 
         if (durum === "mola") {
             kartDers.style.display = "none"; kartTatil.style.display = "block";
-            document.getElementById("tatil-baslik").innerText = "🌸 Hazırlık & Bakım Günü 💅";
-            document.getElementById("tatil-aciklama").innerText = "TUSBarbiesi çalışma planı 7 Kasım'da başlıyor. Enerjini topla! 💖";
+            document.getElementById("tatil-baslik").innerText = "🌸 Mola & Öteleme Günü 💅";
+            document.getElementById("tatil-aciklama").innerText = (aktifTarih < startDate)
+                ? "TUSBarbiesi çalışma planı 7 Kasım'da başlıyor. Enerjini topla! 💖"
+                : "Takvim bugün ilerlemez, kaldığın yerden devam! 💖";
             return;
         }
 
