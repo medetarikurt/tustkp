@@ -614,28 +614,42 @@
     let globalGunlukKayitlar = {};
     let globalBransSayilari = {};
 
-    // 3. Tur: Biyo/Farma (Tam Konu+Soru), Mikro/Fizyo (Selektif Konu+Soru), Dahiliye/Pediatri (Tam Konu+Soru), Diğerleri Full Soru
+    // 3. Tur: Biyo/Farma (Tam Konu 2g+Soru 2g), Fizyo (Selektif 1g+Soru 2g), Mikro (Selektif 2g+Soru 2g), Pedo/Dahiliye (Selektif 2g+Soru 3g), Diğerleri Full Soru
     const t3 = [
-        { d: 'fizyoloji', g: 3, selektifKonu: true, sadeceSoru: false },
+        { d: 'fizyoloji', g: 3, konuG: 1, selektifKonu: true, sadeceSoru: false },   // 1g Fizyo selektif + 2g K.Doğum (T2) soru
         { d: 'patoloji', g: 2, sadeceSoru: true },
-        { d: 'biyokimya', g: 4, sadeceSoru: false },
-        { d: 'pediatri', g: 3, sadeceSoru: false },
-        { d: 'mikrobiyoloji', g: 3, selektifKonu: true, sadeceSoru: false },
-        { d: 'farmakoloji', g: 3, sadeceSoru: false },
-        { d: 'dahiliye', g: 4, sadeceSoru: false },
+        { d: 'biyokimya', g: 4, konuG: 2, sadeceSoru: false },                       // 2g Biyo konu + 2g Fizyo (T3) soru
+        { d: 'pediatri', g: 4, konuG: 2, selektifKonu: true, sadeceSoru: false },    // 2g Pedo selektif + 2g Biyo (T3) soru
+        { d: 'mikrobiyoloji', g: 5, konuG: 2, selektifKonu: true, sadeceSoru: false }, // 2g Mikro selektif + 3g Pedo (T3) soru
+        { d: 'farmakoloji', g: 4, konuG: 2, sadeceSoru: false },                     // 2g Farma konu + 2g Mikro (T3) soru
+        { d: 'dahiliye', g: 4, konuG: 2, selektifKonu: true, sadeceSoru: false },    // 2g Dahiliye selektif + 2g Farma (T3) soru
         { d: 'kucukstajlar', g: 2, sadeceSoru: true },
         { d: 'genelcerrahi', g: 2, sadeceSoru: true },
         { d: 'kadindogum', g: 1, sadeceSoru: true }
     ];
 
-    // 4. ve 5. Tur: Dahiliye (3g) ve Pediatri (2g) de Full Soru oluyor!
-    const t45 = [
-        { d: 'fizyoloji', g: 3, selektifKonu: true, sadeceSoru: false },
+    // 4. Tur: Dahiliye (3g) ve Pediatri (3g) Full Soru; Fizyo ve Mikro soruları 1'er gün
+    const t4 = [
+        { d: 'fizyoloji', g: 4, konuG: 1, selektifKonu: true, sadeceSoru: false },   // 1g Fizyo selektif + 3g Dahiliye (T3) soru
         { d: 'patoloji', g: 2, sadeceSoru: true },
-        { d: 'biyokimya', g: 4, sadeceSoru: false },
-        { d: 'pediatri', g: 2, sadeceSoru: true },
-        { d: 'mikrobiyoloji', g: 3, selektifKonu: true, sadeceSoru: false },
-        { d: 'farmakoloji', g: 3, sadeceSoru: false },
+        { d: 'biyokimya', g: 3, konuG: 2, sadeceSoru: false },                       // 2g Biyo konu + 1g Fizyo (T4) soru
+        { d: 'pediatri', g: 3, sadeceSoru: true },
+        { d: 'mikrobiyoloji', g: 4, konuG: 2, selektifKonu: true, sadeceSoru: false }, // 2g Mikro selektif + 2g Biyo (T4) soru
+        { d: 'farmakoloji', g: 3, konuG: 2, sadeceSoru: false },                     // 2g Farma konu + 1g Mikro (T4) soru
+        { d: 'dahiliye', g: 3, sadeceSoru: true },
+        { d: 'kucukstajlar', g: 2, sadeceSoru: true },
+        { d: 'genelcerrahi', g: 2, sadeceSoru: true },
+        { d: 'kadindogum', g: 1, sadeceSoru: true }
+    ];
+
+    // 5. Tur: Fizyoloji bloğunda Farmakoloji (T4) 2g soru; Fizyo ve Mikro soruları 1'er gün
+    const t5 = [
+        { d: 'fizyoloji', g: 3, konuG: 1, selektifKonu: true, sadeceSoru: false },   // 1g Fizyo selektif + 2g Farma (T4) soru
+        { d: 'patoloji', g: 2, sadeceSoru: true },
+        { d: 'biyokimya', g: 3, konuG: 2, sadeceSoru: false },                       // 2g Biyo konu + 1g Fizyo (T5) soru
+        { d: 'pediatri', g: 3, sadeceSoru: true },
+        { d: 'mikrobiyoloji', g: 4, konuG: 2, selektifKonu: true, sadeceSoru: false }, // 2g Mikro selektif + 2g Biyo (T5) soru
+        { d: 'farmakoloji', g: 3, konuG: 2, sadeceSoru: false },                     // 2g Farma konu + 1g Mikro (T5) soru
         { d: 'dahiliye', g: 3, sadeceSoru: true },
         { d: 'kucukstajlar', g: 2, sadeceSoru: true },
         { d: 'genelcerrahi', g: 2, sadeceSoru: true },
@@ -660,7 +674,7 @@
             {d:'genelcerrahi',g:4, sadeceSoru:false},
             {d:'kadindogum',g:4, sadeceSoru:false}
         ]},
-        { tur: 3, seq: t3 }, { tur: 4, seq: t45 }, { tur: 5, seq: t45 }
+        { tur: 3, seq: t3 }, { tur: 4, seq: t4 }, { tur: 5, seq: t5 }
     ];
 
     let calismaGunleri = [];
@@ -675,7 +689,7 @@
             sadeceSoruMap[t.tur][dersIsim] = !!s.sadeceSoru;
             selektifMap[t.tur][dersIsim] = !!s.selektifKonu;
             for(let i=1; i<=s.g; i++) {
-                calismaGunleri.push({ tur: t.tur, ders: s.d, gun: i, toplamGun: s.g, sadeceSoru: !!s.sadeceSoru, selektifKonu: !!s.selektifKonu });
+                calismaGunleri.push({ tur: t.tur, ders: s.d, gun: i, toplamGun: s.g, konuGun: s.konuG || null, sadeceSoru: !!s.sadeceSoru, selektifKonu: !!s.selektifKonu });
             } 
         }); 
     });
@@ -725,7 +739,7 @@
         if (!isBolunmusSarmalGunu(workDaySayaci)) return 'birlesik';
         const gVeri = calismaGunleri[workDaySayaci - 1];
         if (gVeri.sadeceSoru) return 'kendi_sorusu';
-        const konuGunSayisi = Math.ceil(gVeri.toplamGun / 2);
+        const konuGunSayisi = gVeri.konuGun || Math.ceil(gVeri.toplamGun / 2);
         return (gVeri.gun <= konuGunSayisi) ? 'sadece_konu' : 'onceki_soru';
     }
 
@@ -1085,7 +1099,6 @@
             let toplamKonuSayisi = ozelT1.konuTam;
             let toplamSbSayisi = ozelT1.sbTam;
             let toplamTtsSayisi = ozelT1.ttsTam;
-            const bransDenemeAdet = globalBransSayilari[dersAd] || 0;
 
             let satirHtml = `<tr><td class="env-ders-isim">${d.kisa}</td>`;
 
@@ -1129,13 +1142,12 @@
                     } else {
                         hucreSinif += " env-hucre-plan";
                         if (sadeceSoruMu) {
-                            otoMetin = `🎯 Full Soru (${hedefGun}g)`;
+                            otoMetin = `🎯 Full Soru (${h.pS}g)`;
                         } else if (selektifMi) {
-                            otoMetin = `⚡Selektif K+S (${hedefGun}g)`;
+                            otoMetin = h.soruGerek ? `⚡Selektif K(${h.pK}g) + S(${h.pS}g)` : `⚡Selektif K(${h.pK}g) ⚠️soru yok`;
                         } else {
-                            otoMetin = `📖 Konu + 🎯 Soru (${hedefGun}g)`;
+                            otoMetin = h.soruGerek ? `📖 Konu(${h.pK}g) + 🎯 S(${h.pS}g)` : `📖 Konu(${h.pK}g) ⚠️soru yok`;
                         }
-                        if (h.konuGerek && !h.soruGerek) otoMetin += " ⚠️soru yok";
                     }
                 }
 
@@ -1149,7 +1161,6 @@
             bilancoParcalar.push(`${toplamKonuSayisi}x Konu`);
             bilancoParcalar.push(`${toplamSbSayisi}x SB`);
             if (toplamTtsSayisi > 0) bilancoParcalar.push(`${toplamTtsSayisi}x TTS`);
-            if (bransDenemeAdet > 0) bilancoParcalar.push(`${bransDenemeAdet} BD`);
 
             satirHtml += `<td class="env-total">${bilancoParcalar.join(" • ")}</td></tr>`;
             html += satirHtml;
@@ -1482,7 +1493,7 @@
                 document.getElementById("konu-ders-isim").innerText = konuVeri.isim;
                 document.getElementById("soru-ders-isim").innerText = soruVeri.isim;
 
-                const konuGunSayisi = Math.ceil(aktif.toplamGun / 2);
+                const konuGunSayisi = aktif.konuGun || Math.ceil(aktif.toplamGun / 2);
                 const soruGunSayisi = Math.max(1, Math.floor(aktif.toplamGun - konuGunSayisi));
 
                 if (mod === 'sadece_konu') {
