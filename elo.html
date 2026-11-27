@@ -567,25 +567,26 @@
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const db = firebase.database();
 
-    // ONLINE / KURUMSAL DENEME TAKVİMİ (İlk gününde ana ekranda görünür, çarpıyla silinebilir)
+    // ONLINE / KURUMSAL DENEME TAKVİMİ (Güncel Liste - İlk gününde ana ekranda görünür, çarpıyla silinebilir)
     const onlineDenemeTakvimi = [
-        { id: 'd_20261203_1', baslangic: '2026-12-03', aralik: '03.12.2026 - 06.12.2026', ad: 'TUSMER / Medotomy' },
-        { id: 'd_20261203_2', baslangic: '2026-12-03', aralik: '03.12.2026 - 06.12.2026', ad: 'Tıp Akademisi – 10. Deneme (1. Dönem)' },
-        { id: 'd_20261210_1', baslangic: '2026-12-10', aralik: '10.12.2026 - 12.12.2026', ad: 'Tusem' },
-        { id: 'd_20261211_1', baslangic: '2026-12-11', aralik: '11.12.2026 - 13.12.2026', ad: 'Tıpdemy' },
-        { id: 'd_20261217_1', baslangic: '2026-12-17', aralik: '17.12.2026 - 19.12.2026', ad: 'TUSDATA' },
-        { id: 'd_20270107_1', baslangic: '2027-01-07', aralik: '07.01.2027 - 10.01.2027', ad: 'TUSMER / Medotomy' },
-        { id: 'd_20270114_1', baslangic: '2027-01-14', aralik: '14.01.2027 - 16.01.2027', ad: 'Tusem' },
-        { id: 'd_20270115_1', baslangic: '2027-01-15', aralik: '15.01.2027 - 17.01.2027', ad: 'Tıpdemy' },
-        { id: 'd_20270121_1', baslangic: '2027-01-21', aralik: '21.01.2027 - 23.01.2027', ad: 'TUSDATA' },
-        { id: 'd_20270204_1', baslangic: '2027-02-04', aralik: '04.02.2027 - 07.02.2027', ad: 'TUSMER / Medotomy' },
-        { id: 'd_20270204_2', baslangic: '2027-02-04', aralik: '04.02.2027 - 07.02.2027', ad: 'Tıp Akademisi – 11. Deneme (1. Dönem)' },
-        { id: 'd_20270211_1', baslangic: '2027-02-11', aralik: '11.02.2027 - 13.02.2027', ad: 'Tusem' },
-        { id: 'd_20270212_1', baslangic: '2027-02-12', aralik: '12.02.2027 - 14.02.2027', ad: 'Tıpdemy' },
-        { id: 'd_20270218_1', baslangic: '2027-02-18', aralik: '18.02.2027 - 20.02.2027', ad: 'TUSDATA' },
-        { id: 'd_20270304_1', baslangic: '2027-03-04', aralik: '04.03.2027 - 07.03.2027', ad: 'TUSMER / Medotomy' },
-        { id: 'd_20270506_1', baslangic: '2027-05-06', aralik: '06.05.2027 - 09.05.2027', ad: 'Tıp Akademisi – 12. Deneme (2. Dönem)' },
-        { id: 'd_20270701_1', baslangic: '2027-07-01', aralik: '01.07.2027 - 04.07.2027', ad: 'Tıp Akademisi – 13. Deneme (2. Dönem)' }
+        { id: 'v2_20261203_medotomy', baslangic: '2026-12-03', aralik: '03.12.2026 - 05.12.2026', ad: 'Medotomy – 2. Deneme Sınavı (Meditercih)' },
+        { id: 'v2_20261203_tipak',    baslangic: '2026-12-03', aralik: '03.12.2026 - 06.12.2026', ad: 'Tıp Akademisi – 10. Deneme (1. Dönem)' },
+        { id: 'v2_20261203_tusmer',   baslangic: '2026-12-03', aralik: '03.12.2026 - 06.12.2026', ad: 'TUSMER – 2. Deneme' },
+        { id: 'v2_20261210_tusem',    baslangic: '2026-12-10', aralik: '10.12.2026 - 12.12.2026', ad: 'Tusem' },
+        { id: 'v2_20261211_tipdemy',  baslangic: '2026-12-11', aralik: '11.12.2026 - 13.12.2026', ad: 'Tıpdemy' },
+        { id: 'v2_20261217_tusdata',  baslangic: '2026-12-17', aralik: '17.12.2026 - 19.12.2026', ad: 'TUSDATA' },
+        { id: 'v2_20270107_medotomy', baslangic: '2027-01-07', aralik: '07.01.2027 - 09.01.2027', ad: 'Medotomy – 3. Deneme Sınavı (Meditercih)' },
+        { id: 'v2_20270107_tusmer',   baslangic: '2027-01-07', aralik: '07.01.2027 - 10.01.2027', ad: 'TUSMER – 3. Deneme' },
+        { id: 'v2_20270114_tusem',    baslangic: '2027-01-14', aralik: '14.01.2027 - 16.01.2027', ad: 'Tusem' },
+        { id: 'v2_20270115_tipdemy',  baslangic: '2027-01-15', aralik: '15.01.2027 - 17.01.2027', ad: 'Tıpdemy' },
+        { id: 'v2_20270121_tusdata',  baslangic: '2027-01-21', aralik: '21.01.2027 - 23.01.2027', ad: 'TUSDATA' },
+        { id: 'v2_20270204_medotomy', baslangic: '2027-02-04', aralik: '04.02.2027 - 06.02.2027', ad: 'Medotomy – 4. Deneme Sınavı (Meditercih)' },
+        { id: 'v2_20270204_tipak',    baslangic: '2027-02-04', aralik: '04.02.2027 - 07.02.2027', ad: 'Tıp Akademisi – 11. Deneme (1. Dönem)' },
+        { id: 'v2_20270204_tusmer',   baslangic: '2027-02-04', aralik: '04.02.2027 - 07.02.2027', ad: 'TUSMER – 4. Deneme' },
+        { id: 'v2_20270211_tusem',    baslangic: '2027-02-11', aralik: '11.02.2027 - 13.02.2027', ad: 'Tusem' },
+        { id: 'v2_20270212_tipdemy',  baslangic: '2027-02-12', aralik: '12.02.2027 - 14.02.2027', ad: 'Tıpdemy' },
+        { id: 'v2_20270218_tusdata',  baslangic: '2027-02-18', aralik: '18.02.2027 - 20.02.2027', ad: 'TUSDATA' },
+        { id: 'v2_20270304_tusmer',   baslangic: '2027-03-04', aralik: '04.03.2027 - 07.03.2027', ad: 'TUSMER – 5. Deneme' }
     ];
 
     let silinenOnlineDenemeler = {};
