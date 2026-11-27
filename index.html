@@ -272,7 +272,7 @@
 
 <div class="container">
     <div id="toast">✅ Kaydedildi</div>
-    <h1>TUS Sarmal Takip <span style="font-size:11px; color:var(--text-muted); font-weight:500; vertical-align:middle;">v7</span></h1>
+    <h1>TUS Sarmal Takip <span style="font-size:11px; color:var(--text-muted); font-weight:500; vertical-align:middle;">v8</span></h1>
     <div class="countdown-banner" id="countdown-banner">📅 Hesaplanıyor...</div>
     
     <div class="tabs">
@@ -630,23 +630,24 @@
     let silinenKurumDenemeleri = {};
 
     const KURUM_DENEMELERI = [
-        { id: "2026-12-03_tusmer", baslangic: "2026-12-03", aralik: "03.12.2026 - 06.12.2026", ad: "TUSMER / Medotomy" },
+        { id: "2026-12-03_medotomy2", baslangic: "2026-12-03", aralik: "03.12.2026 - 05.12.2026", ad: "Medotomy – 2. Deneme Sınavı (Meditercih)" },
         { id: "2026-12-03_tipak10", baslangic: "2026-12-03", aralik: "03.12.2026 - 06.12.2026", ad: "Tıp Akademisi – 10. Deneme (1. Dönem)" },
+        { id: "2026-12-03_tusmer2", baslangic: "2026-12-03", aralik: "03.12.2026 - 06.12.2026", ad: "TUSMER – 2. Deneme" },
         { id: "2026-12-10_tusem", baslangic: "2026-12-10", aralik: "10.12.2026 - 12.12.2026", ad: "Tusem" },
         { id: "2026-12-11_tipdemy", baslangic: "2026-12-11", aralik: "11.12.2026 - 13.12.2026", ad: "Tıpdemy" },
         { id: "2026-12-17_tusdata", baslangic: "2026-12-17", aralik: "17.12.2026 - 19.12.2026", ad: "TUSDATA" },
-        { id: "2027-01-07_tusmer", baslangic: "2027-01-07", aralik: "07.01.2027 - 10.01.2027", ad: "TUSMER / Medotomy" },
+        { id: "2027-01-07_medotomy3", baslangic: "2027-01-07", aralik: "07.01.2027 - 09.01.2027", ad: "Medotomy – 3. Deneme Sınavı (Meditercih)" },
+        { id: "2027-01-07_tusmer3", baslangic: "2027-01-07", aralik: "07.01.2027 - 10.01.2027", ad: "TUSMER – 3. Deneme" },
         { id: "2027-01-14_tusem", baslangic: "2027-01-14", aralik: "14.01.2027 - 16.01.2027", ad: "Tusem" },
         { id: "2027-01-15_tipdemy", baslangic: "2027-01-15", aralik: "15.01.2027 - 17.01.2027", ad: "Tıpdemy" },
         { id: "2027-01-21_tusdata", baslangic: "2027-01-21", aralik: "21.01.2027 - 23.01.2027", ad: "TUSDATA" },
-        { id: "2027-02-04_tusmer", baslangic: "2027-02-04", aralik: "04.02.2027 - 07.02.2027", ad: "TUSMER / Medotomy" },
+        { id: "2027-02-04_medotomy4", baslangic: "2027-02-04", aralik: "04.02.2027 - 06.02.2027", ad: "Medotomy – 4. Deneme Sınavı (Meditercih)" },
         { id: "2027-02-04_tipak11", baslangic: "2027-02-04", aralik: "04.02.2027 - 07.02.2027", ad: "Tıp Akademisi – 11. Deneme (1. Dönem)" },
+        { id: "2027-02-04_tusmer4", baslangic: "2027-02-04", aralik: "04.02.2027 - 07.02.2027", ad: "TUSMER – 4. Deneme" },
         { id: "2027-02-11_tusem", baslangic: "2027-02-11", aralik: "11.02.2027 - 13.02.2027", ad: "Tusem" },
         { id: "2027-02-12_tipdemy", baslangic: "2027-02-12", aralik: "12.02.2027 - 14.02.2027", ad: "Tıpdemy" },
         { id: "2027-02-18_tusdata", baslangic: "2027-02-18", aralik: "18.02.2027 - 20.02.2027", ad: "TUSDATA" },
-        { id: "2027-03-04_tusmer", baslangic: "2027-03-04", aralik: "04.03.2027 - 07.03.2027", ad: "TUSMER / Medotomy" },
-        { id: "2027-05-06_tipak12", baslangic: "2027-05-06", aralik: "06.05.2027 - 09.05.2027", ad: "Tıp Akademisi – 12. Deneme (2. Dönem)" },
-        { id: "2027-07-01_tipak13", baslangic: "2027-07-01", aralik: "01.07.2027 - 04.07.2027", ad: "Tıp Akademisi – 13. Deneme (2. Dönem)" }
+        { id: "2027-03-04_tusmer5", baslangic: "2027-03-04", aralik: "04.03.2027 - 07.03.2027", ad: "TUSMER – 5. Deneme" }
     ];
 
     // 3. Tur: Fizyo Konu (1g) -> Pato Soru (2g) -> Fizyo Soru (2g) -> Biyo Konu (2g) -> sarmal devam
