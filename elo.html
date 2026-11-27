@@ -82,6 +82,38 @@
 
         .tarih-alt-yazi { text-align: center; color: var(--secondary); font-size: 13px; font-weight: 600; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
 
+        /* ===== ONLINE DENEME BİLDİRİM KARTI ===== */
+        .online-deneme-kart {
+            background: var(--surface-card);
+            border-left: 4px solid var(--warning);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .online-deneme-sol { flex: 1; min-width: 0; }
+        .online-deneme-baslik { font-size: 11px; font-weight: 800; color: var(--warning); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px; }
+        .online-deneme-ad { font-size: 14px; color: #fff; font-weight: 600; }
+        .online-deneme-tarih { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+        .online-deneme-sil {
+            background: var(--surface-nested);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            transition: 0.2s;
+        }
+        .online-deneme-sil:hover { color: #fff; border-color: var(--danger); background: rgba(var(--danger-rgb), 0.25); }
+        .online-deneme-sil:active { transform: scale(0.92); }
+
         .hedef-karti { background: var(--surface-card); border-left: 4px solid var(--primary); padding: 16px; border-radius: 12px; margin-bottom: 15px; }
         .tatil-karti { border-left-color: var(--warning); display: none; }
 
@@ -269,6 +301,9 @@
             <button class="nav-ok" onclick="tarihDegistir(1)">❯</button>
         </div>
         <div class="tarih-alt-yazi" id="tarih-metni">Tarih Hesaplanıyor...</div>
+
+        <!-- ONLINE / KURUMSAL DENEME BİLDİRİMLERİ -->
+        <div id="online-deneme-alani"></div>
 
         <div id="aktif-ders-karti" class="hedef-karti">
             <div class="hedef-baslik">
@@ -532,6 +567,72 @@
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const db = firebase.database();
 
+    // ONLINE / KURUMSAL DENEME TAKVİMİ (İlk gününde ana ekranda görünür, çarpıyla silinebilir)
+    const onlineDenemeTakvimi = [
+        { id: 'd_20261203_1', baslangic: '2026-12-03', aralik: '03.12.2026 - 06.12.2026', ad: 'TUSMER / Medotomy' },
+        { id: 'd_20261203_2', baslangic: '2026-12-03', aralik: '03.12.2026 - 06.12.2026', ad: 'Tıp Akademisi – 10. Deneme (1. Dönem)' },
+        { id: 'd_20261210_1', baslangic: '2026-12-10', aralik: '10.12.2026 - 12.12.2026', ad: 'Tusem' },
+        { id: 'd_20261211_1', baslangic: '2026-12-11', aralik: '11.12.2026 - 13.12.2026', ad: 'Tıpdemy' },
+        { id: 'd_20261217_1', baslangic: '2026-12-17', aralik: '17.12.2026 - 19.12.2026', ad: 'TUSDATA' },
+        { id: 'd_20270107_1', baslangic: '2027-01-07', aralik: '07.01.2027 - 10.01.2027', ad: 'TUSMER / Medotomy' },
+        { id: 'd_20270114_1', baslangic: '2027-01-14', aralik: '14.01.2027 - 16.01.2027', ad: 'Tusem' },
+        { id: 'd_20270115_1', baslangic: '2027-01-15', aralik: '15.01.2027 - 17.01.2027', ad: 'Tıpdemy' },
+        { id: 'd_20270121_1', baslangic: '2027-01-21', aralik: '21.01.2027 - 23.01.2027', ad: 'TUSDATA' },
+        { id: 'd_20270204_1', baslangic: '2027-02-04', aralik: '04.02.2027 - 07.02.2027', ad: 'TUSMER / Medotomy' },
+        { id: 'd_20270204_2', baslangic: '2027-02-04', aralik: '04.02.2027 - 07.02.2027', ad: 'Tıp Akademisi – 11. Deneme (1. Dönem)' },
+        { id: 'd_20270211_1', baslangic: '2027-02-11', aralik: '11.02.2027 - 13.02.2027', ad: 'Tusem' },
+        { id: 'd_20270212_1', baslangic: '2027-02-12', aralik: '12.02.2027 - 14.02.2027', ad: 'Tıpdemy' },
+        { id: 'd_20270218_1', baslangic: '2027-02-18', aralik: '18.02.2027 - 20.02.2027', ad: 'TUSDATA' },
+        { id: 'd_20270304_1', baslangic: '2027-03-04', aralik: '04.03.2027 - 07.03.2027', ad: 'TUSMER / Medotomy' },
+        { id: 'd_20270506_1', baslangic: '2027-05-06', aralik: '06.05.2027 - 09.05.2027', ad: 'Tıp Akademisi – 12. Deneme (2. Dönem)' },
+        { id: 'd_20270701_1', baslangic: '2027-07-01', aralik: '01.07.2027 - 04.07.2027', ad: 'Tıp Akademisi – 13. Deneme (2. Dönem)' }
+    ];
+
+    let silinenOnlineDenemeler = {};
+
+    function silinenOnlineDenemeleriGetir() {
+        db.ref('tus_silinen_online_denemeler').once('value').then(snap => {
+            silinenOnlineDenemeler = snap.val() || {};
+            onlineDenemeBildirimiCiz();
+        }).catch(err => {
+            console.error("Silinen denemeler okunamadı:", err);
+        });
+    }
+
+    function onlineDenemeBildirimiCiz() {
+        const alan = document.getElementById("online-deneme-alani");
+        if (!alan) return;
+        const dateStr = localToISO(aktifTarih);
+        const bugunkuDenemeler = onlineDenemeTakvimi.filter(d => d.baslangic === dateStr && !silinenOnlineDenemeler[d.id]);
+
+        if (bugunkuDenemeler.length === 0) {
+            alan.innerHTML = "";
+            return;
+        }
+
+        alan.innerHTML = bugunkuDenemeler.map(d => `
+            <div class="online-deneme-kart">
+                <div class="online-deneme-sol">
+                    <div class="online-deneme-baslik">📢 Bugün Başlayan Deneme</div>
+                    <div class="online-deneme-ad">${escapeHtml(d.ad)}</div>
+                    <div class="online-deneme-tarih">🗓️ ${escapeHtml(d.aralik)}</div>
+                </div>
+                <button class="online-deneme-sil" onclick="onlineDenemeSil('${d.id}')" aria-label="Kaldır">✕</button>
+            </div>
+        `).join('');
+    }
+
+    function onlineDenemeSil(id) {
+        silinenOnlineDenemeler[id] = true;
+        onlineDenemeBildirimiCiz();
+        db.ref('tus_silinen_online_denemeler/' + id).set(true).then(() => {
+            toastGoster("✕ Deneme bildirimi kaldırıldı");
+        }).catch(err => {
+            toastGoster("❌ Kaldırılamadı", true);
+            console.error(err);
+        });
+    }
+
     let gunlukCalismaDakika = 480; // Süre Takibi - 8 saat varsayılan
 
     function sureDegistir(dk) {
@@ -701,6 +802,7 @@
         gunuHesaplaVeArayuzuCiz(); 
         genelNotGetir();
         eksikKonularGetir();
+        silinenOnlineDenemeleriGetir();
         gunlukKarsilamaKontrolu();
     };
 
@@ -868,6 +970,7 @@
             globalGunVerisi = calismaGunleri[info.workDaySayaci - 1];
         }
 
+        onlineDenemeBildirimiCiz();
         arayuzuUygula(info.workDaySayaci, info.durum);
         updateCountdown();
         firebaseDurumGetir(); 
