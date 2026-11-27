@@ -114,6 +114,16 @@
         .checkbox-container { display: flex; align-items: center; cursor: pointer; user-select: none; font-size: 14px; color: #ccc; padding: 4px 0; }
         .checkbox-container input { margin-right: 10px; width: 20px; height: 20px; accent-color: var(--success); cursor: pointer; }
         
+        /* Kurum Deneme Hatırlatma Modülü CSS */
+        .kurum-deneme-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; background: var(--surface-nested); border-left: 3px solid var(--info); padding: 11px 12px; border-radius: 10px; }
+        .kurum-deneme-bilgi { flex: 1; min-width: 0; text-align: left; }
+        .kurum-deneme-etiket { font-size: 11px; font-weight: 700; color: var(--info); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px; }
+        .kurum-deneme-ad { font-size: 14px; font-weight: 700; color: #fff; line-height: 1.3; }
+        .kurum-deneme-tarih { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+        .btn-deneme-kapat { background: rgba(var(--danger-rgb), 0.14); color: var(--danger); border: 1px solid rgba(var(--danger-rgb), 0.45); border-radius: 8px; width: 36px; height: 36px; min-width: 36px; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.15s; }
+        .btn-deneme-kapat:hover { background: rgba(var(--danger-rgb), 0.25); }
+        .btn-deneme-kapat:active { transform: scale(0.92); background: var(--danger); color: #2b0b0b; }
+
         /* Saat ve Telafi Modülü CSS */
         .saat-modulu { background: linear-gradient(145deg, #1b2438, #161d2e); border: 1px solid var(--border); border-left: 4px solid var(--primary); padding: 12px; border-radius: 10px; margin-top: 10px; }
         .saat-ust-satir { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
@@ -262,7 +272,7 @@
 
 <div class="container">
     <div id="toast">✅ Kaydedildi</div>
-    <h1>TUS Sarmal Takip <span style="font-size:11px; color:var(--text-muted); font-weight:500; vertical-align:middle;">v6</span></h1>
+    <h1>TUS Sarmal Takip <span style="font-size:11px; color:var(--text-muted); font-weight:500; vertical-align:middle;">v7</span></h1>
     <div class="countdown-banner" id="countdown-banner">📅 Hesaplanıyor...</div>
     
     <div class="tabs">
@@ -319,6 +329,9 @@
                 </label>
             </div>
 
+            <!-- KURUM DENEME HATIRLATMA MODÜLÜ -->
+            <div id="kurum-deneme-alani" style="display: none;"></div>
+
             <!-- CANLI SAAT & TELAFİ MODÜLÜ -->
             <div id="saat-modulu" class="saat-modulu" style="display: none;">
                 <div class="saat-ust-satir">
@@ -345,6 +358,7 @@
         <div id="tatil-karti" class="hedef-karti tatil-karti">
             <h2 id="tatil-baslik" style="color: var(--warning); text-align: center; margin-bottom: 10px;">🌴 Mola Günü</h2>
             <p id="tatil-aciklama" style="text-align: center; font-size: 14px; color: var(--text-muted);">Sarmal takvim bugün ilerlemez.</p>
+            <div id="kurum-deneme-tatil-alani" style="display: none; margin-top: 12px;"></div>
         </div>
 
         <!-- GENEL NOT PANOSU -->
@@ -613,6 +627,27 @@
     let userEnvanter = {};
     let globalGunlukKayitlar = {};
     let globalBransSayilari = {};
+    let silinenKurumDenemeleri = {};
+
+    const KURUM_DENEMELERI = [
+        { id: "2026-12-03_tusmer", baslangic: "2026-12-03", aralik: "03.12.2026 - 06.12.2026", ad: "TUSMER / Medotomy" },
+        { id: "2026-12-03_tipak10", baslangic: "2026-12-03", aralik: "03.12.2026 - 06.12.2026", ad: "Tıp Akademisi – 10. Deneme (1. Dönem)" },
+        { id: "2026-12-10_tusem", baslangic: "2026-12-10", aralik: "10.12.2026 - 12.12.2026", ad: "Tusem" },
+        { id: "2026-12-11_tipdemy", baslangic: "2026-12-11", aralik: "11.12.2026 - 13.12.2026", ad: "Tıpdemy" },
+        { id: "2026-12-17_tusdata", baslangic: "2026-12-17", aralik: "17.12.2026 - 19.12.2026", ad: "TUSDATA" },
+        { id: "2027-01-07_tusmer", baslangic: "2027-01-07", aralik: "07.01.2027 - 10.01.2027", ad: "TUSMER / Medotomy" },
+        { id: "2027-01-14_tusem", baslangic: "2027-01-14", aralik: "14.01.2027 - 16.01.2027", ad: "Tusem" },
+        { id: "2027-01-15_tipdemy", baslangic: "2027-01-15", aralik: "15.01.2027 - 17.01.2027", ad: "Tıpdemy" },
+        { id: "2027-01-21_tusdata", baslangic: "2027-01-21", aralik: "21.01.2027 - 23.01.2027", ad: "TUSDATA" },
+        { id: "2027-02-04_tusmer", baslangic: "2027-02-04", aralik: "04.02.2027 - 07.02.2027", ad: "TUSMER / Medotomy" },
+        { id: "2027-02-04_tipak11", baslangic: "2027-02-04", aralik: "04.02.2027 - 07.02.2027", ad: "Tıp Akademisi – 11. Deneme (1. Dönem)" },
+        { id: "2027-02-11_tusem", baslangic: "2027-02-11", aralik: "11.02.2027 - 13.02.2027", ad: "Tusem" },
+        { id: "2027-02-12_tipdemy", baslangic: "2027-02-12", aralik: "12.02.2027 - 14.02.2027", ad: "Tıpdemy" },
+        { id: "2027-02-18_tusdata", baslangic: "2027-02-18", aralik: "18.02.2027 - 20.02.2027", ad: "TUSDATA" },
+        { id: "2027-03-04_tusmer", baslangic: "2027-03-04", aralik: "04.03.2027 - 07.03.2027", ad: "TUSMER / Medotomy" },
+        { id: "2027-05-06_tipak12", baslangic: "2027-05-06", aralik: "06.05.2027 - 09.05.2027", ad: "Tıp Akademisi – 12. Deneme (2. Dönem)" },
+        { id: "2027-07-01_tipak13", baslangic: "2027-07-01", aralik: "01.07.2027 - 04.07.2027", ad: "Tıp Akademisi – 13. Deneme (2. Dönem)" }
+    ];
 
     // 3. Tur: Fizyo Konu (1g) -> Pato Soru (2g) -> Fizyo Soru (2g) -> Biyo Konu (2g) -> sarmal devam
     const t3 = [
@@ -929,6 +964,59 @@
         db.ref('tus_kaynak_envanteri').on('value', snap => {
             userEnvanter = snap.val() || {};
             envanterTablosunuCiz();
+        });
+
+        db.ref('tus_silinen_kurum_denemeleri').on('value', snap => {
+            silinenKurumDenemeleri = snap.val() || {};
+            kurumDenemeleriniCiz();
+        });
+    }
+
+    // --- KURUM DENEME HATIRLATMALARI (İLK GÜN GÖSTERİM & SİLME) ---
+    function kurumDenemeleriniCiz() {
+        const alanAktif = document.getElementById("kurum-deneme-alani");
+        const alanTatil = document.getElementById("kurum-deneme-tatil-alani");
+        if (!alanAktif || !alanTatil) return;
+
+        const dateStr = localToISO(aktifTarih);
+        const bugunkuDenemeler = KURUM_DENEMELERI.filter(d => d.baslangic === dateStr && !silinenKurumDenemeleri[d.id]);
+
+        if (bugunkuDenemeler.length === 0) {
+            alanAktif.style.display = "none";
+            alanAktif.innerHTML = "";
+            alanTatil.style.display = "none";
+            alanTatil.innerHTML = "";
+            return;
+        }
+
+        const html = bugunkuDenemeler.map(d => `
+            <div class="kurum-deneme-item">
+                <div class="kurum-deneme-bilgi">
+                    <div class="kurum-deneme-etiket">📢 Kurum Denemesi Başladı</div>
+                    <div class="kurum-deneme-ad">${escapeHtml(d.ad)}</div>
+                    <div class="kurum-deneme-tarih">🗓️ ${escapeHtml(d.aralik)}</div>
+                </div>
+                <button type="button" class="btn-deneme-kapat" data-id="${escapeHtml(d.id)}" onclick="kurumDenemeSil(this.dataset.id)" title="Hatırlatmayı sil">✕</button>
+            </div>
+        `).join('');
+
+        alanAktif.innerHTML = html;
+        alanAktif.style.display = "block";
+        alanTatil.innerHTML = html;
+        alanTatil.style.display = "block";
+    }
+
+    function kurumDenemeSil(id) {
+        if (!id) return;
+        silinenKurumDenemeleri[id] = true;
+        kurumDenemeleriniCiz();
+        db.ref('tus_silinen_kurum_denemeleri/' + id).set(true).then(() => {
+            toastGoster("🗑 Deneme hatırlatması silindi");
+        }).catch(err => {
+            console.error(err);
+            delete silinenKurumDenemeleri[id];
+            kurumDenemeleriniCiz();
+            toastGoster("❌ Silinemedi", true);
         });
     }
 
@@ -1390,6 +1478,7 @@
         firebaseDurumGetir(); 
         envanterTablosunuCiz();
         saatMotorunuHesaplaVeCiz();
+        kurumDenemeleriniCiz();
     }
 
     // Tek günde çok soru düşen günler için uyarı metni
